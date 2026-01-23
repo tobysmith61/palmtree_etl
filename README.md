@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="static/core/images/palmtree_logo_clean_no_bg.png" alt="Palmtree Logo" width="120">
+  <img src="core/static/core/images/palmtree_logo_clean_no_bg.png" alt="Palmtree Logo" width="120">
 </p>
 
 <h1 align="center">Palmtree ETL</h1>
