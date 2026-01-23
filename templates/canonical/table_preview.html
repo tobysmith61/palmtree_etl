@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Table Preview - {{ tabledata.name }}</title>
+
+    <!-- Django admin CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+    <!-- Handsontable CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.css">
+
+    <!-- Handsontable JS -->
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.js"></script>
+</head>
+<body class="app-canonical model-tabledata change-form">
+
+<!-- Admin-style header -->
+<div id="header">
+    <div id="branding">
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">Django Admin</a></h1>
+    </div>
+</div>
+
+<div id="content-main" class="module">
+    <h1>Preview: {{ tabledata.name }}</h1>
+
+    <div class="form-row">
+        <fieldset class="module aligned">
+            <h2>Source Test Data</h2>
+            <div class="field-box">
+                {{ table_source|safe }}
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="form-row">
+        <fieldset class="module aligned">
+            <h2>Target Canonicalised</h2>
+            <div class="field-box">
+                {{ table_target|safe }}
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+</body>
+</html>

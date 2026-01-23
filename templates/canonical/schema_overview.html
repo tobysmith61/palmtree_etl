@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block content %}
+<div class="p-4 space-y-4">
+    <h1 class="text-2xl font-bold mb-4">Canonical Schemas Overview</h1>
+
+    <!-- Grid Headers -->
+    <div class="grid grid-cols-[180px_180px_180px_180px_180px_180px] gap-x-2 mb-2 font-semibold text-gray-700 text-center">
+        <div>Test now!</div>
+        <div>Source data contract</div>
+        <div>Edit test data</div>
+        <div>Edit source → ingest (mappings)</div>
+        <div>palmTree ingest contract</div>
+        <div>Canonical schema (target)</div>
+    </div>
+
+    {% for row in schema_list %}
+    <div class="grid grid-cols-[180px_180px_180px_180px_180px_180px] gap-x-2">
+
+        <!-- Test now! -->
+        {% if row.source_schema and row.source_schema.table_data %}
+            <a href="{% url 'canonical:tabledata_preview' row.source_schema.table_data.id %}"
+            class="w-full px-4 py-2 rounded text-center bg-gray-600 !text-white no-underline hover:bg-gray-900 hover:!text-white font-medium block">
+                Test now!
+            </a>
+        {% else %}
+            <span class="px-4 py-2 rounded text-center bg-gray-200 text-gray-500">
+                No test data
+            </span>
+        {% endif %}
+
+        <!-- Contract -->
+        <a
+        class="w-full px-4 py-2 rounded text-center bg-blue-600 !text-white no-underline hover:bg-blue-900 hover:!text-white font-medium block">
+            View Contract
+        </a>
+
+        <!-- Edit test data -->
+        {% if row.source_schema and row.source_schema.table_data %}
+            <a href="{% url 'admin:canonical_tabledata_change' row.source_schema.table_data.id %}"
+            class="w-full px-4 py-2 rounded text-center bg-blue-600 !text-white no-underline hover:bg-blue-900 hover:!text-white font-medium block">
+                {{ row.source_schema.table_data.name }}
+            </a>
+        {% else %}
+            <span class="px-4 py-2 rounded text-center bg-gray-200 text-gray-500">
+                No test data
+            </span>
+        {% endif %}
+
+        <!-- Edit source schema -->
+        {% if row.source_schema %}
+            <a href="{% url 'admin:canonical_sourceschema_change' row.source_schema.id %}"
+            class="w-full px-4 py-2 rounded text-center bg-green-600 !text-white no-underline hover:bg-green-900 hover:!text-white font-medium block">
+                {{ row.source_schema.name }}
+            </a>
+        {% else %}
+            <span class="px-4 py-2 rounded text-center bg-gray-200 text-gray-500">
+                No source mappings
+            </span>
+        {% endif %}
+
+        <!-- Contract button -->
+        {% if row.canonical and row.canonical.contract %}
+            {% with model_name=row.canonical.contract|cut:"contracts." %}
+                <a href="{% url 'contracts:view' model_name %}"
+                class="w-full px-4 py-2 rounded text-center bg-blue-600 !text-white no-underline hover:bg-blue-900 hover:!text-white font-medium block">
+                    View Contract
+                </a>
+            {% endwith %}
+        {% else %}
+            <span class="px-4 py-2 rounded text-center bg-gray-200 text-gray-500">
+                No Contract
+            </span>
+        {% endif %}
+
+        <!-- Canonical schema -->
+        <a href="{% url 'admin:canonical_canonicalschema_change' row.canonical.id %}"
+        class="w-full px-4 py-2 rounded text-center bg-blue-600 !text-white no-underline hover:bg-blue-900 hover:!text-white font-medium block">
+            {{ row.canonical.name }}
+        </a>
+
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tenants</h1>
+
+<a class="button" href="{% url 'tenant_create' %}">Add tenant</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Internal Code</th>
+            <th>External Code</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tenant in object_list %}
+        <tr>
+            <td>{{ tenant.internal_tenant_code }}</td>
+            <td>{{ tenant.external_tenant_code }}</td>
+            <td>{{ tenant.desc }}</td>
+            <td>
+                <a href="{% url 'tenant_edit' tenant.pk %}">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

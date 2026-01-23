@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>Hello World</h1>
+
+{% if user.is_superuser %}
+    <p>You are superuser!</p>
+{% else %}
+    {% if tenant_desc %}
+        <p>Your tenant: {{ tenant.desc }}</p>
+    {% else %}
+        <p>You are not associated with any tenant yet.</p>
+    {% endif %}
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Data Ingest Contract</h1>
+
+<p><strong>Model:</strong> {{ app_label }}.{{ model_name }}</p>
+<p><strong>Version:</strong> {{ version }}</p>
+
+<table class="adminlist">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Primary Key</th>
+      <th>Related Model</th>
+      <th>Max Length</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for field in fields %}
+    <tr>
+      <td>{{ field.name }}</td>
+      <td>{{ field.type }}</td>
+      <td>{{ field.required }}</td>
+      <td>{{ field.primary_key }}</td>
+      <td>{{ field.related_model }}</td>
+      <td>{{ field.max_length }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="javascript:history.back()">⬅ Back</a>
+{% endblock %}

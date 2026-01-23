@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Palmtree ETL{% endblock %}</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="container mx-auto px-4 h-12 flex items-center gap-4">
+            <!-- Logo -->
+            <img
+                src="{% static 'core/images/palmtree_logo_clean_no_bg.png' %}"
+                alt="Palmtree ETL"
+                class="h-7 w-auto"
+            />
+
+            <!-- App name -->
+            <span class="font-semibold text-base">Palmtree ETL</span>
+
+            <!-- Right side -->
+            <div class="ml-auto flex items-center gap-4 text-sm">
+                {% if user.is_authenticated %}
+                    <!-- Left part: username + tenant stacked -->
+                    <div class="flex flex-col text-right">
+                        <span class="text-gray-700">{{ user.username }}</span>
+
+                        {% if tenant %}
+                            <a
+                                href="{% url 'tenants:select_tenant' %}"
+                                class="inline-flex items-center text-xs uppercase tracking-wide text-gray-500 font-medium text-gray-700 normal-case transition-colors duration-200 hover:text-red-600"
+                                title="Change Tenant"
+                            >
+                                Tenant: {{ tenant.desc }}
+                                {% if can_edit_tenant %}
+                                    <!-- Pencil icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                                    </svg>
+                                {% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Logout button to the right -->
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button
+                            type="submit"
+                            class="text-red-600 hover:text-red-800"
+                            title="Logout"
+                        >
+                            <!-- Logout icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+                            </svg>
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 underline underline-offset-2">Login</a>
+                {% endif %}
+            </div>
+
+            
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="bg-white border border-gray-200 rounded-md p-6 w-full">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t border-gray-200 py-1 mt-auto">
+        <div class="container mx-auto px-4 flex items-center justify-center gap-2">
+            <img 
+                src="{% static 'core/images/BitSprout-logo-only.png' %}" 
+                alt="BitSprout" 
+                class="h-6 w-auto hover:opacity-80 transition-opacity duration-200"
+            />
+            <span class="text-gray-600 text-sm">Powered by</span>
+            <img 
+                src="{% static 'core/images/BitSprout-text.png' %}" 
+                alt="BitSprout" 
+                class="h-3 w-auto hover:opacity-80 transition-opacity duration-200"
+            />
+        </div>
+    </footer>
+
+</body>
+</html>
