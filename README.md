@@ -2,7 +2,7 @@
     <img src="core/static/core/images/palmtree_logo_clean_no_bg.png" alt="Palmtree Logo" width="120">
 </p>
 
-<h1 align="center">Palmtree ETL</h1>
+<h1 align="center">palmTree ETL</h1>
 
 <div align="center">
     A lightweight, multi-tenant ETL management platform by
