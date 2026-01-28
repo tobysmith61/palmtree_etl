@@ -1,4 +1,4 @@
-from .models import Tenant
+from .models import Tenant, UserAccount, Account
 
 class NoTenantError(Exception):
     pass
@@ -14,7 +14,7 @@ def resolve_user_tenant(request):
     May set request.session["tenant_id"].
     """
     user = request.user
-
+    
     if not user.is_authenticated:
         return None
 
@@ -22,7 +22,12 @@ def resolve_user_tenant(request):
     if user.is_superuser:
         return None
 
-    tenants = Tenant.objects.filter(usertenant__user=user).distinct()
+    # Get the user's account (exactly 1)
+    account = UserAccount.objects.get(user=user).account
+
+    # Get all tenants linked to that account
+    tenants = Tenant.objects.filter(account=account)
+    
     if tenants.count() == 0:
         raise NoTenantError("User has no tenants")
 

@@ -1,15 +1,29 @@
 # canonical/views.py
 from django.shortcuts import render, redirect
-from .models import Tenant
+from .models import Tenant, UserAccount
 from .utils import get_current_tenant
 from django.http import HttpResponse
 from uuid import UUID
 from django.contrib.auth.views import LogoutView
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
+from django.templatetags.static import static
 
 def select_tenant(request):
-    tenants = Tenant.objects.filter(usertenant__user=request.user)
+    user = request.user
+
+    if not user.is_authenticated:
+        return None
+
+    # Superusers: do nothing automatically
+    if user.is_superuser:
+        return None
+    
+    # Get the user's account (exactly 1)
+    account = UserAccount.objects.get(user=user).account
+
+    # Get all tenants linked to that account
+    tenants = Tenant.objects.filter(account=account)
 
     if request.method == "POST":
         tenant_id = request.POST.get("tenant")
@@ -116,3 +130,66 @@ class TenantUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
                 )
             })
         return form
+    
+
+from django.http import JsonResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Account, Group, Tenant
+
+@staff_member_required
+def account_tree(request):
+    """
+    Return the Account → Group → Tenant hierarchy as JSON for the tree view.
+    Only accessible to staff (admin) users.
+    """
+    tree = []
+
+    account_id = request.GET.get("account_id")
+    
+    account = Account.objects.get(pk=account_id)
+    account_node = {
+        "id": f"account-{account.id}",
+        "title": 'Account: '+account.name,
+        "type": "account",
+        "url": f"/admin/tenants/account/{account.id}/change/",
+        "icon": static('core/images/groupings/rooftop.jpg'),
+        "children": []
+    }
+
+    groups = Group.objects.filter(account=account)
+    for group in groups:
+        group_node = {
+            "id": f"group-{group.id}",
+            "title": 'Group: '+group.name,
+            "type": "group",
+            "url": f"/admin/tenants/group/{group.id}/change/",
+            "icon": static('core/images/groupings/rooftop.jpg'),
+            "children": []
+        }
+
+        tenants = Tenant.objects.filter(group=group)
+        for tenant in tenants:
+            tenant_node = {
+                "id": f"tenant-{tenant.pk}",
+                "title": 'Tenant: '+tenant.desc,  # adjust if your tenant uses a different field
+                "type": "tenant",
+                "url": f"/admin/tenants/tenant/{tenant.pk}/change/",
+                "icon": static(tenant.logo_path) if tenant.logo_path else None,
+                "children": []
+            }
+            group_node["children"].append(tenant_node)
+
+        account_node["children"].append(group_node)
+
+        tree.append(account_node)
+
+    return JsonResponse(tree, safe=False)
+
+
+
+@staff_member_required
+def account_tree_page(request):
+    """
+    Renders the interactive tree page
+    """
+    return render(request, "tenants/account_tree.html")

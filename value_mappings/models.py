@@ -13,11 +13,7 @@ class ValueMapping(models.Model):
     Generic value mapping table.
     Each mapping belongs to a group (e.g., 'fuel types') and maps from a source code to a canonical code/value.
     """
-    group = models.ForeignKey(
-        ValueMappingGroup,
-        on_delete=models.CASCADE,
-        related_name="mappings",
-    )
+    group = models.ForeignKey(ValueMappingGroup, on_delete=models.DO_NOTHING, related_name="mappings",)
     from_code = models.CharField(
         max_length=255,
         help_text="Original/source value/code"

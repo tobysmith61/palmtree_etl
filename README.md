@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="core/static/core/images/palmtree_logo_clean_no_bg.png" alt="Palmtree Logo" width="120">
+    <img src="core/static/core/images/branding/palmtree/palmtree_logo_clean_no_bg.png" alt="palmTree Logo" width="120">
 </p>
 
 <h1 align="center">palmTree ETL</h1>
@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-    <img src="core/static/core/images/BitSprout1-transparent.png" alt="Palmtree Logo" width="120">
+    <img src="core/static/core/images/branding/bitsprout/BitSprout1-transparent.png" alt="BitSprout Logo" width="120">
 </div>
 
 START REDIS (on separate terminal)

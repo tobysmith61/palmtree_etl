@@ -11,5 +11,4 @@ urlpatterns = [
     path("new/", TenantCreateView.as_view(), name="tenant_create"),
     path("<uuid:pk>/edit/", TenantUpdateView.as_view(), name="tenant_edit"),
     path("select/", select_tenant, name="select_tenant"),
-
 ]

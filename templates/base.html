@@ -12,12 +12,12 @@
 
     <!-- Header -->
     <header class="bg-white border-b border-gray-200">
-        <div class="container mx-auto px-4 h-12 flex items-center gap-4">
+        <div class="container mx-auto px-4 h-16 flex items-center gap-4">
             <!-- Logo -->
             <img
-                src="{% static 'core/images/palmtree_logo_clean_no_bg.png' %}"
+                src="{% static 'core/images/branding/palmtree/palmtree_logo_clean_no_bg.png' %}"
                 alt="palmTree ETL"
-                class="h-7 w-auto"
+                class="h-12 w-auto"
             />
 
             <!-- App name -->
@@ -27,25 +27,39 @@
             <div class="ml-auto flex items-center gap-4 text-sm">
                 {% if user.is_authenticated %}
                     <!-- Left part: username + tenant stacked -->
-                    <div class="flex flex-col text-right">
-                        <span class="text-gray-700">{{ user.username }}</span>
-
-                        {% if tenant %}
-                            <a
-                                href="{% url 'tenants:select_tenant' %}"
-                                class="inline-flex items-center text-xs uppercase tracking-wide text-gray-500 font-medium text-gray-700 normal-case transition-colors duration-200 hover:text-red-600"
-                                title="Change Tenant"
+                    <div class="flex items-center gap-3">
+                        {% if tenant and tenant.logo_path %}
+                            <img
+                                src="{% static tenant.logo_path %}"
+                                alt="{{ tenant.desc }} logo"
+                                class="h-8 w-8 object-contain"
                             >
-                                Tenant: {{ tenant.desc }}
-                                {% if can_edit_tenant %}
-                                    <!-- Pencil icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/>
-                                    </svg>
-                                {% endif %}
-                            </a>
                         {% endif %}
+                    
+                        <div class="flex flex-col text-right">
+                            <!-- username -->
+                            <span class="text-gray-700">{{ user.username }}</span>
+                    
+                            {% if tenant %}
+                                <a
+                                    href="{% url 'tenants:select_tenant' %}"
+                                    class="inline-flex items-center justify-end text-xs uppercase tracking-wide font-medium text-gray-500 normal-case transition-colors duration-200 hover:text-red-600"
+                                    title="Change Tenant"
+                                >
+                                    Tenant: {{ tenant.desc }}
+                    
+                                    {% if can_edit_tenant %}
+                                        <!-- Pencil icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M15.232 5.232l3.536 3.536M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                                        </svg>
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
+                    
 
                     <!-- Logout button to the right -->
                     <form method="post" action="{% url 'logout' %}">
@@ -81,13 +95,13 @@
     <footer class="bg-gray-100 border-t border-gray-200 py-1 mt-auto">
         <div class="container mx-auto px-4 flex items-center justify-center gap-2">
             <img 
-                src="{% static 'core/images/BitSprout-logo-only.png' %}" 
+                src="{% static 'core/images/branding/bitsprout/BitSprout-logo-only.png' %}" 
                 alt="BitSprout" 
                 class="h-6 w-auto hover:opacity-80 transition-opacity duration-200"
             />
-            <span class="text-gray-600 text-sm">Powered by</span>
+            <span class="text-gray-600 text-xs">Powered by</span>
             <img 
-                src="{% static 'core/images/BitSprout-text.png' %}" 
+                src="{% static 'core/images/branding/bitsprout/BitSprout-text.png' %}" 
                 alt="BitSprout" 
                 class="h-3 w-auto hover:opacity-80 transition-opacity duration-200"
             />

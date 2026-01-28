@@ -30,11 +30,7 @@ class CanonicalField(models.Model):
         ("mapped_string", "Mapped string"),
     ]
 
-    schema = models.ForeignKey(
-        "CanonicalSchema",
-        on_delete=models.CASCADE,
-        related_name="fields"
-    )
+    schema = models.ForeignKey("CanonicalSchema", on_delete=models.CASCADE, related_name="fields")
 
     name = models.CharField(max_length=100)
 
@@ -111,11 +107,7 @@ class SourceSchema(models.Model):
         return f"{self.system} - {self.name}"
 
 class FieldMapping(models.Model):
-    source_schema = models.ForeignKey(
-        SourceSchema, 
-        on_delete=models.CASCADE,         
-        related_name="field_mappings",
-    )
+    source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")
     canonical_field = models.ForeignKey(CanonicalField, on_delete=models.SET_NULL, null=True, blank=True)
 
     source_field_name = models.CharField(max_length=100, null=True, blank=True)

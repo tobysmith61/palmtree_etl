@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+import sys
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "nested_admin",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,14 +88,38 @@ WSGI_APPLICATION = 'palmtree_etl.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER_APP"),         # palmtree_app at runtime
+        "PASSWORD": config("DB_PASSWORD_APP"),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="5432"),
+    },
+    "migrate": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER_MIGRATE"),     # palmtree_migrate for migrations
+        "PASSWORD": config("DB_PASSWORD_MIGRATE"),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="5432"),
+    },
+    "readonly": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER_READONLY"),    # palmtree_readonly for BI/reporting
+        "PASSWORD": config("DB_PASSWORD_READONLY"),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="5432"),
+    },
 }
 
+if "migrate" not in sys.argv and DATABASES["default"]["USER"] == config("DB_USER_MIGRATE"):
+    raise RuntimeError("Do not use migrate user for normal runtime")
+
+if "migrate" in sys.argv and "--database=migrate" not in sys.argv:
+    raise RuntimeError("Use --database=migrate")
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
