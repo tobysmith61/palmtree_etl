@@ -8,6 +8,9 @@ class TenantResolutionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        if request.path.startswith("/tenants/dev/login-as/"):
+            return self.get_response(request)
+        
         if request.user.is_authenticated:
             # Only resolve tenant if not already set in session
             tenant_id = request.session.get("tenant_id")
@@ -20,8 +23,8 @@ class TenantResolutionMiddleware:
                         return redirect("tenants:select_tenant")
                 except NoTenantError:
                     # Redirect to a page informing user has no tenant
-                    if request.path != reverse("no_tenant"):
-                        return redirect("no_tenant")
+                    if request.path != reverse("tenants:no_tenant"):
+                        return redirect("tenants:no_tenant")
             else:
                 # If tenant_id in session, set request.current_tenant for convenience
                 from .models import Tenant

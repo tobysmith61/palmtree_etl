@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{ account.name }} - Structure</h1>
+
+<div id="tree"></div>
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jstree/dist/themes/default/style.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/jstree/dist/jstree.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  const treeData = {{ tree_data|safe }};
+  const csrftoken = '{{ csrf_token }}';
+
+  $('#tree').jstree({
+    core: {
+      data: treeData,
+      check_callback: function (op, node, parent) {
+        // Account cannot move
+        if (node.type === 'account') return false;
+
+        // Nothing can go under a tenant
+        if (parent.type === 'tenant') return false;
+
+        return true;
+      }
+    },
+    types: {
+      account: { icon: 'fa fa-briefcase' },
+      group: { icon: 'fa fa-folder' },
+      tenant: { icon: 'fa fa-building' }
+    },
+    plugins: ['dnd', 'types']
+  });
+
+  $('#tree').on('move_node.jstree', function (e, data) {
+    fetch("{% url 'tenants:move_node' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        node_id: data.node.id,
+        parent_id: data.parent
+      })
+    });
+  });
+</script>
+{% endblock %}

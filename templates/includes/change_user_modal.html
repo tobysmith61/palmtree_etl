@@ -1,0 +1,24 @@
+<div id="changeUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded shadow w-80 text-center">
+        <h2 class="text-lg font-semibold mb-2">Developer</h2>
+        <p class="text-sm text-gray-600">Impersonate User!</p>
+
+        <div class="mt-4 flex flex-col gap-2">
+            <a href="{% url 'tenants:dev_login_as' 'toby' %}"
+            class="w-full px-4 py-2 bg-blue-500 text-white rounded block text-center">
+                Superuser
+            </a>
+        
+            <a href="{% url 'tenants:dev_login_as' 'toby1' %}"
+            class="w-full px-4 py-2 bg-blue-500 text-white rounded block text-center">
+                toby1 (Stellantis)
+            </a>
+        
+            <a href="{% url 'tenants:dev_login_as' 'toby2' %}"
+            class="w-full px-4 py-2 bg-blue-500 text-white rounded block text-center">
+                toby2 (Group1)
+            </a>
+        </div>
+        <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded" onclick="closeChangeUserModal()">Close</button>
+    </div>
+</div>

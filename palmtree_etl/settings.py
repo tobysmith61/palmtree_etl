@@ -49,6 +49,11 @@ INSTALLED_APPS = [
     'value_mappings',
     'file_ingestion',
     'django_celery_results',
+
+    "mptt",
+    "sandbox",
+
+
 ]
 
 MIDDLEWARE = [
@@ -75,7 +80,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                "tenants.context_processors.tenant_context",
+                'tenants.context_processors.tenant_context',
+                'palmtree_etl.context_processors.developer_quick_login_buttons',
 
             ],
         },
@@ -158,6 +164,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -178,4 +187,6 @@ CELERY_RESULT_BACKEND = "django-db"
 # After login, redirect here
 LOGIN_REDIRECT_URL = "/"  
 # After logout, redirect here
-LOGOUT_REDIRECT_URL = "/" 
+LOGOUT_REDIRECT_URL = "/login/" 
+
+DEVELOPER_QUICK_LOGIN_BUTTONS = True

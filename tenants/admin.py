@@ -1,12 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import Account, Group, Tenant, Account, UserAccount, TenantGroupType
+from .models import Account, Tenant, UserAccount, TenantGroupType #TenantGroup
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 import json
 from django.urls import reverse
+from django.contrib import admin
+print (11)
+print(admin.site)
+
+
 
 
 User = get_user_model()
@@ -48,7 +53,7 @@ class TenantAdmin(RedirectOnSaveAdmin):
         "desc",
         "internal_tenant_code",
         "external_tenant_code",
-        "group",
+        #"group",
         'logo_path',
     )
     
@@ -56,7 +61,7 @@ class TenantAdmin(RedirectOnSaveAdmin):
         "desc",
         "internal_tenant_code",
         "external_tenant_code",
-        "group",
+        #"group",
         "created_at",
         "updated_at",
         "logo_preview",
@@ -65,7 +70,7 @@ class TenantAdmin(RedirectOnSaveAdmin):
     search_fields = (
         "internal_tenant_code",
         "external_tenant_code",
-        "group",
+        #"group",
     )
 
     ordering = ("internal_tenant_code",)
@@ -84,15 +89,21 @@ class TenantAdmin(RedirectOnSaveAdmin):
         return "-"
 TenantAdmin.logo_preview.short_description = "Logo"
 
-@admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "parent", "group_type", "account")
-    list_filter = ("account", "group_type")
-    autocomplete_fields = ("parent", "account")
-    search_fields = ("name", "account__name")
+from mptt.admin import DraggableMPTTAdmin
 
-    class Media:
-        js = ("tenants/js/popup_refresh.js",)  # put the script in static
+# if admin.site.is_registered(TenantGroup):
+#     admin.site.unregister(TenantGroup)
+# @admin.register(TenantGroup)
+
+# class TenantGroupAdmin(DraggableMPTTAdmin):
+#     mptt_indent_field = "name"
+#     list_display = ("tree_actions", "indented_title", "account", "group_type")
+#     list_display_links = ("indented_title",)
+#     list_filter = ("account", "group_type")
+
+#     def changelist_view(self, request, extra_context=None):
+#         print("🔥 DRAGGABLE MPTT ADMIN ACTIVE 🔥")
+#         return super().changelist_view(request, extra_context)
 
 class TenantInline(admin.TabularInline):
     model = Tenant
@@ -137,10 +148,10 @@ class AccountAdmin(RedirectOnSaveAdmin):
 
         tree_data = build_account_tree(obj)
 
-        edit_url = reverse(
-                "admin:tenants_group_changelist"
-            ) + f"?account__id__exact={obj.id}&_popup=1"
-
+        # edit_url = reverse(
+        #         "admin:tenants_group_changelist"
+        #     ) + f"?account__id__exact={obj.id}&_popup=1"
+        return mark_safe("<div/>")
         return mark_safe(f"""
                          
             <div style="display:flex; align-items:center; gap:8px;">
@@ -177,9 +188,9 @@ class AccountAdmin(RedirectOnSaveAdmin):
 
 def build_account_tree(account):
     groups = (
-        Group.objects
-        .filter(account=account)
-        .prefetch_related("children")
+        #TenantGroup.objects
+        #.filter(account=account)
+        #.prefetch_related("children")
     )
 
     tenants = Tenant.objects.filter(account=account)
@@ -202,7 +213,7 @@ def build_account_tree(account):
         }
 
     def group_node(group):
-        icon = TenantGroupType(group.group_type).icon if group.group_type else "📁"
+        #icon = TenantGroupType(group.group_type).icon if group.group_type else "📁"
 
         return {
             "text": f"{icon} {group.name}",

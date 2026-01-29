@@ -1,13 +1,23 @@
 # canonical/views.py
-from django.shortcuts import render, redirect
-from .models import Tenant, UserAccount
-from .utils import get_current_tenant
-from django.http import HttpResponse
+
+# Standard library
 from uuid import UUID
-from django.contrib.auth.views import LogoutView
+
+# Django
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.views import LogoutView
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.templatetags.static import static
+from django.views.generic import ListView, CreateView, UpdateView
+from django.contrib.auth import logout
+
+# Local app
+from .models import Tenant, UserAccount
+from .forms import TenantForm
+from .utils import get_current_tenant
+
 
 def select_tenant(request):
     user = request.user
@@ -33,7 +43,7 @@ def select_tenant(request):
     return render(request, "tenants/select_tenant.html", {"tenants": tenants})
 
 def no_tenant(request):
-    return render(request, "no_tenant.html", status=403)
+    return render(request, "tenants/no_tenant.html")
 
 def whoami(request):
     tenant = get_current_tenant(request)
@@ -76,11 +86,6 @@ class TenantLogoutView(LogoutView):
         request.session.pop("tenant_id", None)
         return super().dispatch(request, *args, **kwargs)
     
-# tenants/views.py
-from django.views.generic import ListView, CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from .models import Tenant
-from .forms import TenantForm
 
 class TenantListView(LoginRequiredMixin, ListView):
     model = Tenant
@@ -130,66 +135,42 @@ class TenantUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
                 )
             })
         return form
-    
 
-from django.http import JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
-from .models import Account, Group, Tenant
+# views.py
+from django.contrib.auth import login
+from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.http import Http404
+from django.shortcuts import redirect
 
-@staff_member_required
-def account_tree(request):
-    """
-    Return the Account → Group → Tenant hierarchy as JSON for the tree view.
-    Only accessible to staff (admin) users.
-    """
-    tree = []
+User = get_user_model()
 
-    account_id = request.GET.get("account_id")
-    
-    account = Account.objects.get(pk=account_id)
-    account_node = {
-        "id": f"account-{account.id}",
-        "title": 'Account: '+account.name,
-        "type": "account",
-        "url": f"/admin/tenants/account/{account.id}/change/",
-        "icon": static('core/images/groupings/rooftop.jpg'),
-        "children": []
-    }
+def developer_quick_logins(view_func):
+    def wrapped(request, *args, **kwargs):
+        if not settings.DEVELOPER_QUICK_LOGIN_BUTTONS:
+            raise Http404
+        # if not request.user.is_superuser:
+        #     raise Http404
+        return view_func(request, *args, **kwargs)
+    return wrapped
 
-    groups = Group.objects.filter(account=account)
-    for group in groups:
-        group_node = {
-            "id": f"group-{group.id}",
-            "title": 'Group: '+group.name,
-            "type": "group",
-            "url": f"/admin/tenants/group/{group.id}/change/",
-            "icon": static('core/images/groupings/rooftop.jpg'),
-            "children": []
-        }
+def get_first_tenant_for_user(user):
+    return user.tenants.first()
 
-        tenants = Tenant.objects.filter(group=group)
-        for tenant in tenants:
-            tenant_node = {
-                "id": f"tenant-{tenant.pk}",
-                "title": 'Tenant: '+tenant.desc,  # adjust if your tenant uses a different field
-                "type": "tenant",
-                "url": f"/admin/tenants/tenant/{tenant.pk}/change/",
-                "icon": static(tenant.logo_path) if tenant.logo_path else None,
-                "children": []
-            }
-            group_node["children"].append(tenant_node)
+#@developer_quick_logins
+def dev_login_as(request, username):
+    # Logout current user (clears session)
+    logout(request)
 
-        account_node["children"].append(group_node)
+    # Login new user (sets session)
+    user = User.objects.get(username=username)
+    login(request, user)
+ 
+    return redirect("/")
 
-        tree.append(account_node)
-
-    return JsonResponse(tree, safe=False)
-
-
-
-@staff_member_required
-def account_tree_page(request):
-    """
-    Renders the interactive tree page
-    """
-    return render(request, "tenants/account_tree.html")
+def custom_logout(request):
+    """Logs out the user and clears tenant session info."""
+    if 'tenant_id' in request.session:
+        del request.session['tenant_id']
+    logout(request)
+    return redirect('/login/')  # Or redirect to home page

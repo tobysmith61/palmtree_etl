@@ -1,0 +1,68 @@
+{% load static %}
+
+<div class="ml-auto flex items-center gap-4 text-sm">
+    {% if user.is_authenticated %}
+        <!-- Left part: logo + username + tenant stacked -->
+        <div class="flex items-center gap-3">
+            {% if tenant and tenant.logo_path %}
+                <img
+                    src="{% static tenant.logo_path %}"
+                    alt="{{ tenant.desc }} logo"
+                    class="h-8 w-8 object-contain"
+                >
+            {% endif %}
+
+            <div class="flex flex-col text-right">
+                
+                <!-- Username + Admin link inline -->
+                <div class="flex items-center justify-end gap-2">
+                    {% if request.user.is_superuser %}
+                        <a
+                            href="/admin/"
+                            class="inline-flex items-center text-xs uppercase tracking-wide font-medium text-gray-500 normal-case transition-colors duration-200 hover:text-red-600"
+                        >
+                            Admin
+                        </a>
+                    {% endif %}
+
+                    {% if DEVELOPER_QUICK_LOGIN_BUTTONS %}
+                        <span
+                            class="inline-flex items-center text-xs uppercase tracking-wide font-medium text-gray-500 normal-case transition-colors duration-200 hover:text-red-600 cursor-pointer"
+                            onclick="openChangeUserModal()">
+                            {{ user.username }}
+                        </span>
+                    {% else %}
+                        <span
+                            class="inline-flex items-center text-xs uppercase tracking-wide font-medium text-gray-500 normal-case"
+                        >
+                            {{ user.username }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Tenant info -->
+                {% if tenant %}
+                    <a
+                        href="{% url 'tenants:select_tenant' %}"
+                        class="inline-flex items-center justify-end text-xs uppercase tracking-wide font-medium text-gray-500 normal-case transition-colors duration-200 hover:text-red-600"
+                        title="Change Tenant"
+                    >
+                        Tenant: {{ tenant.desc }}
+
+                        {% if can_edit_tenant %}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15.232 5.232l3.536 3.536M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                            </svg>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Logout button -->
+        {% include "includes/logout_button.html" %}
+    {% else %}
+        <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 underline underline-offset-2">Login</a>
+    {% endif %}
+</div>

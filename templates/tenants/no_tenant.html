@@ -1,1 +1,11 @@
-<h2>No Tenant(s) Assigned</h2>
+{% extends "base.html" %}
+
+{% block title %}No Tenant{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <p class="text-gray-700 text-lg font-medium">
+        You do not belong to any tenants.
+    </p>
+</div>
+{% endblock %}

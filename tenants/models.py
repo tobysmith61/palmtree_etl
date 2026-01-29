@@ -48,22 +48,22 @@ class TenantGroupType(models.TextChoices):
 
     # Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)
 
-class Group(MPTTModel):
-    name = models.CharField(max_length=255)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
-    group_type = models.CharField(
-        max_length=20,
-        choices=TenantGroupType.choices,
-        blank=True,
-        help_text="Categorise the type of group"
-    )
+# class TenantGroup(MPTTModel):
+#     name = models.CharField(max_length=255)
+#     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="tenantgroups")
+#     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+#     group_type = models.CharField(
+#         max_length=20,
+#         choices=TenantGroupType.choices,
+#         blank=True,
+#         help_text="Categorise the type of group"
+#     )
 
-    class MPTTMeta:
-        order_insertion_by = ['name']
+#     class MPTTMeta:
+#         order_insertion_by = ['name']
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 class Tenant(TimeStampedModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -81,7 +81,7 @@ class Tenant(TimeStampedModel):
     external_tenant_code = models.CharField(max_length=100)
     desc = models.CharField(max_length=200)
     logo_path = models.CharField(max_length=255, blank=True)
-    group = models.ForeignKey(Group, null=True, blank=True, on_delete=models.DO_NOTHING)
+    #group = models.ForeignKey(TenantGroup, null=True, blank=True, on_delete=models.DO_NOTHING)
     live = models.BooleanField(default=False)
 
     def __str__(self):
