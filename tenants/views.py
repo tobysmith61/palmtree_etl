@@ -6,17 +6,21 @@ from uuid import UUID
 # Django
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.views import LogoutView
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout, get_user_model
+from django.conf import settings
+from django.http import Http404
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 
 # Local app
-from .models import Tenant, UserAccount
+from .models import Account, Tenant, UserAccount
 from .forms import TenantForm
 from .utils import get_current_tenant
+
 
 
 def select_tenant(request):
@@ -77,16 +81,6 @@ def home(request):
         "can_edit_tenant": can_edit,
     })
 
-
-class TenantLogoutView(LogoutView):
-    next_page = "/"
-
-    def dispatch(self, request, *args, **kwargs):
-        # Remove tenant from session BEFORE logout
-        request.session.pop("tenant_id", None)
-        return super().dispatch(request, *args, **kwargs)
-    
-
 class TenantListView(LoginRequiredMixin, ListView):
     model = Tenant
     template_name = "tenants/tenant_list.html"
@@ -136,13 +130,6 @@ class TenantUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
             })
         return form
 
-# views.py
-from django.contrib.auth import login
-from django.contrib.auth import get_user_model
-from django.conf import settings
-from django.http import Http404
-from django.shortcuts import redirect
-
 User = get_user_model()
 
 def developer_quick_logins(view_func):
@@ -158,19 +145,40 @@ def get_first_tenant_for_user(user):
     return user.tenants.first()
 
 #@developer_quick_logins
-def dev_login_as(request, username):
-    # Logout current user (clears session)
-    logout(request)
+def dev_login_as(request, username, account_id=None):
+#    if not request.user.is_superuser:
+#        raise PermissionDenied
 
-    # Login new user (sets session)
-    user = User.objects.get(username=username)
+    custom_logout(request)
+    user = get_object_or_404(User, username=username)
     login(request, user)
- 
+
+    # Determine the account to use
+    if account_id:
+        account = get_object_or_404(Account, id=account_id)
+    else:
+        # Pick first account linked to user
+        user_account = UserAccount.objects.filter(user=user).first()
+        account = user_account.account if user_account else None
+
+    if account:
+        request.session["account_id"] = account.id
+
+    request.session["impersonating"] = True
+
     return redirect("/")
 
+@csrf_protect
 def custom_logout(request):
-    """Logs out the user and clears tenant session info."""
-    if 'tenant_id' in request.session:
-        del request.session['tenant_id']
+    """
+    Logs out the user and clears any tenant/account session info.
+    """
+    # Clear tenant/account related session keys if present
+    for key in ["tenant_id", "account_id", "impersonating"]:
+        request.session.pop(key, None)
+
+    # Log out the user
     logout(request)
-    return redirect('/login/')  # Or redirect to home page
+
+    # Redirect to login page (or homepage)
+    return redirect("/login/")

@@ -48,23 +48,6 @@ class TenantGroupType(models.TextChoices):
 
     # Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)
 
-# class TenantGroup(MPTTModel):
-#     name = models.CharField(max_length=255)
-#     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="tenantgroups")
-#     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
-#     group_type = models.CharField(
-#         max_length=20,
-#         choices=TenantGroupType.choices,
-#         blank=True,
-#         help_text="Categorise the type of group"
-#     )
-
-#     class MPTTMeta:
-#         order_insertion_by = ['name']
-
-#     def __str__(self):
-#         return self.name
-
 class Tenant(TimeStampedModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     rls_key = models.UUIDField(

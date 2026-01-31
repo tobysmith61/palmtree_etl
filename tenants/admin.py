@@ -89,21 +89,7 @@ class TenantAdmin(RedirectOnSaveAdmin):
         return "-"
 TenantAdmin.logo_preview.short_description = "Logo"
 
-from mptt.admin import DraggableMPTTAdmin
 
-# if admin.site.is_registered(TenantGroup):
-#     admin.site.unregister(TenantGroup)
-# @admin.register(TenantGroup)
-
-# class TenantGroupAdmin(DraggableMPTTAdmin):
-#     mptt_indent_field = "name"
-#     list_display = ("tree_actions", "indented_title", "account", "group_type")
-#     list_display_links = ("indented_title",)
-#     list_filter = ("account", "group_type")
-
-#     def changelist_view(self, request, extra_context=None):
-#         print("🔥 DRAGGABLE MPTT ADMIN ACTIVE 🔥")
-#         return super().changelist_view(request, extra_context)
 
 class TenantInline(admin.TabularInline):
     model = Tenant

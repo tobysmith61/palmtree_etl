@@ -42,3 +42,4 @@ def model_contract_view(request, model_name):
         "fields": fields,
         "version": "v1",
     })
+

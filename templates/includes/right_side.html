@@ -41,6 +41,9 @@
                 </div>
 
                 <!-- Tenant info -->
+                {% if current_account %}
+                    <div>{{ current_account.name }}</div>
+                {% endif %}
                 {% if tenant %}
                     <a
                         href="{% url 'tenants:select_tenant' %}"

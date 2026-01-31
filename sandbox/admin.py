@@ -1,18 +1,26 @@
 from django.contrib import admin
 from mptt.admin import DraggableMPTTAdmin
-from .models import Group
+
+from .models import TenantGroup
 
 
-@admin.register(Group)
-class GroupAdmin(DraggableMPTTAdmin):
-    mptt_indent_field = "name"
+@admin.register(TenantGroup)
+class TenantGroupAdmin(DraggableMPTTAdmin):
     list_display = ("tree_actions", "indented_title")
-    list_display_links = ("indented_title",)
+    mptt_level_indent = 30
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
 
+        account_id = request.GET.get("account__id__exact")
+        group_type = request.GET.get("group_type__exact")
 
-# use these later
+        if account_id:
+            qs = qs.filter(account_id=account_id)
 
-# group = Group.objects.get(name="Engineering")
-# group.get_children()
-# group.get_descendants()
-# group.get_ancestors()
+        if group_type:
+            qs = qs.filter(group_type=group_type)
+
+        return qs
+    
+    list_filter = ("account", "group_type")

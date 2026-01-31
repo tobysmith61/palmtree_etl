@@ -3,8 +3,7 @@ from django.urls import path, include
 #from rawdataeditor import views
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
-from tenants.views import home  # <-- updated
-from tenants.views import TenantLogoutView
+from tenants.views import home, custom_logout
 
 urlpatterns = [
     #path('', lambda request: redirect('/canonical/schema-overview/', permanent=True)),  #home
@@ -12,7 +11,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
-    path("logout/", TenantLogoutView.as_view(next_page="/"), name="logout"), #includes unsetting of session tenant_id
+    path("logout/", custom_logout, name="logout"), #includes unsetting of session tenant_id
     path("tenants/", include("tenants.urls")),
 
     path('admin/', admin.site.urls),
