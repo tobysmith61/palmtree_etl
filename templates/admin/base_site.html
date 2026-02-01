@@ -3,27 +3,27 @@
 
 {% block branding %}
 <style>
-/* Force the branding content to be flex and aligned */
-#header .branding {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    height: 100% !important;
-}
+    /* Force the branding content to be flex and aligned */
+    #header .branding {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        height: 100% !important;
+    }
 
-/* Constrain the logo height to fit header */
-#header .branding img {
-    max-height: 64px !important;
-    width: auto !important;
-    display: block !important;
-}
+    /* Constrain the logo height to fit header */
+    #header .branding img {
+        max-height: 64px !important;
+        width: auto !important;
+        display: block !important;
+    }
 
-/* Make the text bigger */
-#header .branding span {
-    font-size: 1.5rem !important; /* bigger text */
-    font-weight: 600 !important;  /* semi-bold */
-    color: white !important;
-}
+    /* Make the text bigger */
+    #header .branding span {
+        font-size: 1.5rem !important; /* bigger text */
+        font-weight: 600 !important;  /* semi-bold */
+        color: white !important;
+    }
 </style>
 
 <a href="{% url 'admin:index' %}" class="branding">
@@ -32,3 +32,28 @@
 </a>
 {% endblock %}
 
+{% block userlinks %}
+    {{ block.super }}
+
+    {% if available_accounts %}
+        <form method="post"
+              action="{% url 'tenants:admin-account-switch' %}"
+              style="display:inline;margin-left:1rem;">
+            {% csrf_token %}
+            <select name="account_id"
+                    onchange="this.form.submit()"
+                    style="padding:2px 6px; font-size:0.9rem;">
+                <option value="">— Account —</option>
+                {% for account in available_accounts %}
+                    <option value="{{ account.id }}"
+                        {% if account.id|stringformat:"s" == current_account_id|stringformat:"s" %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ account.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    {% endif %}
+{% endblock %}

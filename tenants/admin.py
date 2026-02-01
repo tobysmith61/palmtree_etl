@@ -76,6 +76,13 @@ class TenantAdmin(RedirectOnSaveAdmin):
     ordering = ("internal_tenant_code",)
     readonly_fields = ("rls_key", "logo_preview")  # logo_preview must be readonly
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            qs = qs.filter(account_id=account_id)
+        return qs
+
     def logo_preview(self, obj):
         """Show a small preview of the tenant logo in admin"""
         if obj.logo_path:
@@ -116,6 +123,13 @@ class AccountAdmin(RedirectOnSaveAdmin):
             "fields": ("account_hierarchy",)
         }),
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            qs = qs.filter(id=account_id)
+        return qs
 
     class Media:
         css = {

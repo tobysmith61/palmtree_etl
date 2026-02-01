@@ -182,3 +182,20 @@ def custom_logout(request):
 
     # Redirect to login page (or homepage)
     return redirect("/login/")
+
+
+
+@require_POST
+def admin_account_switch(request):
+    account_id = request.POST.get("account_id")
+
+    if account_id:
+        request.session["account_id"] = int(account_id)
+    else:
+        request.session.pop("account_id", None)
+
+    #as we selected a different account, unset tenant,
+    #forcing user to select another for the newly selected account
+    request.session.pop("tenant_id", None)
+
+    return redirect(request.META.get("HTTP_REFERER", "/admin/"))

@@ -72,6 +72,7 @@ ROOT_URLCONF = 'palmtree_etl.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,12 +81,12 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
+                'tenants.context_processors.account_context',
                 'tenants.context_processors.tenant_context',
                 'palmtree_etl.context_processors.developer_quick_login_buttons',
 
             ],
         },
-        'DIRS': [BASE_DIR / 'templates'],
     },
 ]
 

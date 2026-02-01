@@ -157,3 +157,6 @@ class TableData(models.Model):
         # Returns the same data for read-only preview
         return self.data
     
+    class Meta:
+        verbose_name = "Table data"
+        verbose_name_plural = "Table data"

@@ -22,6 +22,18 @@ class TenantGroupType(models.TextChoices):
             self.CALLCENTRE: "📞",
         }[self]
 
+    @property
+    def requires_all_tenants(self) -> bool:
+        return self in {
+            self.OPERATING, self.REGIONAL
+        }
+
+    @property
+    def one_per_account(self) -> bool:
+        return self in {
+            self.ACCOUNT, self.OPERATING
+        }
+    
 class TenantGroup(MPTTModel):
     NODE_TYPE_CHOICES = [
         ("group", "Group"),

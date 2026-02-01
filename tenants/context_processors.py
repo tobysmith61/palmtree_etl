@@ -20,3 +20,19 @@ def tenant_context(request):
         "can_edit_tenant": can_edit,
         "current_account": account,
     }
+
+def account_context(request):
+    if not request.user.is_authenticated:
+        return {}
+
+    if request.user.is_superuser:
+        accounts = Account.objects.all()
+    else:
+        accounts = Account.objects.filter(
+            useraccount__user=request.user
+        )
+
+    return {
+        "available_accounts": accounts,
+        "current_account_id": request.session.get("account_id"),
+    }
