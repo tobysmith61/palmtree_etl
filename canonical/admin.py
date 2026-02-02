@@ -240,34 +240,34 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
             return "email"
         return "string"
 
-@admin.register(CanonicalField)
-class CanonicalFieldAdmin(admin.ModelAdmin):
-    form = CanonicalFieldForm
+# @admin.register(CanonicalField)
+# class CanonicalFieldAdmin(admin.ModelAdmin):
+#     form = CanonicalFieldForm
 
-    list_display = (
-        "name",
-        "schema",
-        "data_type",
-        "format_type",
-        "is_pii",
-        "requires_encryption",
-        "required",
-        "order",
-    )
-    list_filter = ("schema", "data_type", "format_type", "is_pii", "requires_encryption")
-    ordering = ("schema", "order")
-    search_fields = ("name",)
+#     list_display = (
+#         "name",
+#         "schema",
+#         "data_type",
+#         "format_type",
+#         "is_pii",
+#         "requires_encryption",
+#         "required",
+#         "order",
+#     )
+#     list_filter = ("schema", "data_type", "format_type", "is_pii", "requires_encryption")
+#     ordering = ("schema", "order")
+#     search_fields = ("name",)
 
-    fieldsets = (
-        (None, {"fields": ("schema", "name", "order")}),
-        ("Data Shape", {"fields": ("data_type", "required")}),
-        ("Normalisation", {
-            "description": "Generic cleanup rules (JSON). Allowed keys: "
-                           "trim, null_if_empty, lowercase, uppercase, date_format, boolean_map, tri_state_map, trim_whitespace",
-            "fields": ("normalisation", "format_type"),
-        }),
-        ("Governance", {"fields": ("is_pii", "requires_encryption")}),
-    )
+#     fieldsets = (
+#         (None, {"fields": ("schema", "name", "order")}),
+#         ("Data Shape", {"fields": ("data_type", "required")}),
+#         ("Normalisation", {
+#             "description": "Generic cleanup rules (JSON). Allowed keys: "
+#                            "trim, null_if_empty, lowercase, uppercase, date_format, boolean_map, tri_state_map, trim_whitespace",
+#             "fields": ("normalisation", "format_type"),
+#         }),
+#         ("Governance", {"fields": ("is_pii", "requires_encryption")}),
+#     )
 
 class FieldMappingInlineForm(forms.ModelForm):
     class Meta:
@@ -313,18 +313,18 @@ class FieldMappingInline(admin.TabularInline):
 class SourceSchemaAdmin(admin.ModelAdmin):
     inlines = [FieldMappingInline]
 
-@admin.register(FieldMapping)
-class FieldMappingAdmin(admin.ModelAdmin):
-    list_display = ("source_schema", "source_field_name", "canonical_field", "order", "active")
-    list_filter = ("source_schema", "canonical_field__schema", "active")
-    search_fields = ("source_field_name", "canonical_field__name")
-    ordering = ("source_schema", "order")
-    list_editable = ("order", "active")
+# @admin.register(FieldMapping)
+# class FieldMappingAdmin(admin.ModelAdmin):
+#     list_display = ("source_schema", "source_field_name", "canonical_field", "order", "active")
+#     list_filter = ("source_schema", "canonical_field__schema", "active")
+#     search_fields = ("source_field_name", "canonical_field__name")
+#     ordering = ("source_schema", "order")
+#     list_editable = ("order", "active")
 
 @admin.register(TableData)
 class TableDataAdmin(admin.ModelAdmin):
     form = TableDataForm
-    
+
     class Media:
         css = {
             'all': (

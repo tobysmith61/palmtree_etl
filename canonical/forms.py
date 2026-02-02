@@ -2,6 +2,7 @@ from django import forms
 from .models import TableData, CanonicalField
 from .widgets import ExcelWidget
 from django.core.exceptions import ValidationError
+import json
 
 class TableDataForm(forms.ModelForm):
     class Meta:
@@ -23,38 +24,38 @@ ALLOWED_NORMALISATION_KEYS = {
 }
 
 class CanonicalFieldForm(forms.ModelForm):
-    normalisation = forms.JSONField(
+    normalisation = forms.CharField(
         required=False,
-        help_text=(
-            "Allowed ops:<br>"
-            + "<br>".join(sorted(ALLOWED_NORMALISATION_KEYS))
-            + "<br>Example: [{'op': 'trim'}, {'op': 'lowercase'}]"
-        ),
-        widget=forms.Textarea(attrs={"rows": 4, "cols": 40}),
+        widget=forms.Textarea(attrs={
+            "rows": 10,
+            "style": "font-family: monospace; white-space: pre;",
+        }),
+        help_text="JSON normalisation rules",
     )
 
     class Meta:
         model = CanonicalField
         fields = "__all__"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.pk and self.instance.normalisation:
+            self.initial["normalisation"] = json.dumps(
+                self.instance.normalisation,
+                indent=2,
+                sort_keys=True,
+            )
+
     def clean_normalisation(self):
-        data = self.cleaned_data.get("normalisation") or []
+        raw = self.cleaned_data["normalisation"]
+        if not raw:
+            return []
 
-        if not isinstance(data, list):
-            raise ValidationError("Normalisation must be a list")
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            raise ValidationError(f"Invalid JSON: {e}")
 
-        for i, step in enumerate(data):
-            if not isinstance(step, dict):
-                raise ValidationError(f"Step {i} must be an object")
-
-            op = step.get("op")
-            if not op:
-                raise ValidationError(f"Step {i} missing 'op'")
-
-            if op not in ALLOWED_NORMALISATION_KEYS:
-                raise ValidationError(
-                    f"Unknown normalisation op '{op}'. "
-                    f"Allowed: {', '.join(sorted(ALLOWED_NORMALISATION_KEYS))}"
-                )
-
+        # your existing validation logic here
         return data

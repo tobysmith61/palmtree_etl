@@ -119,7 +119,7 @@ class Tenant(TimeStampedModel):
     brand = models.ForeignKey(Brand, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return self.internal_tenant_code + ' / ' + self.desc
+        return self.desc
 
     def save(self, *args, **kwargs):
         if not self.internal_tenant_code:  # only set if not already provided
