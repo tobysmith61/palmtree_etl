@@ -9,8 +9,26 @@ from .forms import TableDataForm, CanonicalFieldForm
 from .models import CanonicalSchema, CanonicalField, SourceSchema, FieldMapping, TableData, TenantMapping
 from tenants.models import Tenant
 import pandas as pd
+from django.forms.models import BaseInlineFormSet
+from django.core.exceptions import ValidationError
 
+class CanonicalFieldInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        parent = self.instance
+        if getattr(parent, "requires_tenant_mapping", False):
+            tenant_code_fields = [
+                form.cleaned_data
+                for form in self.forms
+                if not form.cleaned_data.get('DELETE', False)
+                and form.cleaned_data.get('data_type') == "tenant_mapping"
+            ]
 
+            if len(tenant_code_fields) != 1:
+                raise ValidationError(
+                    "You must have exactly one CanonicalField with data_type='Tenant code mapping'."
+                )
+        
 class CanonicalFieldInline(admin.TabularInline):
     model = CanonicalField
     extra = 1
@@ -32,6 +50,7 @@ class CanonicalFieldInline(admin.TabularInline):
     )
     form = CanonicalFieldForm
     show_change_link = True
+    formset = CanonicalFieldInlineFormSet
 
 @admin.register(CanonicalSchema)
 class CanonicalSchemaAdmin(admin.ModelAdmin):
@@ -43,7 +62,7 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
         (
             None,
             {
-                "fields": ("name", "description", "contract"),
+                "fields": ("name", "description", "contract", "requires_tenant_mapping"),
             },
         ),
         (
@@ -104,7 +123,6 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
             return ("contract",)
         return ()
 
-
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -120,7 +138,6 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context["show_sync_button"] = True
         return super().changeform_view(request, object_id, form_url, extra_context)
-
 
     def sync_and_renumber_fields(self, request, pk):
         schema = self.get_object(request, pk)
@@ -252,7 +269,6 @@ class CanonicalFieldAdmin(admin.ModelAdmin):
         ("Governance", {"fields": ("is_pii", "requires_encryption")}),
     )
 
-
 class FieldMappingInlineForm(forms.ModelForm):
     class Meta:
         model = FieldMapping
@@ -293,7 +309,6 @@ class FieldMappingInline(admin.TabularInline):
 
         return InjectSourceSchemaFormSet
 
-
 @admin.register(SourceSchema)
 class SourceSchemaAdmin(admin.ModelAdmin):
     inlines = [FieldMappingInline]
@@ -306,11 +321,19 @@ class FieldMappingAdmin(admin.ModelAdmin):
     ordering = ("source_schema", "order")
     list_editable = ("order", "active")
 
-
 @admin.register(TableData)
 class TableDataAdmin(admin.ModelAdmin):
     form = TableDataForm
-
+    
+    class Media:
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.css',
+            )
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.js',
+        )
     fieldsets = (
         (None, {
             'fields': ('name', 'source_schema', 'data'),

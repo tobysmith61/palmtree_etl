@@ -7,6 +7,7 @@ class CanonicalSchema(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
     contract = models.CharField(max_length=100, blank=True)
+    requires_tenant_mapping = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -29,6 +30,7 @@ class CanonicalField(models.Model):
         ("boolean", "Boolean"),
         ("email", "Email"),
         ("mapped_string", "Mapped string"),
+        ("tenant_mapping", "Tenant code mapping"),
     ]
 
     schema = models.ForeignKey("CanonicalSchema", on_delete=models.CASCADE, related_name="fields")
@@ -144,6 +146,7 @@ class TableData(models.Model):
     )
     data = models.JSONField(
         default=list,
+        blank=True,
         help_text="Array of rows, first row is header"
     )
 
