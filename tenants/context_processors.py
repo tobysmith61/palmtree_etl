@@ -34,5 +34,5 @@ def account_context(request):
 
     return {
         "available_accounts": accounts,
-        "current_account_id": request.session.get("account_id"),
+        "account_id": request.session.get("account_id"),
     }

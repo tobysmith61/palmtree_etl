@@ -46,7 +46,7 @@
                 <option value="">— Account —</option>
                 {% for account in available_accounts %}
                     <option value="{{ account.id }}"
-                        {% if account.id|stringformat:"s" == current_account_id|stringformat:"s" %}
+                        {% if account.id|stringformat:"s" == account_id|stringformat:"s" %}
                             selected
                         {% endif %}
                     >

@@ -2,10 +2,42 @@ from django.db import models
 from core.models import TimeStampedModel
 import uuid
 from django.conf import settings
-from mptt.models import MPTTModel, TreeForeignKey
+from core.models import Address
+from django.core.validators import MinLengthValidator
 
+class Marque(models.Model):
+    name = models.CharField(max_length=30)
+    short = models.CharField(max_length=8, blank=True) #remove blank=True, 
+
+    def save(self, *args, **kwargs):
+        if self.short:
+            self.short = self.short.upper()  # enforce uppercase
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+    
+class Brand(models.Model):
+    marque = models.ForeignKey(Marque, on_delete=models.CASCADE)
+    name = models.CharField(max_length=30)
+    short = models.CharField(max_length=8, blank=True) #remove blank=True, 
+
+    def save(self, *args, **kwargs):
+        if self.short:
+            self.short = self.short.upper()  # enforce uppercase
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+    
 class Account(models.Model):
     name = models.CharField(max_length=255)
+    short = models.CharField(max_length=8, blank=True) #remove blank=True, 
+
+    def save(self, *args, **kwargs):
+        if self.short:
+            self.short = self.short.upper()  # enforce uppercase
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -48,8 +80,23 @@ class TenantGroupType(models.TextChoices):
 
     # Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)
 
-class Tenant(TimeStampedModel):
+class Location(Address):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    short = models.CharField(
+        max_length=8,
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = "Location"
+        verbose_name_plural = "Locations"
+
+    def __str__(self):
+        return self.short + ' / ' + self.postcode
+
+class Tenant(TimeStampedModel):
+    account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.CASCADE) #remove blank=True, null=True
     rls_key = models.UUIDField(
         primary_key=True, 
         default=uuid.uuid4,
@@ -58,17 +105,26 @@ class Tenant(TimeStampedModel):
         verbose_name="RLS Key",
     )
     internal_tenant_code = models.CharField(
-        max_length=50,
-        verbose_name='Internal (to palmTree) tenant code'
+        max_length=26,
+        unique=True,
+        blank=True,
+        verbose_name='Internal tenant code',
+        help_text='Internal (to palmTree) tenant code made up of ACCOUNT/LOCATION/BRAND. Leave blank and I\'ll default for you'
     )
     external_tenant_code = models.CharField(max_length=100)
     desc = models.CharField(max_length=200)
     logo_path = models.CharField(max_length=255, blank=True)
-    #group = models.ForeignKey(TenantGroup, null=True, blank=True, on_delete=models.DO_NOTHING)
-    live = models.BooleanField(default=False)
+    is_live = models.BooleanField(default=False)
+    location = models.ForeignKey(Location, null=True, blank=True, on_delete=models.DO_NOTHING)#if the parent goes, the child goes too
+    brand = models.ForeignKey(Brand, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return self.internal_tenant_code + ' / ' + self.desc
+
+    def save(self, *args, **kwargs):
+        if not self.internal_tenant_code:  # only set if not already provided
+            self.internal_tenant_code = f"{self.account.short}/{self.location.short}/{self.brand.short}"
+        super().save(*args, **kwargs)
 
 class UserAccount(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

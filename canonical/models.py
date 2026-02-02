@@ -1,6 +1,7 @@
 from django.db import models
 from value_mappings.models import ValueMappingGroup
 from django.core.exceptions import ValidationError
+from tenants.models import Account, Tenant
 
 class CanonicalSchema(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -90,8 +91,7 @@ class CanonicalField(models.Model):
             raise ValidationError({
                 "value_mapping_group": "Only mapped string fields can have a value mapping group."
             })
-        
-        
+  
 class SourceSchema(models.Model):
     name = models.CharField(max_length=50)
     system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
@@ -132,8 +132,6 @@ class FieldMapping(models.Model):
         return not self.source_schema.canonical_schema.fields.filter(
             id=self.canonical_field_id
         ).exists()
-    
-
 
 class TableData(models.Model):
     name = models.CharField(max_length=100)
@@ -160,3 +158,28 @@ class TableData(models.Model):
     class Meta:
         verbose_name = "Table data"
         verbose_name_plural = "Table data"
+
+class TenantMapping(models.Model):
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="tenant_mappings"
+    )
+    source_system_field_value = models.CharField(max_length=255)
+    mapped_tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="tenant_mappings"
+    )
+    effective_from_date = models.DateField(
+        help_text="The date the mapping is valid from"
+    )
+
+    class Meta:
+        unique_together = ('account', 'source_system_field_value', 'effective_from_date')
+        verbose_name = "Tenant Code Mapping"
+        verbose_name_plural = "Tenant Code Mappings"
+
+# tenant_internal-code should be account(short)_tenant(short) e.g. STELLANT_GODL_FIAT
+# need function to build internal tenant_code
+# choices are ACCOUNT, LOCATION, BRAND, all upper case ALPHA only

@@ -1,18 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import Account, Tenant, UserAccount, TenantGroupType #TenantGroup
+from .models import Account, Tenant, UserAccount, Location
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 import json
-from django.urls import reverse
 from django.contrib import admin
-print (11)
-print(admin.site)
-
-
-
 
 User = get_user_model()
 
@@ -44,17 +38,48 @@ class RedirectOnSaveAdmin(admin.ModelAdmin):
         if next_url:
             return HttpResponseRedirect(next_url)
         return super().response_change(request, obj)
-    
+
+from django.contrib import admin
+from .models import Marque, Brand
+
+
+@admin.register(Marque)
+class MarqueAdmin(admin.ModelAdmin):
+    list_display = ('name', 'short')
+    search_fields = ('name', 'short')
+    ordering = ('name',)
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name', 'short', 'marque')
+    list_filter = ('marque',)
+    search_fields = ('name', 'short', 'marque__name')
+    ordering = ('marque', 'name')
+
+
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            qs = qs.filter(id=account_id)
+        return qs
+
 @admin.register(Tenant)
 class TenantAdmin(RedirectOnSaveAdmin):
     fields = (
         "rls_key",
         'account',
+        'brand',
+        'location',
         "desc",
         "internal_tenant_code",
         "external_tenant_code",
         #"group",
         'logo_path',
+        'is_live',
     )
     
     list_display = (
@@ -116,7 +141,7 @@ class AccountAdmin(RedirectOnSaveAdmin):
 
     fieldsets = (
         (None, {
-            "fields": ("name",)
+            "fields": ("name", "short")
         }),
         ("Account Hierarchy", {
             "classes": ("collapse",),  # makes this section collapsible
@@ -183,8 +208,6 @@ class AccountAdmin(RedirectOnSaveAdmin):
             </script>
         """)
     account_hierarchy.short_description = "Account Structure"
-
-
 
 def build_account_tree(account):
     groups = (

@@ -9,3 +9,11 @@ class IngestedFileAdmin(admin.ModelAdmin):
     search_fields = ("filename", "error")
     readonly_fields = ("received_at", "processed_at")
     ordering = ("-received_at",)
+
+    # prevent adding new records
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    # optional: prevent deletion
+    def has_delete_permission(self, request, obj=None):
+        return False
