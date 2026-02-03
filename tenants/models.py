@@ -1,9 +1,8 @@
 from django.db import models
-from core.models import TimeStampedModel
+from core.models import TimeStampedModel, Address
 import uuid
 from django.conf import settings
-from core.models import Address
-from django.core.validators import MinLengthValidator
+from canonical.models import Job
 
 class Marque(models.Model):
     name = models.CharField(max_length=30)
@@ -136,3 +135,34 @@ class UserAccount(models.Model):
     def __str__(self):
         return f"{self.user} → {self.account}"
 
+class TenantMapping(models.Model):
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="tenant_mappings"
+    )
+    source_system_field_value = models.CharField(max_length=255)
+    mapped_tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="tenant_mappings"
+    )
+    effective_from_date = models.DateField(
+        help_text="The date the mapping is valid from"
+    )
+
+    class Meta:
+        unique_together = ('account', 'source_system_field_value', 'effective_from_date')
+        verbose_name = "Tenant Code Mapping"
+        verbose_name_plural = "Tenant Code Mappings"
+
+# tenant_internal-code should be account(short)_tenant(short) e.g. STELLANT_GODL_FIAT
+# need function to build internal tenant_code
+# choices are ACCOUNT, LOCATION, BRAND, all upper case ALPHA only
+
+class AccountJob(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.job}"

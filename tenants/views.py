@@ -6,7 +6,7 @@ from uuid import UUID
 # Django
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
@@ -20,7 +20,6 @@ from django.views.decorators.csrf import csrf_protect
 from .models import Account, Tenant, UserAccount
 from .forms import TenantForm
 from .utils import get_current_tenant
-from sandbox.models import TenantGroup
 
 
 

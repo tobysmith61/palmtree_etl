@@ -1,7 +1,6 @@
 from django.db import models
 from value_mappings.models import ValueMappingGroup
 from django.core.exceptions import ValidationError
-from tenants.models import Account, Tenant
 
 class CanonicalSchema(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -162,27 +161,17 @@ class TableData(models.Model):
         verbose_name = "Table data"
         verbose_name_plural = "Table data"
 
-class TenantMapping(models.Model):
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-        related_name="tenant_mappings"
-    )
-    source_system_field_value = models.CharField(max_length=255)
-    mapped_tenant = models.ForeignKey(
-        Tenant,
-        on_delete=models.PROTECT,
-        related_name="tenant_mappings"
-    )
-    effective_from_date = models.DateField(
-        help_text="The date the mapping is valid from"
+
+class Job(models.Model):
+    desc = models.CharField(max_length=100)
+    canonical_schema = models.ForeignKey(CanonicalSchema, on_delete=models.CASCADE)
+    source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE)
+    test_table = models.ForeignKey(TableData, on_delete=models.CASCADE)
+    one_or_many_source_files = models.BooleanField(default=False)
+    source_filename_pattern = models.CharField(
+        max_length=50,
     )
 
-    class Meta:
-        unique_together = ('account', 'source_system_field_value', 'effective_from_date')
-        verbose_name = "Tenant Code Mapping"
-        verbose_name_plural = "Tenant Code Mappings"
-
-# tenant_internal-code should be account(short)_tenant(short) e.g. STELLANT_GODL_FIAT
-# need function to build internal tenant_code
-# choices are ACCOUNT, LOCATION, BRAND, all upper case ALPHA only
+    def __str__(self):
+        return self.desc
+    

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import Account, Tenant, UserAccount, Location
+from .models import Account, Tenant, UserAccount, Location, TenantMapping, AccountJob
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
@@ -243,3 +243,60 @@ def build_account_tree(account,  group_type):
         }
 
     return [node_to_dict(root) for root in roots]
+
+# @admin.register(AccountJob)
+# class AccountJobAdmin(admin.ModelAdmin):
+#     list_display = ('account', 'job')
+
+@admin.register(TenantMapping)
+class TenantMappingAdmin(admin.ModelAdmin):
+    list_display = (
+        'account',
+        'source_system_field_value',
+        'mapped_tenant',
+        'effective_from_date'
+    )
+    list_filter = ('effective_from_date',)
+    search_fields = ('source_system_field_value', 'account__name', 'mapped_tenant__name')
+    ordering = ('effective_from_date',)
+    date_hierarchy = 'effective_from_date'
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            qs = qs.filter(account_id=account_id)
+        return qs
+    
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Make account read-only if a session account is set.
+        """
+        readonly = list(super().get_readonly_fields(request, obj))
+
+        if request.session.get("account_id"):
+            readonly.append("account")
+
+        return readonly
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Only restrict the tenant dropdown
+        if db_field.name == "mapped_tenant":
+            account_id = request.session.get("account_id")
+            if account_id:
+                kwargs["queryset"] = Tenant.objects.filter(account_id=account_id)
+            else:
+                # Optionally raise error if session has no account
+                kwargs["queryset"] = Tenant.objects.all()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        if not change and request.session.get("account_id"):
+            obj.account_id = request.session["account_id"]
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(AccountJob)
+class AccountJobAdmin(admin.ModelAdmin):
+    list_display = ('account', 'job')
