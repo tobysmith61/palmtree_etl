@@ -6,7 +6,7 @@ from uuid import UUID
 # Django
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_protect
 from .models import Account, Tenant, UserAccount
 from .forms import TenantForm
 from .utils import get_current_tenant
+from sandbox.models import TenantGroup
 
 
 
@@ -183,8 +184,6 @@ def custom_logout(request):
     # Redirect to login page (or homepage)
     return redirect("/login/")
 
-
-
 @require_POST
 def admin_account_switch(request):
     account_id = request.POST.get("account_id")
@@ -199,3 +198,48 @@ def admin_account_switch(request):
     request.session.pop("tenant_id", None)
 
     return redirect(request.META.get("HTTP_REFERER", "/admin/"))
+
+def xtenant_group_tree_view(request, account_id, group_type):
+    account = Account.objects.get(pk=account_id)
+    tree = get_tenant_group_tree(account, group_type)
+    return JsonResponse(tree, safe=False)
+
+def xget_tenant_group_tree(account, group_type):
+    roots = TenantGroup.objects.filter(
+        account=account,
+        group_type=group_type,
+        parent__isnull=True,
+    )
+
+    trees = []
+    for root in roots:
+        nodes = root.get_descendants(include_self=True)
+        trees.append(build_tree(nodes))
+
+    return trees
+
+def xbuild_tree(queryset):
+    node_map = {}
+    roots = []
+
+    for node in queryset:
+        node_map[node.id] = {
+            "id": node.id,
+            "node_type": node.node_type,
+            "group_type": node.group_type,
+            "label": node.root_label or node.group_label or (
+                str(node.tenant) if node.tenant else None
+            ),
+            "tenant_id": node.tenant_id,
+            "children": [],
+        }
+
+    for node in queryset:
+        if node.parent_id:
+            node_map[node.parent_id]["children"].append(
+                node_map[node.id]
+            )
+        else:
+            roots.append(node_map[node.id])
+
+    return roots[0] if len(roots) == 1 else roots

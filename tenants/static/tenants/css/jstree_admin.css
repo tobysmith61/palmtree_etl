@@ -1,0 +1,22 @@
+/* Shrink jsTree indentation horizontally for deep trees */
+.jstree-default .jstree-children {
+    margin-left: 16px !important;      /* main indent for child <ul> */
+}
+
+.jstree-default .jstree-node {
+    margin-left: 0 !important;        /* remove extra <li> margin */
+}
+
+.jstree-default .jstree-anchor {
+    padding-left: 8px !important;     /* reduce icon + label padding */
+}
+
+.jstree-default .jstree-icon {
+    width: 24px !important;           /* shrink icon width */
+}
+
+/* Optional: reduce vertical spacing to make it more compact */
+.jstree-default .jstree-anchor {
+    line-height: 20px !important;
+    height: 20px !important;
+}

@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 import json
 from django.contrib import admin
+from sandbox.models import TenantGroup, TenantGroupType
 
 User = get_user_model()
 
@@ -160,6 +161,7 @@ class AccountAdmin(RedirectOnSaveAdmin):
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/themes/default/style.min.css",
+                "tenants/css/jstree_admin.css",
             )
         }
         js = (
@@ -168,97 +170,76 @@ class AccountAdmin(RedirectOnSaveAdmin):
         )
 
     def account_hierarchy(self, obj):
-        if not obj:
+        if not obj.pk:
             return "Save account to view structure"
 
-        tree_data = build_account_tree(obj)
+        tree_data = build_account_organisational_tree(obj)
+        tree_json = json.dumps(tree_data)
 
-        # edit_url = reverse(
-        #         "admin:tenants_group_changelist"
-        #     ) + f"?account__id__exact={obj.id}&_popup=1"
-        return mark_safe("<div/>")
-        return mark_safe(f"""
-                         
-            <div style="display:flex; align-items:center; gap:8px;">
-                <strong>Account Structure</strong>
-                <a href="{edit_url}" class="edit-popup-link" title="Edit groups">✏️</a>
-            </div>
-
-            <div id="account-tree"></div>
+        return format_html(
+            """
+            <div id="account-tree" style="margin-top: 10px;"></div>
 
             <script>
-                (function($) {{
-                    $('#account-tree').jstree({{
-                        core: {{
-                            data: {json.dumps(tree_data)},
-                            check_callback: false,
-                            themes: {{ icons: true }}
-                        }}
-                    }}).on('ready.jstree', function () {{
-                        $('#account-tree').jstree('open_all');
-                    }});
+            (function() {{
+                const data = {};
 
-                    // Popup for pencil icon
-                    $('.edit-popup-link').on('click', function(e){{
-                        e.preventDefault();
-                        var url = $(this).attr('href');
-                        window.open(url, "_blank", "height=600,width=1000,resizable=yes,scrollbars=yes");
+                function initTree() {{
+                    const $ = django.jQuery;
+
+                    const el = $('#account-tree');
+                    if (!el.length) return;
+
+                    el
+                    .on('ready.jstree', function () {{
+                        el.jstree('open_all');
+                    }})
+                    .jstree({{
+                        core: {{
+                            data: data,
+                            themes: {{
+                                dots: true,
+                                icons: true
+                            }}
+                        }}
                     }});
-                }})(django.jQuery);
+                }}
+
+                // Run after admin JS is ready
+                if (document.readyState !== 'loading') {{
+                    setTimeout(initTree, 50);
+                }} else {{
+                    document.addEventListener('DOMContentLoaded', function () {{
+                        setTimeout(initTree, 50);
+                    }});
+                }}
+            }})();
             </script>
-        """)
+            """,
+            mark_safe(tree_json),
+        )
+
     account_hierarchy.short_description = "Account Structure"
 
-def build_account_tree(account):
-    groups = (
-        #TenantGroup.objects
-        #.filter(account=account)
-        #.prefetch_related("children")
+def build_account_organisational_tree(account):
+    return build_account_tree(account, TenantGroupType.OPERATING)
+
+def build_account_tree(account,  group_type):
+    roots = TenantGroup.objects.filter(
+        account=account,
+        group_type=group_type,
+        parent__isnull=True,
     )
-
-    tenants = Tenant.objects.filter(account=account)
-
-    # Map tenants by group
-    tenants_by_group = {}
-    ungrouped_tenants = []
-
-    for tenant in tenants:
-        if tenant.group_id:
-            tenants_by_group.setdefault(tenant.group_id, []).append(tenant)
-        else:
-            ungrouped_tenants.append(tenant)
-
-    def tenant_node(tenant):
+    
+    def node_to_dict(node):
         return {
-            "text": f"{tenant.internal_tenant_code} — {tenant.desc}",
-            "icon": "🏷️",
-            "state": {"opened": True},
+            "id": str(node.id),
+            "text": str(node),
+            "children": [
+                node_to_dict(child)
+                for child in node.get_children()
+            ],
+            "icon": "jstree-folder" if node.node_type != "tenant" else "jstree-file",
         }
 
-    def group_node(group):
-        #icon = TenantGroupType(group.group_type).icon if group.group_type else "📁"
-
-        return {
-            "text": f"{icon} {group.name}",
-            "icon": "folder",
-            "state": {"opened": True},
-            "children": (
-                [group_node(child) for child in group.children.all()] +
-                [tenant_node(t) for t in tenants_by_group.get(group.id, [])]
-            ),
-        }
-
-    root_groups = [g for g in groups if g.parent_id is None]
-
-    return [{
-        "text": f"💼 {account.name}",
-        "state": {"opened": True},
-        "children": (
-            [group_node(g) for g in root_groups] +
-            ([{
-                "text": "📦 Ungrouped Tenants",
-                "state": {"opened": True},
-                "children": [tenant_node(t) for t in ungrouped_tenants],
-            }] if ungrouped_tenants else [])
-        ),
-    }]
+    return [node_to_dict(root) for root in roots]
