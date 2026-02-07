@@ -127,13 +127,26 @@ class UserAccountInline(admin.TabularInline):
     classes = ['collapse'] 
     extra = 1  # show 1 extra blank row
 
+class SFTPDropZoneInline(AccountScopedInlineMixin, admin.TabularInline):
+    model = SFTPDropZone
+    extra = 1
+    fields = ('sftp_parent_folder', 'desc')
+    show_change_link = True  # optional
+
 @admin.register(Account)
-class AccountAdmin(AccountScopedAdminMixin, RedirectOnSaveAdmin):
+class AccountAdmin(RedirectOnSaveAdmin):
     search_fields = ("name",)
     ordering = ("name",)
     change_form_template = "admin/tenants/account/change_form.html"
     readonly_fields = ("account_hierarchy",)
-    inlines = [TenantInline, UserAccountInline] 
+    inlines = [TenantInline, UserAccountInline, SFTPDropZoneInline] 
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            return qs.filter(**{f"id": account_id})
+        return qs
 
     fieldsets = (
         (None, {

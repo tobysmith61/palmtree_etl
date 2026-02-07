@@ -9,3 +9,18 @@ stellant
 DMS001
 stellant_sftp_user_dev1
 lruDXY2z6Nnsrk2471UyIy8/wy83AqZU
+
+
+
+# Need to apply visibility of configured groups to Users who are tied to email domain.
+# Users need palmTree roles
+# Roles have privileges
+
+# Add RLS policies via Meta on Models
+# Any Table with Tenant field
+
+# Roles
+# =====
+# IT support
+
+# Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)

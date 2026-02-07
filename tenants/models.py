@@ -3,8 +3,6 @@ from core.models import TimeStampedModel, Address
 import uuid
 from django.conf import settings
 from canonical.models import Job
-from django.core.exceptions import ValidationError
-from tenants.admin_mixins import AccountScopedAdminMixin
 
 class Marque(models.Model):
     name = models.CharField(max_length=30)
@@ -68,19 +66,6 @@ class TenantGroupType(models.TextChoices):
             self.CALLCENTRE: "📞", # Special case for where Tenants cross multiple accounts
         }[self]
     
-    # Need to apply visibility of configured groups to Users who are tied to email domain.
-    # Users need palmTree roles
-    # Roles have privileges
-
-    # Add RLS policies via Meta on Models
-    # Any Table with Tenant field
-
-    # Roles
-    # =====
-    # IT support
-
-    # Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)
-
 class Location(Address):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     short = models.CharField(
@@ -179,10 +164,6 @@ class SFTPDropZone(models.Model):
 
     def __str__(self):
         return f"{self.desc} ({self.account})"
-    
-# tenant_internal-code should be account(short)_tenant(short) e.g. STELLANT_GODL_FIAT
-# need function to build internal tenant_code
-# choices are ACCOUNT, LOCATION, BRAND, all upper case ALPHA only
 
 class AccountJob(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
