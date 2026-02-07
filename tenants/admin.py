@@ -11,6 +11,7 @@ import json
 from django.contrib import admin
 from sandbox.models import TenantGroup, TenantGroupType
 from .admin_extra import register_extra_admin_urls
+from tenants.admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
 
 register_extra_admin_urls(admin.site)
 
@@ -66,16 +67,11 @@ class BrandAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        account_id = request.session.get("account_id")
-        if account_id:
-            qs = qs.filter(id=account_id)
-        return qs
+class LocationAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+    pass
 
 @admin.register(Tenant)
-class TenantAdmin(RedirectOnSaveAdmin):
+class TenantAdmin(AccountScopedAdminMixin, RedirectOnSaveAdmin):
     fields = (
         "rls_key",
         'account',
@@ -93,7 +89,6 @@ class TenantAdmin(RedirectOnSaveAdmin):
         "desc",
         "internal_tenant_code",
         "external_tenant_code",
-        #"group",
         "created_at",
         "updated_at",
         "logo_preview",
@@ -102,18 +97,10 @@ class TenantAdmin(RedirectOnSaveAdmin):
     search_fields = (
         "internal_tenant_code",
         "external_tenant_code",
-        #"group",
     )
 
     ordering = ("internal_tenant_code",)
     readonly_fields = ("rls_key", "logo_preview")  # logo_preview must be readonly
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        account_id = request.session.get("account_id")
-        if account_id:
-            qs = qs.filter(account_id=account_id)
-        return qs
 
     def logo_preview(self, obj):
         """Show a small preview of the tenant logo in admin"""
@@ -141,7 +128,7 @@ class UserAccountInline(admin.TabularInline):
     extra = 1  # show 1 extra blank row
 
 @admin.register(Account)
-class AccountAdmin(RedirectOnSaveAdmin):
+class AccountAdmin(AccountScopedAdminMixin, RedirectOnSaveAdmin):
     search_fields = ("name",)
     ordering = ("name",)
     change_form_template = "admin/tenants/account/change_form.html"
@@ -157,13 +144,6 @@ class AccountAdmin(RedirectOnSaveAdmin):
             "fields": ("account_hierarchy",)
         }),
     )
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        account_id = request.session.get("account_id")
-        if account_id:
-            qs = qs.filter(id=account_id)
-        return qs
 
     class Media:
         css = {
@@ -253,8 +233,33 @@ def build_account_tree(account,  group_type):
     return [node_to_dict(root) for root in roots]
 
 @admin.register(AccountJob)
-class AccountJobAdmin(admin.ModelAdmin):
+class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        #filter sftp_drop_zone
+        if db_field.name == "sftp_drop_zone":
+            account_id = request.session.get("account_id")
+
+            if account_id:
+                kwargs["queryset"] = SFTPDropZone.objects.filter(
+                    account_id=account_id
+                )
+            else:
+                kwargs["queryset"] = SFTPDropZone.objects.none()
+
+        #filter tenant_mapping
+        if db_field.name == "tenant_mapping":
+            account_id = request.session.get("account_id")
+
+            if account_id:
+                kwargs["queryset"] = TenantMapping.objects.filter(
+                    account_id=account_id
+                )
+            else:
+                kwargs["queryset"] = TenantMapping.objects.none()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class TenantMappingCodeInline(admin.TabularInline):
     model = TenantMappingCode
@@ -262,30 +267,25 @@ class TenantMappingCodeInline(admin.TabularInline):
     fields = ('source_system_field_value', 'mapped_tenant', 'effective_from_date')
     show_change_link = True  # Allows clicking to edit in separate page if needed
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "mapped_tenant":
+            account_id = request.session.get("account_id")
+
+            if account_id:
+                kwargs["queryset"] = Tenant.objects.filter(
+                    account_id=account_id
+                )
+            else:
+                kwargs["queryset"] = Tenant.objects.none()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(TenantMapping)
-class TenantMappingAdmin(admin.ModelAdmin):
+class TenantMappingAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     list_display = ('account', 'desc')
     search_fields = ('account__name', 'desc')  # assuming Account has a name field
     inlines = [TenantMappingCodeInline]
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        account_id = request.session.get("account_id")
-        if account_id:
-            qs = qs.filter(account_id=account_id)
-        return qs
-    
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Make account read-only if a session account is set.
-        """
-        readonly = list(super().get_readonly_fields(request, obj))
-
-        if request.session.get("account_id"):
-            readonly.append("account")
-
-        return readonly
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Only restrict the tenant dropdown
@@ -299,12 +299,6 @@ class TenantMappingAdmin(admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    def save_model(self, request, obj, form, change):
-        if not change and request.session.get("account_id"):
-            obj.account_id = request.session["account_id"]
-        super().save_model(request, obj, form, change)
-
-
 @admin.register(SFTPDropZone)
-class SFTPDropZoneAdmin(admin.ModelAdmin):
-    list_display = ('account', 'sftp_parent_folder')
+class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+    list_display = ('account', 'sftp_parent_folder', 'desc')

@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from canonical.models import Job
 from django.core.exceptions import ValidationError
+from tenants.admin_mixins import AccountScopedAdminMixin
 
 class Marque(models.Model):
     name = models.CharField(max_length=30)
@@ -96,7 +97,7 @@ class Location(Address):
         return self.short + ' / ' + self.postcode
 
 class Tenant(TimeStampedModel):
-    account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.CASCADE) #remove blank=True, null=True
+    account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.CASCADE)
     rls_key = models.UUIDField(
         primary_key=True, 
         default=uuid.uuid4,
@@ -170,13 +171,14 @@ class TenantMappingCode(models.Model):
 class SFTPDropZone(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     sftp_parent_folder = models.CharField(max_length=50) #e.g. DMS001
-    
+    desc = models.CharField(max_length=200)
+
     class Meta:
         verbose_name = "sFTP drop zone"
         verbose_name_plural = "sFTP drop zones"
 
     def __str__(self):
-        return f"{self.sftp_parent_folder}"
+        return f"{self.desc} ({self.account})"
     
 # tenant_internal-code should be account(short)_tenant(short) e.g. STELLANT_GODL_FIAT
 # need function to build internal tenant_code
@@ -187,12 +189,6 @@ class AccountJob(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
     tenant_mapping = models.ForeignKey(TenantMapping, on_delete=models.PROTECT, null=True, blank=True)
-    
-    def clean(self):
-        if self.sftp_drop_zone.account_id != self.account_id:
-            raise ValidationError(
-                "sFTP drop zone must belong to the same account as the job."
-            )
         
     def __str__(self):
         return f"{self.job}"

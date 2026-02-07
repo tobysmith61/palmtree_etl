@@ -3,20 +3,15 @@ from mptt.admin import DraggableMPTTAdmin
 
 from .models import TenantGroup
 from tenants.models import Tenant
+from tenants.admin_mixins import AccountScopedAdminMixin
 
 @admin.register(TenantGroup)
-class TenantGroupAdmin(DraggableMPTTAdmin):
+class TenantGroupAdmin(AccountScopedAdminMixin, DraggableMPTTAdmin):
     list_display = ('root_label', 'tree_actions', 'indented_title', 'tenant')
     mptt_level_indent = 30
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-
-        #account_id = request.GET.get("account__id__exact")
-        account_id = request.session.get("account_id")
-       
-        if account_id:
-            qs = qs.filter(account_id=account_id)
 
         group_type = request.GET.get("group_type__exact")
         if group_type:
@@ -25,17 +20,6 @@ class TenantGroupAdmin(DraggableMPTTAdmin):
         return qs
     
     list_filter = ("account", "group_type")
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Make account read-only if a session account is set.
-        """
-        readonly = list(super().get_readonly_fields(request, obj))
-
-        if request.session.get("account_id"):
-            readonly.append("account")
-
-        return readonly
     
     def get_fields(self, request, obj=None):
         fields = [
@@ -70,13 +54,7 @@ class TenantGroupAdmin(DraggableMPTTAdmin):
             initial["group_type"] = group_type
         return initial
     
-    def save_model(self, request, obj, form, change):
-        if not change and request.session.get("account_id"):
-            obj.account_id = request.session["account_id"]
-        super().save_model(request, obj, form, change)
-
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        
         if db_field.name == "parent":
             qs = TenantGroup.objects.all()
 

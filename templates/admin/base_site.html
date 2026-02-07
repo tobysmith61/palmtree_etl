@@ -41,6 +41,7 @@
               style="display:inline;margin-left:1rem;">
             {% csrf_token %}
             <select name="account_id"
+                    {% if disable_account_dropdown %}disabled{% endif %}
                     onchange="this.form.submit()"
                     style="padding:2px 6px; font-size:0.9rem;">
                 <option value="">— Account —</option>

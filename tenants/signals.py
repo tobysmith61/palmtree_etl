@@ -13,4 +13,6 @@ def clear_tenant_on_logout(sender, request, user, **kwargs):
 def set_current_account(request, account_id):
     account = get_object_or_404(Account, id=account_id)
     request.session["account_id"] = account.id
+    print ("🆔 tenant.signals session['account'] is now: "+str(account_id))
+
     return redirect(request.META.get("HTTP_REFERER", "/"))

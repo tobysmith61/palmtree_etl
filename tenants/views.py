@@ -163,6 +163,7 @@ def dev_login_as(request, username, account_id=None):
 
     if account:
         request.session["account_id"] = account.id
+    print ("🆔 tenant.views dev_login_as session['account'] is now: "+str(account_id))
 
     request.session["impersonating"] = True
 
@@ -191,6 +192,7 @@ def admin_account_switch(request):
         request.session["account_id"] = int(account_id)
     else:
         request.session.pop("account_id", None)
+    print ("🆔 tenant.views admin_account_switch session['account'] is now: "+str(account_id))
 
     #as we selected a different account, unset tenant,
     #forcing user to select another for the newly selected account

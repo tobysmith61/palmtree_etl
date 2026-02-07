@@ -101,7 +101,6 @@ class TenantGroup(MPTTModel):
         """
         Ensures that exactly one of root_label, group_label, or tenant is supplied.
         """
-        print ('hello')
         fields = [self.root_label, self.group_label, self.tenant]
         non_none = [f for f in fields if f is not None]
 
