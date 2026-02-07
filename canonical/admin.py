@@ -12,6 +12,8 @@ import pandas as pd
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 
+from django.utils.html import format_html
+
 class CanonicalFieldInlineFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
@@ -343,10 +345,5 @@ class TableDataAdmin(admin.ModelAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = (
-        'desc',
-        'source_filename_pattern',
-        'source_schema',
-        'canonical_schema',
-        'test_table',
-    )
+    change_form_template = "admin/canonical/job/change_form.html"
+    fields = ("desc", "source_schema", "canonical_schema", "test_table")

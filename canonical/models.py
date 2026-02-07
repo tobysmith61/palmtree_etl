@@ -166,7 +166,11 @@ class Job(models.Model):
     desc = models.CharField(max_length=100)
     canonical_schema = models.ForeignKey(CanonicalSchema, on_delete=models.CASCADE)
     source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE)
-    test_table = models.ForeignKey(TableData, on_delete=models.CASCADE)
+    test_table = models.ForeignKey(
+        TableData, 
+        on_delete=models.CASCADE, 
+        verbose_name="Test transformation with:"
+    )
     one_or_many_source_files = models.BooleanField(default=False)
     source_filename_pattern = models.CharField(
         max_length=50,

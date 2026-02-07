@@ -82,7 +82,6 @@ def strip_empty_columns(table):
 
 def tabledata_preview(request, pk):
     tabledata = get_object_or_404(TableData, pk=pk)
-
     source_data = strip_empty_columns(strip_empty_rows(tabledata.data or []))
     canonical_rows = run_etl_preview(tabledata)
 

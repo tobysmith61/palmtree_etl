@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import Account, Tenant, UserAccount, Location, TenantMapping, AccountJob
+from .models import Account, Tenant, UserAccount, Location
+from .models import TenantMapping, TenantMappingCode
+from .models import AccountJob, SFTPDropZone
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
@@ -8,6 +10,10 @@ from django.utils.safestring import mark_safe
 import json
 from django.contrib import admin
 from sandbox.models import TenantGroup, TenantGroupType
+from .admin_extra import register_extra_admin_urls
+
+register_extra_admin_urls(admin.site)
+
 
 User = get_user_model()
 
@@ -126,10 +132,12 @@ TenantAdmin.logo_preview.short_description = "Logo"
 
 class TenantInline(admin.TabularInline):
     model = Tenant
+    classes = ['collapse'] 
     extra = 1  # show 1 extra blank row
 
 class UserAccountInline(admin.TabularInline):
     model = UserAccount
+    classes = ['collapse'] 
     extra = 1  # show 1 extra blank row
 
 @admin.register(Account)
@@ -144,7 +152,7 @@ class AccountAdmin(RedirectOnSaveAdmin):
         (None, {
             "fields": ("name", "short")
         }),
-        ("Account Hierarchy", {
+        ("ACCOUNT HIERARCHY", {
             "classes": ("collapse",),  # makes this section collapsible
             "fields": ("account_hierarchy",)
         }),
@@ -244,22 +252,22 @@ def build_account_tree(account,  group_type):
 
     return [node_to_dict(root) for root in roots]
 
-# @admin.register(AccountJob)
-# class AccountJobAdmin(admin.ModelAdmin):
-#     list_display = ('account', 'job')
+@admin.register(AccountJob)
+class AccountJobAdmin(admin.ModelAdmin):
+    list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
+
+class TenantMappingCodeInline(admin.TabularInline):
+    model = TenantMappingCode
+    extra = 1  # Number of extra blank rows
+    fields = ('source_system_field_value', 'mapped_tenant', 'effective_from_date')
+    show_change_link = True  # Allows clicking to edit in separate page if needed
+
 
 @admin.register(TenantMapping)
 class TenantMappingAdmin(admin.ModelAdmin):
-    list_display = (
-        'account',
-        'source_system_field_value',
-        'mapped_tenant',
-        'effective_from_date'
-    )
-    list_filter = ('effective_from_date',)
-    search_fields = ('source_system_field_value', 'account__name', 'mapped_tenant__name')
-    ordering = ('effective_from_date',)
-    date_hierarchy = 'effective_from_date'
+    list_display = ('account', 'desc')
+    search_fields = ('account__name', 'desc')  # assuming Account has a name field
+    inlines = [TenantMappingCodeInline]
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -297,6 +305,6 @@ class TenantMappingAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(AccountJob)
-class AccountJobAdmin(admin.ModelAdmin):
-    list_display = ('account', 'job')
+@admin.register(SFTPDropZone)
+class SFTPDropZoneAdmin(admin.ModelAdmin):
+    list_display = ('account', 'sftp_parent_folder')

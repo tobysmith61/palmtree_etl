@@ -1,0 +1,16 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+  <div class="module">
+    <h2>DEVELOPER TOOLS</h2>
+    <ul>
+      <li>
+        <a href="{% url 'admin:tenants_simulate_testaccount' %}">
+          Simulate TestAccount
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  {{ block.super }}
+{% endblock %}

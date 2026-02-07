@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <li>
+        <a class="button" href="{% url 'canonical:tabledata_preview' original.test_table.id %}">
+            Preview Transformations
+        </a>
+    </li>
+{% endblock %}

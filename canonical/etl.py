@@ -9,7 +9,6 @@ def run_etl_preview(tabledata):
         return []
 
     header, *rows = tabledata.data
-
     # Map header name → column index
     header_index = {name: i for i, name in enumerate(header)}
 
@@ -20,7 +19,7 @@ def run_etl_preview(tabledata):
         .select_related("canonical_field")
         .order_by("order")
     )
-
+    
     output = []
 
     for row in rows:
