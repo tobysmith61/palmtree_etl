@@ -132,6 +132,14 @@ class SFTPDropZoneInline(AccountScopedInlineMixin, admin.TabularInline):
     extra = 1
     fields = ('sftp_parent_folder', 'desc')
     show_change_link = True  # optional
+    classes = ['collapse'] 
+
+class AccountJobInline(AccountScopedInlineMixin, admin.TabularInline):
+    model = AccountJob
+    extra = 1
+    fields = ('job', 'sftp_drop_zone', 'tenant_mapping')
+    show_change_link = True  # optional
+    classes = ['collapse'] 
 
 @admin.register(Account)
 class AccountAdmin(RedirectOnSaveAdmin):
@@ -139,7 +147,7 @@ class AccountAdmin(RedirectOnSaveAdmin):
     ordering = ("name",)
     change_form_template = "admin/tenants/account/change_form.html"
     readonly_fields = ("account_hierarchy",)
-    inlines = [TenantInline, UserAccountInline, SFTPDropZoneInline] 
+    inlines = [TenantInline, UserAccountInline, SFTPDropZoneInline, AccountJobInline] 
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -222,6 +230,22 @@ class AccountAdmin(RedirectOnSaveAdmin):
 
     account_hierarchy.short_description = "Account Structure"
 
+    # Pass info to template: disable dropdown on change/add pages
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["disable_account_dropdown"] = False
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["disable_account_dropdown"] = True
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+    def add_view(self, request, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["disable_account_dropdown"] = True
+        return super().add_view(request, form_url, extra_context=extra_context)
+    
 def build_account_organisational_tree(account):
     return build_account_tree(account, TenantGroupType.OPERATING)
 
