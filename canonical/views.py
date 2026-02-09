@@ -1,4 +1,4 @@
-from canonical.models import CanonicalSchema, TableData
+from canonical.models import CanonicalSchema, TableData, Job, FieldMapping, CanonicalField
 import json
 from django.shortcuts import render, get_object_or_404
 from .widgets import ExcelWidget
@@ -80,10 +80,28 @@ def strip_empty_columns(table):
     # transpose back
     return [list(row) for row in zip(*kept_cols)]
 
-def tabledata_preview(request, pk):
-    tabledata = get_object_or_404(TableData, pk=pk)
-    source_data = strip_empty_columns(strip_empty_rows(tabledata.data or []))
-    canonical_rows = run_etl_preview(tabledata)
+def job_preview(request, pk):
+    job = Job.objects.select_related(
+        "canonical_schema",
+        "source_schema",
+        "test_table"
+    ).get(pk=pk)
+    table_data = job.test_table
+    source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
+
+    canonical_fields = job.canonical_schema.fields.all()
+
+    field_mappings = {
+        cf.id: cf.source_field
+        for cf in canonical_fields
+        if cf.source_field and cf.source_field.source_schema == job.source_schema
+    }
+
+    canonical_rows = run_etl_preview(
+        canonical_fields=canonical_fields,
+        field_mappings=field_mappings,
+        table_data=table_data,
+    )
 
     # Build canonical table (header + rows)
     if canonical_rows:
@@ -99,7 +117,7 @@ def tabledata_preview(request, pk):
     target_widget = ExcelWidget(readonly=True)
 
     context = {
-        "tabledata": tabledata,
+        "tabledata": table_data,
         "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
         "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_data)),
     }

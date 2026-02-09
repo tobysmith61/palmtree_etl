@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <li>
+        <a class="button" 
+           href="{% url 'admin:accounttabledata_clone_from_canonical' original.id %}">
+            Clone from canonical
+        </a>
+    </li>
+{% endblock %}

@@ -2,9 +2,11 @@
 
 {% block object-tools %}
     {{ block.super }}
+    {% if original.test_table.id %}
     <li>
-        <a class="button" href="{% url 'canonical:tabledata_preview' original.test_table.id %}">
+        <a class="button" href="{% url 'canonical:job_preview' original.id %}">
             Preview Transformations
         </a>
     </li>
+    {% endif %}
 {% endblock %}

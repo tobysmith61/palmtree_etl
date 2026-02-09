@@ -1,41 +1,35 @@
 import re
-
-def run_etl_preview(tabledata):
-    if not tabledata or not tabledata.data:
+def run_etl_preview(canonical_fields, field_mappings, table_data, tenant_mapping=None):
+    if not table_data or not table_data.data:
         return []
 
-    source_schema = tabledata.source_schema
-    if not source_schema:
-        return []
+    header, *rows = table_data.data
 
-    header, *rows = tabledata.data
-    # Map header name → column index
+    # header name → column index
     header_index = {name: i for i, name in enumerate(header)}
 
-    # Active mappings only, ordered
-    mappings = (
-        source_schema.field_mappings
-        .filter(active=True, canonical_field__isnull=False)
-        .select_related("canonical_field")
-        .order_by("order")
-    )
-    
     output = []
 
     for row in rows:
         canonical_row = {}
 
-        for mapping in mappings:
-            src = mapping.source_field_name
-            field = mapping.canonical_field
+        for field in canonical_fields:
+            source_field = field_mappings.get(field.id)
 
-            if src not in header_index:
+            if not source_field:
                 value = None
             else:
-                value = row[header_index[src]]
+                src_name = source_field.source_field_name
+                if src_name not in header_index:
+                    value = None
+                else:
+                    value = row[header_index[src_name]]
 
-            # Normalise
-            value = apply_normalisation(value, field.normalisation)
+            # Tenant mapping
+            if tenant_mapping and source_field and source_field.is_tenant_mapping_source:
+                value = tenant_mapping.resolve_tenant(value)
+            else:
+                value = apply_normalisation(value, field.normalisation)
 
             canonical_row[field.name] = value
 

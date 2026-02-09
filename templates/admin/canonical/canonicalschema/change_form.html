@@ -2,10 +2,17 @@
 
 {% block object-tools %}
     {{ block.super }}
-    {% if original and show_sync_button %}
-        <a class="button" href="{% url 'admin:canonical_sync_fields' original.id %}">
-            Backfill Fields from Contract
+    {% if original and show_backfill_canonical_fields_from_canonical_contract_button %}
+        {% with model_name=original.contract|cut:"contracts." %}
+        <a class="button" href="{% url 'contracts:view' model_name %}">
+            View Contract
         </a>
+        {% endwith %}
+        &nbsp;
+        <a class="button" href="{% url 'admin:backfill_canonical_fields_from_canonical_contract' original.id %}">
+            Backfill Canonical Fields from Canonical Contract
+        </a>
+        
     {% endif %}
    
 {% endblock %}

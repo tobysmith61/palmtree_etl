@@ -3,7 +3,7 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.apps import apps
 from django.shortcuts import redirect, reverse
-from django.db import models
+from django.db import models, transaction
 from django.urls import path
 from .forms import TableDataForm, CanonicalFieldForm
 from .models import CanonicalSchema, CanonicalField, SourceSchema, FieldMapping, TableData, Job
@@ -11,8 +11,8 @@ from tenants.models import Tenant
 import pandas as pd
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404, redirect
 
-from django.utils.html import format_html
 
 class CanonicalFieldInlineFormSet(BaseInlineFormSet):
     def clean(self):
@@ -35,20 +35,15 @@ class CanonicalFieldInline(admin.TabularInline):
     model = CanonicalField
     extra = 1
     ordering = ("order",)
-    form = CanonicalFieldForm
-
-
     fields = (
         "order",
         "name",
+        "source_field",
         "data_type",
         "format_type",
         "value_mapping_group",
         "required",
         "normalisation",
-        "is_pii",
-        "requires_encryption",
-
     )
     form = CanonicalFieldForm
     show_change_link = True
@@ -125,23 +120,24 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
             return ("contract",)
         return ()
 
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
             path(
-                "<int:pk>/sync_fields/",
-                self.admin_site.admin_view(self.sync_and_renumber_fields),
-                name="canonical_sync_fields",
+                "<int:pk>/backfill_canonical_fields_from_canonical_contract/",
+                self.admin_site.admin_view(self.backfill_canonical_fields_from_canonical_contract),
+                name="backfill_canonical_fields_from_canonical_contract",
             ),
         ]
         return custom_urls + urls
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context["show_sync_button"] = True
+        extra_context["show_backfill_canonical_fields_from_canonical_contract_button"] = True
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    def sync_and_renumber_fields(self, request, pk):
+    def backfill_canonical_fields_from_canonical_contract(self, request, pk):
         schema = self.get_object(request, pk)
         if not schema.contract:
             self.message_user(request, "No contract selected!", level=messages.ERROR)
@@ -219,7 +215,7 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
     # -----------------------------
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context["show_sync_button"] = True
+        extra_context["show_backfill_canonical_fields_from_canonical_contract_button"] = True
         extra_context["show_renumber_button"] = True
         return super().changeform_view(request, object_id, form_url, extra_context)
 
@@ -242,39 +238,11 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
             return "email"
         return "string"
 
-# @admin.register(CanonicalField)
-# class CanonicalFieldAdmin(admin.ModelAdmin):
-#     form = CanonicalFieldForm
-
-#     list_display = (
-#         "name",
-#         "schema",
-#         "data_type",
-#         "format_type",
-#         "is_pii",
-#         "requires_encryption",
-#         "required",
-#         "order",
-#     )
-#     list_filter = ("schema", "data_type", "format_type", "is_pii", "requires_encryption")
-#     ordering = ("schema", "order")
-#     search_fields = ("name",)
-
-#     fieldsets = (
-#         (None, {"fields": ("schema", "name", "order")}),
-#         ("Data Shape", {"fields": ("data_type", "required")}),
-#         ("Normalisation", {
-#             "description": "Generic cleanup rules (JSON). Allowed keys: "
-#                            "trim, null_if_empty, lowercase, uppercase, date_format, boolean_map, tri_state_map, trim_whitespace",
-#             "fields": ("normalisation", "format_type"),
-#         }),
-#         ("Governance", {"fields": ("is_pii", "requires_encryption")}),
-#     )
-
 class FieldMappingInlineForm(forms.ModelForm):
     class Meta:
         model = FieldMapping
-        fields = ("order", "source_field_name", "canonical_field", "active")
+        fields = ("order", "source_field_name", "active", 
+                  "is_tenant_mapping_source", "is_pii", "requires_encryption",)
 
     def __init__(self, *args, **kwargs):
         source_schema = kwargs.pop("source_schema", None)
@@ -289,12 +257,6 @@ class FieldMappingInlineForm(forms.ModelForm):
                 self.fields["source_field_name"].widget = forms.Select(
                     choices=[("", "— Select source field —")] + [(h, h) for h in header if h]
                 )
-
-        # --- Canonical field: only fields from this schema
-        canonical_schema = getattr(source_schema, "canonical_schema", None)
-        if canonical_schema:
-            self.fields["canonical_field"].queryset = canonical_schema.fields.all()
-            self.fields["canonical_field"].empty_label = "— Select canonical field —"
 
 class FieldMappingInline(admin.TabularInline):
     model = FieldMapping
@@ -315,13 +277,106 @@ class FieldMappingInline(admin.TabularInline):
 class SourceSchemaAdmin(admin.ModelAdmin):
     inlines = [FieldMappingInline]
 
-# @admin.register(FieldMapping)
-# class FieldMappingAdmin(admin.ModelAdmin):
-#     list_display = ("source_schema", "source_field_name", "canonical_field", "order", "active")
-#     list_filter = ("source_schema", "canonical_field__schema", "active")
-#     search_fields = ("source_field_name", "canonical_field__name")
-#     ordering = ("source_schema", "order")
-#     list_editable = ("order", "active")
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<int:pk>/backfill_source_fields_from_canonical_fields/",
+                self.admin_site.admin_view(self.backfill_source_fields_from_canonical_fields),
+                name="backfill_source_fields_from_canonical_fields",
+            ),
+        ]
+        return custom_urls + urls
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["show_backfill_source_fields_from_canonical_fields_button"] = True
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def backfill_source_fields_from_canonical_fields(self, request, pk):
+        source_schema = get_object_or_404(SourceSchema, pk=pk)
+
+        canonical_schema = source_schema.canonical_schema
+        if not canonical_schema:
+            messages.error(request, "No canonical schema linked.")
+            return redirect(request.path)
+
+        canonical_fields = list(canonical_schema.fields.all())
+        existing_mappings = {
+            fm.canonical_field_id: fm
+            for fm in source_schema.field_mappings.all()
+        }
+
+        updated = 0
+        created = 0
+        deactivated = 0
+
+        with transaction.atomic():
+            # 1️⃣ Ensure every canonical field has a mapping
+            for canonical_field in canonical_fields:
+                fm = existing_mappings.get(canonical_field.id)
+                if fm:
+                    # Update order & reactivate if needed
+                    changed = False
+
+                    if fm.order != canonical_field.order:
+                        fm.order = canonical_field.order
+                        changed = True
+
+                    if not fm.active:
+                        fm.active = True
+                        changed = True
+
+                    if changed:
+                        fm.save(update_fields=["order", "active"])
+                        updated += 1
+                else:
+                    print ('doesnt exists')
+                    FieldMapping.objects.create(
+                        source_schema=source_schema,
+                        canonical_field=canonical_field,
+                        source_field_name=None,
+                        order=canonical_field.order,
+                        active=True,
+                        is_tenant_mapping_source=(
+                            canonical_field.data_type == "tenant_mapping"
+                        ),
+                    )
+                    created += 1
+
+            # 2️⃣ Deactivate mappings whose canonical field no longer exists
+            canonical_ids = {cf.id for cf in canonical_fields}
+
+            removed_qs = source_schema.field_mappings.exclude(
+                canonical_field_id__in=canonical_ids
+            ).filter(active=True)
+
+            deactivated = removed_qs.update(active=False)
+
+            # 3️⃣ Renumber to ensure contiguous ordering
+            mappings = list(
+                source_schema.field_mappings
+                .filter(active=True)
+                .order_by("order", "id")
+            )
+
+            for idx, fm in enumerate(mappings, start=1):
+                if fm.order != idx:
+                    fm.order = idx
+                    fm.save(update_fields=["order"])
+
+        # 4️⃣ Feedback + refresh
+        messages.success(
+            request,
+            f"Backfill complete: {created} created, {updated} updated, {deactivated} deactivated."
+        )
+
+        return redirect(
+            reverse(
+                "admin:canonical_sourceschema_change",
+                args=[pk],
+            )
+        )
 
 @admin.register(TableData)
 class TableDataAdmin(admin.ModelAdmin):
@@ -342,8 +397,8 @@ class TableDataAdmin(admin.ModelAdmin):
         }),
     )
 
-
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     change_form_template = "admin/canonical/job/change_form.html"
     fields = ("desc", "source_schema", "canonical_schema", "test_table")
+    

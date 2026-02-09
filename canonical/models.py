@@ -2,6 +2,7 @@ from django.db import models
 from value_mappings.models import ValueMappingGroup
 from django.core.exceptions import ValidationError
 
+
 class CanonicalSchema(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
@@ -11,6 +12,44 @@ class CanonicalSchema(models.Model):
     def __str__(self):
         return self.name
     
+class SourceSchema(models.Model):
+    name = models.CharField(max_length=50)
+    system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
+    
+    def __str__(self):
+        return f"{self.system} - {self.name}"
+
+class FieldMapping(models.Model): # rename as it not longer maps! it is just a list of fields
+    source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")
+    source_field_name = models.CharField(max_length=100, null=True, blank=True)
+    order = models.PositiveIntegerField()
+    active = models.BooleanField(default=True)
+    is_tenant_mapping_source = models.BooleanField(default=False)
+
+    # 🔐 Governance / compliance
+    is_pii = models.BooleanField(default=False)
+    requires_encryption = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.source_field_name}"
+
+    @property
+    def is_new(self):
+        return not self.source_field_name
+
+    @property
+    def is_removed_from_canonical(self):
+        if not self.source_schema or not self.source_schema.canonical_schema:
+            return False
+
+        return not self.source_schema.canonical_schema.fields.filter(
+            id=self.canonical_field_id
+        ).exists()
+
+
 class CanonicalField(models.Model):
     FORMAT_NONE = "none"
     FORMAT_EMAIL = "email"
@@ -33,9 +72,8 @@ class CanonicalField(models.Model):
     ]
 
     schema = models.ForeignKey("CanonicalSchema", on_delete=models.CASCADE, related_name="fields")
-
     name = models.CharField(max_length=100)
-
+    source_field = models.ForeignKey(FieldMapping, on_delete=models.CASCADE, related_name="field_mappings", null=True, blank=True)
     data_type = models.CharField(
         max_length=20,
         choices=DATA_TYPE_CHOICES
@@ -56,10 +94,6 @@ class CanonicalField(models.Model):
         help_text="Semantic format (e.g. email, UK postcode)"
     )
 
-    # 🔐 Governance / compliance
-    is_pii = models.BooleanField(default=False)
-    requires_encryption = models.BooleanField(default=False)
-
     # 🔢 Ordering / constraints
     required = models.BooleanField(default=False)
     order = models.PositiveIntegerField()
@@ -70,7 +104,7 @@ class CanonicalField(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         help_text="Optional value mapping (e.g. fuel types)"
-)
+    )
 
     class Meta:
         unique_together = ("schema", "name")
@@ -93,47 +127,6 @@ class CanonicalField(models.Model):
                 "value_mapping_group": "Only mapped string fields can have a value mapping group."
             })
   
-class SourceSchema(models.Model):
-    name = models.CharField(max_length=50)
-    system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
-    canonical_schema = models.OneToOneField(
-        CanonicalSchema,
-        on_delete=models.PROTECT,
-        related_name="source_schema",
-        null=True,
-        blank=True,
-    )
-
-    def __str__(self):
-        return f"{self.system} - {self.name}"
-
-class FieldMapping(models.Model):
-    source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")
-    canonical_field = models.ForeignKey(CanonicalField, on_delete=models.SET_NULL, null=True, blank=True)
-
-    source_field_name = models.CharField(max_length=100, null=True, blank=True)
-    order = models.PositiveIntegerField()
-    active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ["order"]
-
-    def __str__(self):
-        return f"{self.source_field_name} → {self.canonical_field}"
-
-    @property
-    def is_new(self):
-        return not self.source_field_name
-
-    @property
-    def is_removed_from_canonical(self):
-        if not self.source_schema or not self.source_schema.canonical_schema:
-            return False
-
-        return not self.source_schema.canonical_schema.fields.filter(
-            id=self.canonical_field_id
-        ).exists()
-
 class TableData(models.Model):
     name = models.CharField(max_length=100)
     source_schema = models.OneToOneField(

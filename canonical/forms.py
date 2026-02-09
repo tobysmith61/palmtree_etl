@@ -27,8 +27,11 @@ class CanonicalFieldForm(forms.ModelForm):
     normalisation = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={
-            "rows": 10,
-            "style": "font-family: monospace; white-space: pre;",
+            "rows": 4,
+            "style": (
+                "font-family: monospace; white-space: pre;"
+                "font-size: 8px;"
+            ),
         }),
         help_text="JSON normalisation rules",
     )

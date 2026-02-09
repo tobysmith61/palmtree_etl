@@ -17,11 +17,14 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 
 # Local app
-from .models import Account, Tenant, UserAccount
+from .models import Account, Tenant, UserAccount, AccountTableData, AccountJob
 from .forms import TenantForm
 from .utils import get_current_tenant
 
-
+from canonical.widgets import ExcelWidget
+from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget
+from canonical.etl import run_etl_preview
+from canonical.models import Job, FieldMapping
 
 def select_tenant(request):
     user = request.user
@@ -199,3 +202,50 @@ def admin_account_switch(request):
     request.session.pop("tenant_id", None)
 
     return redirect(request.META.get("HTTP_REFERER", "/admin/"))
+
+def accountjob_preview(request, pk):
+    accountjob = get_object_or_404(AccountJob, pk=pk)
+
+    job = Job.objects.select_related(
+        "canonical_schema",
+        "source_schema",
+        "test_table"
+    ).get(pk=accountjob.job.pk)
+    account_table_data = accountjob.account_table_data
+    source_data = strip_empty_columns(strip_empty_rows(account_table_data.data or []))
+
+    canonical_fields = accountjob.job.canonical_schema.fields.all()
+
+    field_mappings = {
+        cf.id: cf.source_field
+        for cf in canonical_fields
+        if cf.source_field and cf.source_field.source_schema == accountjob.job.source_schema
+    }
+
+    canonical_rows = run_etl_preview(
+        canonical_fields=canonical_fields,
+        field_mappings=field_mappings,
+        table_data=account_table_data,
+        tenant_mapping=accountjob.tenant_mapping
+    )
+
+    # Build canonical table (header + rows)
+    if canonical_rows:
+        canonical_header = list(canonical_rows[0].keys())
+        canonical_data = [canonical_header]
+        for row in canonical_rows:
+            canonical_data.append([row.get(h) for h in canonical_header])
+    else:
+        canonical_data = [["No mappings"], []]
+    canonical_data=strip_empty_columns(strip_empty_rows(canonical_data))
+
+    source_widget = ExcelWidget(readonly=True)
+    target_widget = ExcelWidget(readonly=True)
+
+    context = {
+        "tabledata": account_table_data,
+        "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
+        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_data)),
+    }
+
+    return render(request, "canonical/table_preview.html", context)

@@ -96,6 +96,36 @@ class Customer(TimeStampedModel):
         help_text="Postcode"
     )
 
+    email_opt_in_value = models.CharField(
+        max_length=12,
+        choices=OPT_IN_TRI_STATE_CHOICES,
+        default='missing',
+        verbose_name="Tri-state flag",
+        help_text="The customer opted in or out of receiving marketing via email: True, False, or Unspecified",
+    )
+
+    email_opt_in_date = models.DateField(
+        null=True,          # allows database NULL
+        blank=True,         # allows empty form input in admin/forms
+        verbose_name="Mobile op-in date",
+        help_text="The date the customer last opted in or out of receiving marketing via their email"
+    )
+
+    home_phone_opt_in_value = models.CharField(
+        max_length=12,
+        choices=OPT_IN_TRI_STATE_CHOICES,
+        default='missing',
+        verbose_name="Tri-state flag",
+        help_text="The customer opted in or out of receiving marketing via their home phone number: True, False, or Unspecified",
+    )
+
+    home_phone_opt_in_date = models.DateField(
+        null=True,          # allows database NULL
+        blank=True,         # allows empty form input in admin/forms
+        verbose_name="Mobile op-in date",
+        help_text="The date the customer last opted in or out of receiving marketing via their home phone number"
+    )
+
     mobile_opt_in_value = models.CharField(
         max_length=12,
         choices=OPT_IN_TRI_STATE_CHOICES,
@@ -158,14 +188,32 @@ class Vehicle(TimeStampedModel):
     )
 
     vin = models.CharField(
-        max_length=20,
+        max_length=17,
         help_text="VIN from source system"
+    )
+
+    brand = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="e.g. BMW"
+    )
+
+    model = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="e.g. 118d"
+    )
+
+    variant = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="e.g. 1D31A8"
     )
 
     fuel_type = models.CharField(
         max_length=20,
         blank=True,
-        help_text="e.g. PETROL"
+        help_text="e.g. DIESEL"
     )
 
     class Meta:

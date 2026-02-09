@@ -2,7 +2,8 @@ from django.db import models
 from core.models import TimeStampedModel, Address
 import uuid
 from django.conf import settings
-from canonical.models import Job
+from canonical.models import Job, TableData
+from django.utils.timezone import now
 
 class Marque(models.Model):
     name = models.CharField(max_length=30)
@@ -132,6 +133,23 @@ class TenantMapping(models.Model):
     def __str__(self):
         return self.desc
 
+    def resolve_tenant(self, source_value, as_of_date=None):
+        as_of_date = as_of_date or now().date()
+
+        mapping = (
+            self.mapping_codes
+            .filter(
+                source_system_field_value=source_value,
+                effective_from_date__lte=as_of_date,
+            )
+            .order_by("-effective_from_date")
+            .first()
+#            .mapped_tenant
+#            .internal_tenant_code
+        )
+
+        return mapping.mapped_tenant.internal_tenant_code if mapping else None
+    
 class TenantMappingCode(models.Model):
     tenant_mapping = models.ForeignKey(
         TenantMapping,
@@ -165,12 +183,41 @@ class SFTPDropZone(models.Model):
     def __str__(self):
         return f"{self.desc} ({self.account})"
 
+class AccountTableData(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    table_data_copied_from = models.OneToOneField(
+        TableData,
+        on_delete=models.PROTECT,
+        related_name="account_table_data",
+        null=True,
+        blank=True,
+    )
+    data = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of rows, first row is header"
+    )
+
+    def __str__(self):
+        return self.name
+    
+    @property
+    def data_preview(self):
+        # Returns the same data for read-only preview
+        return self.data
+    
+    class Meta:
+        verbose_name = "Account table data"
+        verbose_name_plural = "Account table data"
+
 class AccountJob(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
     tenant_mapping = models.ForeignKey(TenantMapping, on_delete=models.PROTECT, null=True, blank=True)
-        
+    account_table_data = models.ForeignKey(AccountTableData, on_delete=models.PROTECT, null=True, blank=True)
+    
     def __str__(self):
         return f"{self.job}"
 

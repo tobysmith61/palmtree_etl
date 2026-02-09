@@ -23,4 +23,13 @@ lruDXY2z6Nnsrk2471UyIy8/wy83AqZU
 # =====
 # IT support
 
-# Maintain Marques (e.g. Volkswagen = Audit, SEAT and VW etc, similar for Stellantis)
+
+
+
+
+8/2/2026
+Source Schema: copy missing fields from canonical to source schema
+Table Data: copy missing fields from source schema to table columns
+job runner
+dashboard for drop location listener to see if services are all up and running
+make drop locations and listener locations local to macbook for dev

@@ -1,20 +1,26 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import Account, Tenant, UserAccount, Location
-from .models import TenantMapping, TenantMappingCode
-from .models import AccountJob, SFTPDropZone
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
-import json
-from django.contrib import admin
-from sandbox.models import TenantGroup, TenantGroupType
+from django.contrib import admin, messages
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import path
+
 from .admin_extra import register_extra_admin_urls
-from tenants.admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
+from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
+from .forms import AccountTableDataForm
+from .models import Account, Tenant, UserAccount, Location
+from .models import TenantMapping, TenantMappingCode
+from .models import AccountJob, SFTPDropZone, AccountTableData
+
+from sandbox.models import TenantGroup, TenantGroupType
+from canonical.models import TableData
+
+import json
 
 register_extra_admin_urls(admin.site)
-
 
 User = get_user_model()
 
@@ -272,6 +278,13 @@ def build_account_tree(account,  group_type):
 @admin.register(AccountJob)
 class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
+    list_display_links = ("job",)
+    fieldsets = (
+        (None, {
+            'fields':
+                ('account', 'job', 'sftp_drop_zone', 'tenant_mapping', 'account_table_data'),
+        }),
+    )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         #filter sftp_drop_zone
@@ -339,3 +352,69 @@ class TenantMappingAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 @admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     list_display = ('account', 'sftp_parent_folder', 'desc')
+
+
+
+@admin.register(AccountTableData)
+class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+    form = AccountTableDataForm
+    list_display = ('account', 'name', 'table_data_copied_from')
+    change_form_template = "admin/tenants/accounttabledata/change_form.html"
+
+    class Media:
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.css',
+            )
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.js',
+        )
+
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'table_data_copied_from', 'data'),
+        }),
+    )
+
+    # ─────────────────────────────
+    # Custom admin URL
+    # ─────────────────────────────
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<int:object_id>/clone-from-canonical/",
+                self.admin_site.admin_view(self.clone_from_canonical),
+                name="accounttabledata_clone_from_canonical",
+            ),
+        ]
+        return custom_urls + urls
+
+    # ─────────────────────────────
+    # Clone handler
+    # ─────────────────────────────
+    def clone_from_canonical(self, request, object_id):
+        obj = get_object_or_404(AccountTableData, pk=object_id)
+        obj.data = obj.table_data_copied_from.data
+        obj.save()
+
+        self.message_user(
+            request,
+            f"Cloned data from canonical table '{obj.table_data_copied_from.name}'.",
+            level=messages.SUCCESS,
+        )
+
+        return redirect(
+            "admin:tenants_accounttabledata_change",
+            object_id,
+        )
+
+    # ─────────────────────────────
+    # Provide canonical tables to template
+    # ─────────────────────────────
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["canonical_tabledata"] = TableData.objects.all()
+        return super().change_view(request, object_id, form_url, extra_context)
+
