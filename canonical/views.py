@@ -38,7 +38,7 @@ def serialize_tabledata_for_widget(tabledata_list):
     """
     def serialize_value(v):
         if v is None:
-            return "NULL"
+            return " "
 
         if isinstance(v, date):
             return f"date({v.isoformat()})"
@@ -104,12 +104,14 @@ def job_preview(request, pk):
     table_data = job.test_table
     source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
     source_fields = job.source_schema.field_mappings.all()
+    tenant_mapping = None
+
     canonical_fields = job.canonical_schema.fields.all()
-    
     canonical_rows, raw_json_rows = run_etl_preview(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
         table_data=table_data,
+        tenant_mapping=tenant_mapping
     )
 
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
@@ -118,7 +120,7 @@ def job_preview(request, pk):
     target_widget = ExcelWidget(readonly=True)
 
     context = {
-        "tabledata": table_data,
+        "table_data": canonical_table_data,
         "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
         "raw_json_rows": raw_json_rows,
         "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
