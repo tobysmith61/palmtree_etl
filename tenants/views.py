@@ -213,18 +213,12 @@ def accountjob_preview(request, pk):
     ).get(pk=accountjob.job.pk)
     account_table_data = accountjob.account_table_data
     source_data = strip_empty_columns(strip_empty_rows(account_table_data.data or []))
+    source_fields = job.source_schema.fields.all()
+    canonical_fields = job.canonical_schema.fields.all()
 
-    canonical_fields = accountjob.job.canonical_schema.fields.all()
-
-    field_mappings = {
-        cf.id: cf.source_field
-        for cf in canonical_fields
-        if cf.source_field and cf.source_field.source_schema == accountjob.job.source_schema
-    }
-
-    canonical_rows = run_etl_preview(
+    canonical_rows, raw_json_rows = run_etl_preview(
+        source_fields=source_fields,
         canonical_fields=canonical_fields,
-        field_mappings=field_mappings,
         table_data=account_table_data,
         tenant_mapping=accountjob.tenant_mapping
     )
@@ -245,6 +239,7 @@ def accountjob_preview(request, pk):
     context = {
         "tabledata": account_table_data,
         "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
+        "raw_json_rows": raw_json_rows,
         "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_data)),
     }
 

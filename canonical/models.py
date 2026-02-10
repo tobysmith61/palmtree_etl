@@ -71,7 +71,7 @@ class CanonicalField(models.Model):
         ("tenant_mapping", "Tenant code mapping"),
     ]
 
-    schema = models.ForeignKey("CanonicalSchema", on_delete=models.CASCADE, related_name="fields")
+    schema = models.ForeignKey(CanonicalSchema, on_delete=models.CASCADE, related_name="fields")
     name = models.CharField(max_length=100)
     source_field = models.ForeignKey(FieldMapping, on_delete=models.CASCADE, related_name="field_mappings", null=True, blank=True)
     data_type = models.CharField(

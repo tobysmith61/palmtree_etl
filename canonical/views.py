@@ -80,6 +80,21 @@ def strip_empty_columns(table):
     # transpose back
     return [list(row) for row in zip(*kept_cols)]
 
+
+def canonical_json_to_excel_style_table(canonical_rows):
+    # Build canonical table (header + rows)
+    if canonical_rows:
+        canonical_header = list(canonical_rows[0].keys())
+        
+        canonical_data = [canonical_header]
+        for row in canonical_rows:
+            canonical_data.append([row.get(h) for h in canonical_header])
+    else:
+        canonical_data = [["No mappings"], []]
+    canonical_data=strip_empty_columns(strip_empty_rows(canonical_data))
+    return canonical_data
+
+
 def job_preview(request, pk):
     job = Job.objects.select_related(
         "canonical_schema",
@@ -88,30 +103,16 @@ def job_preview(request, pk):
     ).get(pk=pk)
     table_data = job.test_table
     source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
-
+    source_fields = job.source_schema.field_mappings.all()
     canonical_fields = job.canonical_schema.fields.all()
-
-    field_mappings = {
-        cf.id: cf.source_field
-        for cf in canonical_fields
-        if cf.source_field and cf.source_field.source_schema == job.source_schema
-    }
-
-    canonical_rows = run_etl_preview(
+    
+    canonical_rows, raw_json_rows = run_etl_preview(
+        source_fields=source_fields,
         canonical_fields=canonical_fields,
-        field_mappings=field_mappings,
         table_data=table_data,
     )
 
-    # Build canonical table (header + rows)
-    if canonical_rows:
-        canonical_header = list(canonical_rows[0].keys())
-        canonical_data = [canonical_header]
-        for row in canonical_rows:
-            canonical_data.append([row.get(h) for h in canonical_header])
-    else:
-        canonical_data = [["No mappings"], []]
-    canonical_data=strip_empty_columns(strip_empty_rows(canonical_data))
+    canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
 
     source_widget = ExcelWidget(readonly=True)
     target_widget = ExcelWidget(readonly=True)
@@ -119,7 +120,8 @@ def job_preview(request, pk):
     context = {
         "tabledata": table_data,
         "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
-        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_data)),
+        "raw_json_rows": raw_json_rows,
+        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
     }
 
     return render(request, "canonical/table_preview.html", context)

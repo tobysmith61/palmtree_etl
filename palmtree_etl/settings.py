@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
 import sys
 import environ
 
@@ -101,31 +100,31 @@ WSGI_APPLICATION = 'palmtree_etl.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER_APP"),         # palmtree_app at runtime
-        "PASSWORD": config("DB_PASSWORD_APP"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER_APP"),         # palmtree_app at runtime
+        "PASSWORD": env("DB_PASSWORD_APP"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
     },
     "migrate": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER_MIGRATE"),     # palmtree_migrate for migrations
-        "PASSWORD": config("DB_PASSWORD_MIGRATE"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER_MIGRATE"),     # palmtree_migrate for migrations
+        "PASSWORD": env("DB_PASSWORD_MIGRATE"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
     },
     "readonly": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER_READONLY"),    # palmtree_readonly for BI/reporting
-        "PASSWORD": config("DB_PASSWORD_READONLY"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER_READONLY"),    # palmtree_readonly for BI/reporting
+        "PASSWORD": env("DB_PASSWORD_READONLY"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
     },
 }
 
-if "migrate" not in sys.argv and DATABASES["default"]["USER"] == config("DB_USER_MIGRATE"):
+if "migrate" not in sys.argv and DATABASES["default"]["USER"] == env("DB_USER_MIGRATE"):
     raise RuntimeError("Do not use migrate user for normal runtime")
 
 if "migrate" in sys.argv and "--database=migrate" not in sys.argv:

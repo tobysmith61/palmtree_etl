@@ -1,42 +1,56 @@
-import re
-def run_etl_preview(canonical_fields, field_mappings, table_data, tenant_mapping=None):
+import re, json
+
+def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=None):
     if not table_data or not table_data.data:
         return []
 
     header, *rows = table_data.data
-
-    # header name → column index
-    header_index = {name: i for i, name in enumerate(header)}
-
     output = []
-
+    raw_json_enc_rows = []
     for row in rows:
-        canonical_row = {}
+        raw_json_dict=dict(zip(header, row))
 
-        for field in canonical_fields:
-            source_field = field_mappings.get(field.id)
+        if all(v in (None, "", []) for v in raw_json_dict.values()):
+            continue  # skip blank row
 
-            if not source_field:
-                value = None
-            else:
-                src_name = source_field.source_field_name
-                if src_name not in header_index:
-                    value = None
-                else:
-                    value = row[header_index[src_name]]
+        #build raw json with applied pii encryption
+        raw_json_dict_enc=encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields)
+        raw_json_enc_rows.append(json.dumps(raw_json_dict_enc))
 
-            # Tenant mapping
-            if tenant_mapping and source_field and source_field.is_tenant_mapping_source:
-                value = tenant_mapping.resolve_tenant(value)
-            else:
-                value = apply_normalisation(value, field.normalisation)
-
-            canonical_row[field.name] = value
+        #build canonical list of values for table
+        canonical_row = build_canonical_row(raw_json_dict, canonical_fields, tenant_mapping)
+        
+        print (23)
+        print (canonical_row)
 
         output.append(canonical_row)
+    
+    return output, raw_json_enc_rows
 
-    return output
+def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields):
+    encrypted_dict = {}
+    for sf in source_fields:
+        field_name = sf.source_field_name
+        value=raw_row[field_name]
+        if sf.is_pii and value not in (None, ""):
+            encrypted_value = f"encr({value})" # Placeholder encryption for now
+        else:
+            encrypted_value = value
+        encrypted_dict[field_name] = encrypted_value
+    return encrypted_dict
 
+def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
+    canonical_row = {}
+    for cf in canonical_fields:
+        sf = cf.source_field
+        value = raw_json_row.get(sf.source_field_name)
+        # Tenant mapping first (raw → semantic)
+        if tenant_mapping and sf.is_tenant_mapping_source:
+            value = tenant_mapping.resolve_tenant(value)
+        else:
+            value = apply_normalisation(value, cf.normalisation)
+        canonical_row[cf.name] = value
+    return canonical_row
 
 def normalise_opt_in(value):
     if value is None:

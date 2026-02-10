@@ -1,4 +1,6 @@
 {% load static %}
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,16 +33,30 @@
     <div class="form-row">
         <fieldset class="module aligned">
             <h2>Source Test Data</h2>
-            <div class="field-box">
+            <div class="field-box" style="max-height: 100px">
                 {{ table_source|safe }}
+            </div>
+        </fieldset>
+    </div>
+    
+    <div class="form-row">
+        <fieldset class="module aligned">
+            <h2>Raw JSON Storage</h2>
+            <div class="field-box" style="max-height:200px; overflow:auto; font-family:monospace; font-size: 11px; line-height:1.2;">
+                {% for row_str in raw_json_rows %}
+                    {% if row_str %}
+                        <div>{{ row_str|safe }}</div>
+                    {% endif %}
+                    <br/>
+                {% endfor %}
             </div>
         </fieldset>
     </div>
 
     <div class="form-row">
         <fieldset class="module aligned">
-            <h2>Target Canonicalised</h2>
-            <div class="field-box">
+            <h2>Normalised and Canonicalised</h2>
+            <div class="field-box" style="max-height: 100px">
                 {{ table_target|safe }}
             </div>
         </fieldset>
