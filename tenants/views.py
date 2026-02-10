@@ -22,7 +22,7 @@ from .forms import TenantForm
 from .utils import get_current_tenant
 
 from canonical.widgets import ExcelWidget
-from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget
+from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import run_etl_preview
 from canonical.models import Job, FieldMapping
 
@@ -211,36 +211,30 @@ def accountjob_preview(request, pk):
         "source_schema",
         "test_table"
     ).get(pk=accountjob.job.pk)
-    account_table_data = accountjob.account_table_data
-    source_data = strip_empty_columns(strip_empty_rows(account_table_data.data or []))
-    source_fields = job.source_schema.fields.all()
-    canonical_fields = job.canonical_schema.fields.all()
+    table_data = accountjob.account_table_data
+    source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
+    source_fields = job.source_schema.field_mappings.all()
+    tenant_mapping = accountjob.tenant_mapping
 
+    canonical_fields = job.canonical_schema.fields.all()
     canonical_rows, raw_json_rows = run_etl_preview(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
-        table_data=account_table_data,
-        tenant_mapping=accountjob.tenant_mapping
+        table_data=table_data,
+        tenant_mapping=tenant_mapping
     )
 
-    # Build canonical table (header + rows)
-    if canonical_rows:
-        canonical_header = list(canonical_rows[0].keys())
-        canonical_data = [canonical_header]
-        for row in canonical_rows:
-            canonical_data.append([row.get(h) for h in canonical_header])
-    else:
-        canonical_data = [["No mappings"], []]
-    canonical_data=strip_empty_columns(strip_empty_rows(canonical_data))
+    canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
+
 
     source_widget = ExcelWidget(readonly=True)
     target_widget = ExcelWidget(readonly=True)
 
     context = {
-        "tabledata": account_table_data,
+        "table_data": canonical_table_data,
         "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
         "raw_json_rows": raw_json_rows,
-        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_data)),
+        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
     }
 
     return render(request, "canonical/table_preview.html", context)
