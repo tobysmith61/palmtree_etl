@@ -1,4 +1,6 @@
 import re, json
+from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime
 
 def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=None):
     if not table_data or not table_data.data:
@@ -19,10 +21,6 @@ def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=
 
         #build canonical list of values for table
         canonical_row = build_canonical_row(raw_json_dict, canonical_fields, tenant_mapping)
-        
-        print (23)
-        print (canonical_row)
-
         output.append(canonical_row)
     
     return output, raw_json_enc_rows
@@ -39,6 +37,18 @@ def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields):
         encrypted_dict[field_name] = encrypted_value
     return encrypted_dict
 
+def apply_value_mapping(value, mapping_group):
+    if not mapping_group or value is None:
+        return value
+
+    value_to_lookup = value
+
+    try:
+        mapping = mapping_group.mappings.get(from_code=value_to_lookup)
+        return mapping.to_code
+    except ObjectDoesNotExist:
+        return value  # fallback to original
+    
 def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
     canonical_row = {}
     for cf in canonical_fields:
@@ -48,7 +58,11 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
         if tenant_mapping and sf.is_tenant_mapping_source:
             value = tenant_mapping.resolve_tenant(value)
         else:
+            # Apply normalisation
             value = apply_normalisation(value, cf.normalisation)
+            # Apply mappings
+            if hasattr(cf, "value_mapping_group") and cf.value_mapping_group:
+                value = apply_value_mapping(value, cf.value_mapping_group)
         canonical_row[cf.name] = value
     return canonical_row
 
@@ -66,9 +80,6 @@ def normalise_opt_in(value):
     else:
         return 'unspecified'  # fallback for unexpected values
     
-from datetime import datetime
-
-
 def normalise_date(value):
     if not value:
         return None
@@ -84,7 +95,6 @@ def normalise_date(value):
         pass
     # fallback if parsing fails
     return None
-
 
 def apply_normalisation(value, rules):
     if value is None:
@@ -119,5 +129,3 @@ def apply_normalisation(value, rules):
             value = re.sub(r"\s+", "", value)
     
     return value
-
-
