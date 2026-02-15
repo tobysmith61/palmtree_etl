@@ -28,8 +28,6 @@
 </div>
 
 <div id="content-main" class="module">
-    <h1>Preview: {{ tabledata.name }}</h1>
-
     <div class="form-row">
         <fieldset class="module aligned">
             <h2>Source Test Data</h2>
@@ -42,13 +40,40 @@
     <div class="form-row">
         <fieldset class="module aligned">
             <h2>Raw JSON Storage</h2>
-            <div class="field-box" style="max-height:200px; overflow:auto; font-family:monospace; font-size: 11px; line-height:1.2;">
+            <div class="field-box" style="max-height:150px; overflow:auto; font-family:monospace; font-size: 9px; line-height:1.2;">
                 {% for row_str in raw_json_rows %}
                     {% if row_str %}
-                        <div>{{ row_str|safe }}</div>
+                        <div 
+                            id="json-container-{{ forloop.counter }}" 
+                            class="json-container" 
+                            style="cursor:pointer; font-family: monospace; white-space: pre-wrap;"
+                        >
+{{ row_str|safe }}
+                        </div>
+                        <br/>
                     {% endif %}
-                    <br/>
                 {% endfor %}
+
+                <script>
+                    document.querySelectorAll(".json-container").forEach(container => {
+                        let pretty = false;
+                        let rawJSON = container.textContent;
+                    
+                        container.addEventListener("click", () => {
+                            if (!pretty) {
+                                try {
+                                    const obj = JSON.parse(rawJSON);
+                                    container.textContent = JSON.stringify(obj, null, 2);
+                                } catch(e) {
+                                    console.error("Invalid JSON:", e);
+                                }
+                            } else {
+                                container.textContent = rawJSON;
+                            }
+                            pretty = !pretty;
+                        });
+                    });
+                </script>
             </div>
         </fieldset>
     </div>
@@ -58,6 +83,15 @@
             <h2>Normalised and Canonicalised</h2>
             <div class="field-box" style="max-height: 100px">
                 {{ table_target|safe }}
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="form-row">
+        <fieldset class="module aligned">
+            <h2>Decrypt for Display</h2>
+            <div class="field-box" style="max-height: 100px">
+                {{ table_display|safe }}
             </div>
         </fieldset>
     </div>

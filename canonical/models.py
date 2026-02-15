@@ -26,9 +26,16 @@ class FieldMapping(models.Model): # rename as it not longer maps! it is just a l
     active = models.BooleanField(default=True)
     is_tenant_mapping_source = models.BooleanField(default=False)
 
+    # 🔹 Generic, composable rules
+    normalisation = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Raw Storage Normalisation Rules",
+    )
+
     # 🔐 Governance / compliance
-    is_pii = models.BooleanField(default=False)
-    requires_encryption = models.BooleanField(default=False)
+    pii_requires_encryption = models.BooleanField(default=False)
+    pii_requires_fingerprint = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["order"]
@@ -53,12 +60,18 @@ class FieldMapping(models.Model): # rename as it not longer maps! it is just a l
 class CanonicalField(models.Model):
     FORMAT_NONE = "none"
     FORMAT_EMAIL = "email"
-    FORMAT_POSTCODE_UK = "postcode_uk"
+    FORMAT_UK_POSTCODE_FULL = "postcode_full"
+    FORMAT_UK_POSTCODE_AREA = "postcode_area"
+    FORMAT_UK_POSTCODE_DISTRICT = "postcode_district"
+    FORMAT_UK_POSTCODE_SECTOR = "postcode_sector"
 
     FORMAT_TYPE_CHOICES = [
         (FORMAT_NONE, "None"),
         (FORMAT_EMAIL, "Email"),
-        (FORMAT_POSTCODE_UK, "UK Postcode"),
+        (FORMAT_UK_POSTCODE_FULL, "UK Postcode"),
+        (FORMAT_UK_POSTCODE_AREA, "UK Postcode Area"),
+        (FORMAT_UK_POSTCODE_DISTRICT, "UK Postcode District"),
+        (FORMAT_UK_POSTCODE_SECTOR, "UK Postcode Sector"),
     ]
 
     DATA_TYPE_CHOICES = [
@@ -78,14 +91,12 @@ class CanonicalField(models.Model):
         max_length=20,
         choices=DATA_TYPE_CHOICES
     )
-
     # 🔹 Generic, composable rules
     normalisation = models.JSONField(
         default=list,
         blank=True,
-        verbose_name="Normalisation rules",
+        verbose_name="Canonical Normalisation Rules",
     )
-
     # 🔹 Semantic format (one per field)
     format_type = models.CharField(
         max_length=30,
@@ -93,11 +104,9 @@ class CanonicalField(models.Model):
         default=FORMAT_NONE,
         help_text="Semantic format (e.g. email, UK postcode)"
     )
-
     # 🔢 Ordering / constraints
     required = models.BooleanField(default=False)
     order = models.PositiveIntegerField()
-
     value_mapping_group = models.ForeignKey(
         ValueMappingGroup,
         null=True,

@@ -11,12 +11,13 @@ from django.urls import path
 from .admin_extra import register_extra_admin_urls
 from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
 from .forms import AccountTableDataForm
-from .models import Account, Tenant, UserAccount, Location
+from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
 from .models import AccountJob, SFTPDropZone, AccountTableData
 
 from sandbox.models import TenantGroup, TenantGroupType
 from canonical.models import TableData
+from .local_kms import generate_encrypted_dek
 
 import json
 
@@ -251,7 +252,13 @@ class AccountAdmin(RedirectOnSaveAdmin):
         extra_context = extra_context or {}
         extra_context["disable_account_dropdown"] = True
         return super().add_view(request, form_url, extra_context=extra_context)
-    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            dek, encrypted_dek = generate_encrypted_dek()
+            obj.encrypted_dek = encrypted_dek
+        super().save_model(request, obj, form, change)
+
+
 def build_account_organisational_tree(account):
     return build_account_tree(account, TenantGroupType.OPERATING)
 
@@ -418,3 +425,8 @@ class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
         extra_context["canonical_tabledata"] = TableData.objects.all()
         return super().change_view(request, object_id, form_url, extra_context)
 
+
+@admin.register(AccountEncryption)
+class JobAdmin(admin.ModelAdmin):
+    pass
+    

@@ -33,7 +33,7 @@ class Brand(models.Model):
 class Account(models.Model):
     name = models.CharField(max_length=255)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
-
+    
     def save(self, *args, **kwargs):
         if self.short:
             self.short = self.short.upper()  # enforce uppercase
@@ -42,6 +42,18 @@ class Account(models.Model):
     def __str__(self):
         return self.name
 
+class AccountEncryption(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+
+    encrypted_dek = models.BinaryField()
+    dek_kms_key_id = models.CharField(max_length=255)
+    dek_algorithm = models.CharField(
+        max_length=50,
+        default="AES-256-GCM"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 # For various collections of Tenants
 class TenantGroupType(models.TextChoices):
     ACCOUNT = "billing", "Account / Billing Group" # Account details is at Group root node

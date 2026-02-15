@@ -242,8 +242,8 @@ class FieldMappingInlineForm(forms.ModelForm):
     class Meta:
         model = FieldMapping
         fields = ("order", "source_field_name", "active", 
-                  "is_tenant_mapping_source", "is_pii", "requires_encryption",)
-
+                  "is_tenant_mapping_source", "normalisation", "pii_requires_encryption", "pii_requires_fingerprint",)
+    
     def __init__(self, *args, **kwargs):
         source_schema = kwargs.pop("source_schema", None)
         super().__init__(*args, **kwargs)
@@ -254,8 +254,9 @@ class FieldMappingInlineForm(forms.ModelForm):
             tabledata = getattr(source_schema, "table_data", None)
             if tabledata and tabledata.data and isinstance(tabledata.data[0], list):
                 header = tabledata.data[0]
+                field_choices=[("", "— Select source field —")] + [(h, h) for h in header if h]
                 self.fields["source_field_name"].widget = forms.Select(
-                    choices=[("", "— Select source field —")] + [(h, h) for h in header if h]
+                    choices=field_choices
                 )
 
 class FieldMappingInline(admin.TabularInline):
