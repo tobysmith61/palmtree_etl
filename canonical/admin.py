@@ -242,7 +242,8 @@ class FieldMappingInlineForm(forms.ModelForm):
     class Meta:
         model = FieldMapping
         fields = ("order", "source_field_name", "active", 
-                  "is_tenant_mapping_source", "normalisation", "pii_requires_encryption", "pii_requires_fingerprint",)
+                  "is_tenant_mapping_source", "normalisation", "pii_requires_encryption", 
+                  "pii_requires_fingerprint", "is_volatile")
     
     def __init__(self, *args, **kwargs):
         source_schema = kwargs.pop("source_schema", None)

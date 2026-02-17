@@ -51,6 +51,19 @@ def hmac_value(value: str, secret: str) -> str:
             hashlib.sha256
         ).hexdigest()
 
+def hash_with_platform_secret(data: dict) -> str:
+    canonical_json = json.dumps(
+        data,
+        sort_keys=True,
+        separators=(",", ":")
+    )
+    platform_secret = os.getenv("HMAC_SECRET")
+    return hmac.new(
+        platform_secret.encode(),
+        canonical_json.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
 def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=None):
     if not table_data or not table_data.data:
         return []
@@ -67,20 +80,40 @@ def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=
     raw_data_storage_rows = []
     for row in rows:
         raw_json_dict=dict(zip(header, row))
+
+        #remove field None: None if it exists
+        raw_json_dict.pop(None, None)
+
+        #keep true raw row, should we need it later
+        unaltered_raw_json_dict=raw_json_dict 
+
+        #keep non encrypted values for hashing later
         raw_json_dict_not_encrypted=raw_json_dict
+
+        #skip blank row
         if all(v in (None, "", []) for v in raw_json_dict.values()):
-            continue  # skip blank row
+            continue
+
+        #ignore (remove) volatile fields before hashing
+        for sf in source_fields:
+            if sf.is_volatile:
+                raw_json_dict.pop(sf.source_field_name, None)
+
+        #hash
+        hash = hash_with_platform_secret(raw_json_dict)
 
         #build raw json with applied pii encryption
         raw_json_dict_enc=encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
+
+        #prepend row with hash
+        raw_json_dict_enc = {'row_hash': hash, **raw_json_dict_enc}
 
         #fingerprints as hmac
         for sf in source_fields:
             if sf.pii_requires_fingerprint:
                 orig_field_name = sf.source_field_name
                 value = raw_json_dict_not_encrypted.get(orig_field_name)
-                field_name = 'FINGERPRINT_'+sf.source_field_name
-                #hmac here
+                field_name = 'fingerprint_'+sf.source_field_name
                 hmac_secret = os.getenv("HMAC_SECRET")
                 raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
 
@@ -99,7 +132,7 @@ def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=
             if sf.pii_requires_fingerprint:
                 orig_field_name = sf.source_field_name
                 value = raw_json_dict_not_encrypted.get(orig_field_name)
-                field_name = 'FINGERPRINT_'+sf.source_field_name
+                field_name = 'fingerprint_'+sf.source_field_name
                 canonical_row[field_name]=raw_json_dict_enc[field_name]
 
         canonical_rows.append(canonical_row)
@@ -107,66 +140,62 @@ def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=
     ####################
     #prepare for display
     ####################
+    
     display_rows=[]
     for canonical_row in canonical_rows:
-        display_row={}
-        display_row['TITLE']=decrypt(canonical_row, 'TITLE', account.short, dek)
-        display_row['FIRST_NAME']=decrypt(canonical_row, 'FIRST_NAME', account.short, dek)
-        display_row['LAST_NAME']=decrypt(canonical_row, 'LAST_NAME', account.short, dek)
-        display_row['POSTCODE']=decrypt(canonical_row, 'POSTCODE', account.short, dek)
-        
-        display_rows.append(display_row)
-    
-    print (117)
-    print (display_rows)
+        canonical_row_copy_for_display = canonical_row.copy()
+        for k in list(canonical_row_copy_for_display.keys()):
+            v = canonical_row_copy_for_display[k]
+            try:
+                cf = canonical_fields.get(name=k)
+            except:
+                # safely remove keys while iterating
+                canonical_row_copy_for_display.pop(k)
+                continue
 
+            field_mapping = cf.source_field
+            if field_mapping and field_mapping.pii_requires_encryption and v:
+                canonical_row_copy_for_display[k] = decrypt(
+                    canonical_row_copy_for_display,
+                    k,
+                    str(account.short),
+                    dek,
+                )
+                
+        display_rows.append(canonical_row_copy_for_display)
+    
     return canonical_rows, [json.dumps(row) for row in raw_data_storage_rows], display_rows
 
 def decrypt(row, key, short, dek):
     encrypted_value=row[key]
     return decrypt_value(encrypted_value, dek, short)
 
-
 def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
     all_kv_values = {}
     for sf in source_fields:
         field_name = sf.source_field_name
-        # if sf.pii_requires_encryption:
-        #     field_name = 'ENC_'+field_name
         value = raw_row.get(field_name)
         extended_kv_values = apply_normalisation(value, field_name, sf.normalisation)
         k, v = next(iter(extended_kv_values.items()))
-        
         try:
             parsed = v
             if isinstance(parsed, dict):
                 # Nested JSON found
-                for k2, v2 in parsed.items():
+                for nested_k, nested_v in parsed.items():
                     #encrypt
-                    encrypted_value = encrypt(v2, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
-                    parsed[k2] = encrypted_value
-
-                    #hash with hmac
-
+                    encrypted_value = encrypt(nested_v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
+                    parsed[nested_k] = encrypted_value
                 extended_kv_values[k] = parsed
             else:
                 #encrypt
                 encrypted_value = encrypt(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
                 extended_kv_values[k] = encrypted_value
-
-                #hash with hmac
-
         except:
             #encrypt
             encrypted_value = encrypt(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
             extended_kv_values[k] = encrypted_value
-
-            #hash with hmac
-
-
         for k, v in extended_kv_values.items():
             all_kv_values[k]=v
-
     return all_kv_values
 
 def encrypt(v, dek, short):
@@ -211,7 +240,6 @@ def encrypt_as_aesgcm_with_nonce(dek: bytes, plaintext: bytes, aad: str) -> byte
     aesgcm = AESGCM(dek)
     nonce = os.urandom(NONCE_SIZE)
     return nonce + aesgcm.encrypt(nonce, plaintext, aad.encode())
-    
 
 def decrypt_as_aesgcm_with_nonce(dek: bytes, encrypted: bytes, aad: str) -> bytes:
     aesgcm = AESGCM(dek)
@@ -224,7 +252,6 @@ def decrypt_as_aesgcm_with_nonce(dek: bytes, encrypted: bytes, aad: str) -> byte
 
     # Decrypt (will raise InvalidTag if wrong key/aad)
     return aesgcm.decrypt(nonce, ciphertext, aad.encode())
-
 
 def apply_value_mapping(value, mapping_group):
     if not mapping_group or value is None:
@@ -253,8 +280,12 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
             # Apply mappings
             if hasattr(cf, "value_mapping_group") and cf.value_mapping_group:
                 #kv_value[1] = apply_value_mapping(kv_value[1], cf.value_mapping_group)
+                print (285)
+                print (kv_value)
                 k, v = list(kv_value.items())[0]
-                v[k] = apply_value_mapping(v, cf.value_mapping_group)
+                print (286)
+                print (k, v)
+                v = apply_value_mapping(v, cf.value_mapping_group)
                 kv_value={k: v}
 
         for k, v in kv_value.items():
@@ -326,7 +357,7 @@ def apply_normalisation(value, field_name, rules):
         elif op == "tri_state_map":
             return {field_name: normalise_opt_in(value)}
 
-        elif op == "trim_whitespace":
+        elif op == "remove_whitespace":
             value = re.sub(r"\s+", "", value)
         
         elif op == "parse_postcode":
@@ -334,3 +365,21 @@ def apply_normalisation(value, field_name, rules):
             return json
         
     return {field_name: value}
+
+
+def to_snake_case(key: str) -> str:
+    """
+    Convert a string to snake_case:
+    - Lowercase
+    - Replace spaces, hyphens, and dots with underscores
+    - Collapse multiple underscores
+    """
+    if not key:
+        return ""
+    key = key.lower()                       # Lowercase
+    key = re.sub(r"[ \-\.]+", "_", key)     # Replace spaces, hyphens, dots with underscores
+    key = re.sub(r"[^a-z0-9_]", "", key)    # Remove any non-alphanumeric/underscore characters    
+    key = re.sub(r"_+", "_", key)           # Collapse multiple underscores
+    key = key.strip("_")                    # Strip leading/trailing underscores
+    return key
+

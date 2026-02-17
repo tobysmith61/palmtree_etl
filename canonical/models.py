@@ -36,6 +36,9 @@ class FieldMapping(models.Model): # rename as it not longer maps! it is just a l
     # 🔐 Governance / compliance
     pii_requires_encryption = models.BooleanField(default=False)
     pii_requires_fingerprint = models.BooleanField(default=False)
+    
+    #enables us to ignore time_stamp or last_updated for hashing
+    is_volatile = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["order"]

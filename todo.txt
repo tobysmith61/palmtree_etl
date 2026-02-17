@@ -33,3 +33,11 @@ Table Data: copy missing fields from source schema to table columns
 job runner
 dashboard for drop location listener to see if services are all up and running
 make drop locations and listener locations local to macbook for dev
+
+ACCOMODATE SPACE FOR ENCRYPTED FIELDS:
+
+AES-256-GCM + Base64
+space needed for 17 char VIN:
+base64_chars = ceil((P + 28) * 4 / 3)
+needs to be baked into models, e.g. 50 chars for address line 1 may be 78*4/3 = 104 ish
+

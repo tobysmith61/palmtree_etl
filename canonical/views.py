@@ -107,7 +107,7 @@ def job_preview(request, pk):
     tenant_mapping = None
 
     canonical_fields = job.canonical_schema.fields.all()
-    canonical_rows, raw_json_rows = run_etl_preview(
+    canonical_rows, raw_json_rows, display_rows = run_etl_preview(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
         table_data=table_data,
@@ -115,15 +115,15 @@ def job_preview(request, pk):
     )
 
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
-
-    source_widget = ExcelWidget(readonly=True)
-    target_widget = ExcelWidget(readonly=True)
+    display_table_data = canonical_json_to_excel_style_table(display_rows)
+    table_widget = ExcelWidget(readonly=True)
 
     context = {
         "table_data": canonical_table_data,
-        "table_source": source_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
+        "table_source": table_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
         "raw_json_rows": raw_json_rows,
-        "table_target": target_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
+        "table_target": table_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
+        "table_display": table_widget.render("table_display", serialize_tabledata_for_widget(display_table_data)),
     }
 
     return render(request, "canonical/table_preview.html", context)
