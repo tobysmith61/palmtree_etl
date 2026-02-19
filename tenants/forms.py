@@ -19,3 +19,8 @@ class AccountTableDataForm(forms.ModelForm):
         widgets = {
             'data': ExcelWidget(),  # editable
         }
+
+class SFTPUploadForm(forms.Form):
+    file = forms.FileField(label="Select a file to upload")
+
+    

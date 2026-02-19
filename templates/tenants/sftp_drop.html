@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}sFTP Drop Dashboard{% endblock %}
+
+{% block content %}
+<h1>sFTP Drop Dashboard</h1>
+
+<div id="messages">
+  {% if messages %}
+    <ul class="messages">
+      {% for msg in messages %}
+        <li class="{{ msg.tags }}">{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
+<div id="drop-zone" style="border: 2px dashed #ccc; padding: 60px; text-align: center;">
+  Drag and drop files here or click to select
+</div>
+
+<form id="file-upload-form" method="post" enctype="multipart/form-data" style="display:none;">
+  {% csrf_token %}
+  <input type="file" name="file" id="file-input">
+</form>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const form = document.getElementById('file-upload-form');
+const messages = document.getElementById('messages');
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.style.background = '#f0f0f0';
+});
+
+dropZone.addEventListener('dragleave', e => {
+  e.preventDefault();
+  dropZone.style.background = '';
+});
+
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.style.background = '';
+  const files = e.dataTransfer.files;
+  if (files.length) {
+    uploadFile(files[0]);
+  }
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    uploadFile(fileInput.files[0]);
+  }
+});
+
+function uploadFile(file) {
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const formData = new FormData();
+  formData.append('file', file);
+
+  fetch("{% url 'tenants:sftp-drop-dashboard' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken
+    },
+    body: formData
+  })
+  .then(response => response.text())
+  .then(data => {
+    messages.innerHTML = `<p style="color:green;">${file.name} uploaded successfully!</p>`;
+  })
+  .catch(err => {
+    messages.innerHTML = `<p style="color:red;">Upload failed: ${err}</p>`;
+  });
+}
+</script>
+{% endblock %}

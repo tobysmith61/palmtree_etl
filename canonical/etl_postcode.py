@@ -40,7 +40,7 @@ def parse_uk_postcode(postcode: str):
     postcode_normalized = f"{outward} {inward}"
 
     return {
-        'Postcode': {
+        'postcode': {
             "postcode_full": postcode_normalized,
             "postcode_area": area,
             "postcode_district": district,

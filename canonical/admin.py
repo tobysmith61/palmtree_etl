@@ -5,7 +5,7 @@ from django.apps import apps
 from django.shortcuts import redirect, reverse
 from django.db import models, transaction
 from django.urls import path
-from .forms import TableDataForm, CanonicalFieldForm
+from .forms import TableDataForm, CanonicalFieldForm, FieldMappingInlineForm
 from .models import CanonicalSchema, CanonicalField, SourceSchema, FieldMapping, TableData, Job
 from tenants.models import Tenant
 import pandas as pd
@@ -82,7 +82,8 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
                         <li><code>date_format</code></li>
                         <li><code>boolean_map</code></li>
                         <li><code>tri_state_map</code></li>
-                        <li><code>trim_whitespace</code></li>
+                        <li><code>collapse_whitespace</code></li>
+                        <li><code>remove_whitespace</code></li>
                     </ul>
                     <p><strong>Example:</strong></p>
                     <pre>[{"op": "trim"}, {"op": "lowercase"}]</pre>
@@ -173,7 +174,7 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
         renumber_count = 0
 
         for order, field in enumerate(business_fields, start=1):
-            field_name_upper = field.name.upper()
+            field_name_upper = field.name.lower()
 
             if field_name_upper in existing_fields:
                 cf = existing_fields[field_name_upper]
@@ -238,28 +239,6 @@ class CanonicalSchemaAdmin(admin.ModelAdmin):
             return "email"
         return "string"
 
-class FieldMappingInlineForm(forms.ModelForm):
-    class Meta:
-        model = FieldMapping
-        fields = ("order", "source_field_name", "active", 
-                  "is_tenant_mapping_source", "normalisation", "pii_requires_encryption", 
-                  "pii_requires_fingerprint", "is_volatile")
-    
-    def __init__(self, *args, **kwargs):
-        source_schema = kwargs.pop("source_schema", None)
-        super().__init__(*args, **kwargs)
-
-        # --- Source field: text input by default
-        self.fields["source_field_name"].widget = forms.TextInput()
-        if source_schema:
-            tabledata = getattr(source_schema, "table_data", None)
-            if tabledata and tabledata.data and isinstance(tabledata.data[0], list):
-                header = tabledata.data[0]
-                field_choices=[("", "— Select source field —")] + [(h, h) for h in header if h]
-                self.fields["source_field_name"].widget = forms.Select(
-                    choices=field_choices
-                )
-
 class FieldMappingInline(admin.TabularInline):
     model = FieldMapping
     form = FieldMappingInlineForm
@@ -279,23 +258,25 @@ class FieldMappingInline(admin.TabularInline):
 class SourceSchemaAdmin(admin.ModelAdmin):
     inlines = [FieldMappingInline]
 
-    def get_urls(self):
+    def get_urls(self): #redundant fn
         urls = super().get_urls()
         custom_urls = [
             path(
-                "<int:pk>/backfill_source_fields_from_canonical_fields/",
-                self.admin_site.admin_view(self.backfill_source_fields_from_canonical_fields),
-                name="backfill_source_fields_from_canonical_fields",
+                "<int:pk>/backfill_source_fields_from_table_data/",
+                self.admin_site.admin_view(self.backfill_source_fields_from_table_data),
+                name="backfill_source_fields_from_table_data",
             ),
         ]
         return custom_urls + urls
 
+    #redundant fn
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context["show_backfill_source_fields_from_canonical_fields_button"] = True
+        extra_context["show_backfill_source_fields_from_table_data_button"] = True
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    def backfill_source_fields_from_canonical_fields(self, request, pk):
+    #redundant fn 
+    def backfill_source_fields_from_table_data(self, request, pk):
         source_schema = get_object_or_404(SourceSchema, pk=pk)
 
         canonical_schema = source_schema.canonical_schema
@@ -304,39 +285,32 @@ class SourceSchemaAdmin(admin.ModelAdmin):
             return redirect(request.path)
 
         canonical_fields = list(canonical_schema.fields.all())
-        existing_mappings = {
-            fm.canonical_field_id: fm
-            for fm in source_schema.field_mappings.all()
-        }
+
+        # Existing mappings for this source
+        existing_mappings = list(source_schema.field_mappings.all())
+        mapping_by_id = {fm.id: fm for fm in existing_mappings}
 
         updated = 0
         created = 0
         deactivated = 0
 
         with transaction.atomic():
-            # 1️⃣ Ensure every canonical field has a mapping
-            for canonical_field in canonical_fields:
-                fm = existing_mappings.get(canonical_field.id)
-                if fm:
-                    # Update order & reactivate if needed
-                    changed = False
 
+            # 1️⃣ Ensure every CanonicalField has a FieldMapping
+            for canonical_field in canonical_fields:
+
+                fm = canonical_field.source_field
+
+                if fm and fm.source_schema_id == source_schema.id:
+                    # Ensure order matches
                     if fm.order != canonical_field.order:
                         fm.order = canonical_field.order
-                        changed = True
-
-                    if not fm.active:
-                        fm.active = True
-                        changed = True
-
-                    if changed:
-                        fm.save(update_fields=["order", "active"])
+                        fm.save(update_fields=["order"])
                         updated += 1
                 else:
-                    print ('doesnt exists')
-                    FieldMapping.objects.create(
+                    # Create new mapping
+                    fm = FieldMapping.objects.create(
                         source_schema=source_schema,
-                        canonical_field=canonical_field,
                         source_field_name=None,
                         order=canonical_field.order,
                         active=True,
@@ -344,18 +318,28 @@ class SourceSchemaAdmin(admin.ModelAdmin):
                             canonical_field.data_type == "tenant_mapping"
                         ),
                     )
+
+                    canonical_field.source_field = fm
+                    canonical_field.save(update_fields=["source_field"])
+
                     created += 1
 
-            # 2️⃣ Deactivate mappings whose canonical field no longer exists
-            canonical_ids = {cf.id for cf in canonical_fields}
+            # 2️⃣ Deactivate mappings not referenced by any CanonicalField
+            active_mapping_ids = {
+                cf.source_field_id
+                for cf in canonical_fields
+                if cf.source_field_id
+            }
 
-            removed_qs = source_schema.field_mappings.exclude(
-                canonical_field_id__in=canonical_ids
-            ).filter(active=True)
+            removed_qs = (
+                source_schema.field_mappings
+                .exclude(id__in=active_mapping_ids)
+                .filter(active=True)
+            )
 
             deactivated = removed_qs.update(active=False)
 
-            # 3️⃣ Renumber to ensure contiguous ordering
+            # 3️⃣ Renumber contiguous ordering
             mappings = list(
                 source_schema.field_mappings
                 .filter(active=True)
@@ -367,7 +351,6 @@ class SourceSchemaAdmin(admin.ModelAdmin):
                     fm.order = idx
                     fm.save(update_fields=["order"])
 
-        # 4️⃣ Feedback + refresh
         messages.success(
             request,
             f"Backfill complete: {created} created, {updated} updated, {deactivated} deactivated."

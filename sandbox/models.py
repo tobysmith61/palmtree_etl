@@ -84,6 +84,14 @@ class TenantGroup(MPTTModel):
         related_name="group_nodes",
         help_text="If set, this node represents a tenant (leaf node).",
     )
+
+    ftp_drop_folder_path = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Path of sFTP drop folder from this platform"
+    )
+
     class MPTTMeta:
         order_insertion_by = ["group_label"]
 
@@ -99,13 +107,32 @@ class TenantGroup(MPTTModel):
 
     def clean(self):
         """
-        Ensures that exactly one of root_label, group_label, or tenant is supplied.
+        Validates that the fields correspond to the node_type:
+        - root: must have root_label, no group_label, no tenant
+        - group: must have group_label, no root_label, no tenant
+        - tenant: must have tenant, no root_label, no group_label
         """
-        fields = [self.root_label, self.group_label, self.tenant]
-        non_none = [f for f in fields if f is not None]
-
-        if len(non_none) != 1:
-            raise ValidationError(
-                "Exactly one of 'root_label', 'group_label', or 'tenant' must be provided."
-            )
+        if self.node_type == "root":
+            if not self.root_label:
+                raise ValidationError("Root nodes must have a root_label.")
+            if self.group_label or self.tenant:
+                raise ValidationError("Root nodes cannot have group_label or tenant set.")
+        elif self.node_type == "group":
+            if not self.group_label:
+                raise ValidationError("Group nodes must have a group_label.")
+            if self.root_label or self.tenant:
+                raise ValidationError("Group nodes cannot have root_label or tenant set.")
+        elif self.node_type == "tenant":
+            if not self.tenant:
+                raise ValidationError("Tenant nodes must have a tenant assigned.")
+            if self.root_label or self.group_label:
+                raise ValidationError("Tenant nodes cannot have root_label or group_label set.")
+        else:
+            raise ValidationError(f"Unknown node_type: {self.node_type}")
         
+        # ---- Group type validation ----
+        if self.group_type == TenantGroupType.DATAFEED:
+            # assuming you have an ftp_path field
+            if not getattr(self, "ftp_drop_folder_path", None):
+                raise ValidationError("Data Feed groups must have an ftp_drop_folder_path specified.")
+            

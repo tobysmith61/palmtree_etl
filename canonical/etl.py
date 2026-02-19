@@ -1,7 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-import os, base64, re, json, hashlib, hmac
+import os, base64, re, hashlib, hmac
+import json
 
 from datetime import datetime
 
@@ -114,6 +115,7 @@ def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=
                 orig_field_name = sf.source_field_name
                 value = raw_json_dict_not_encrypted.get(orig_field_name)
                 field_name = 'fingerprint_'+sf.source_field_name
+                print (field_name)
                 hmac_secret = os.getenv("HMAC_SECRET")
                 raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
 
@@ -279,18 +281,19 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
             
             # Apply mappings
             if hasattr(cf, "value_mapping_group") and cf.value_mapping_group:
-                #kv_value[1] = apply_value_mapping(kv_value[1], cf.value_mapping_group)
-                print (285)
-                print (kv_value)
                 k, v = list(kv_value.items())[0]
-                print (286)
-                print (k, v)
                 v = apply_value_mapping(v, cf.value_mapping_group)
                 kv_value={k: v}
 
         for k, v in kv_value.items():
             if 'postcode' in cf.format_type:
-                #v=json.loads(v)
+                print (290)
+                print (raw_json_row)
+                print (all_kv_values)
+                print (type(all_kv_values))
+                print (k)
+                print (v)
+                print (cf.format_type)
                 all_kv_values[k]=v[cf.format_type]
             else:
                 all_kv_values[k]=v
@@ -329,41 +332,50 @@ def normalise_date(value):
     return None
 
 def apply_normalisation(value, field_name, rules):
-    if value is None:
-        return {field_name: None}
+    if isinstance(rules, str):
+        try:
+            rules = json.loads(rules)
 
-    for step in rules or []:
-        op = step.get("op")
+        except json.JSONDecodeError:
+            rules = []    
 
-        if op == "trim":
-            value = value.strip()
+        for step in rules or []:
+            
+            print (344)
+            print (rules)
+            print (step)
 
-        elif op == "lowercase":
-            value = value.lower()
+            op = step.get("op")
 
-        elif op == "uppercase":
-            value = value.upper()
+            if op == "trim":
+                value = value.strip()
 
-        elif op == "collapse_whitespace":
-            value = re.sub(r"\s+", " ", value)
+            elif op == "lowercase":
+                value = value.lower()
 
-        elif op == "null_if_empty":
-            if value == "":
-                return {field_name: None}
+            elif op == "uppercase":
+                value = value.upper()
 
-        elif op == "date_format":
-            return {field_name: normalise_date(value)}
+            elif op == "collapse_whitespace":
+                value = re.sub(r"\s+", " ", value)
 
-        elif op == "tri_state_map":
-            return {field_name: normalise_opt_in(value)}
+            elif op == "null_if_empty":
+                if value == "":
+                    return {field_name: None}
 
-        elif op == "remove_whitespace":
-            value = re.sub(r"\s+", "", value)
-        
-        elif op == "parse_postcode":
-            json = etl_postcode.parse_uk_postcode(value)
-            return json
-        
+            elif op == "date_format":
+                return {field_name: normalise_date(value)}
+
+            elif op == "tri_state_map":
+                return {field_name: normalise_opt_in(value)}
+
+            elif op == "remove_whitespace":
+                value = re.sub(r"\s+", "", value)
+            
+            elif op == "parse_postcode":
+                json_var = etl_postcode.parse_uk_postcode(value)
+                return json_var
+            
     return {field_name: value}
 
 

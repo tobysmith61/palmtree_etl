@@ -26,7 +26,7 @@ def account_context(request):
         return {}
 
     if request.user.is_superuser:
-        accounts = Account.objects.all()
+        accounts = Account.objects.exclude(name='palmTree')
     else:
         accounts = Account.objects.filter(
             useraccount__user=request.user

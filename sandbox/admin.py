@@ -4,6 +4,8 @@ from mptt.admin import DraggableMPTTAdmin
 from .models import TenantGroup
 from tenants.models import Tenant
 from tenants.admin_mixins import AccountScopedAdminMixin
+from django.db import models
+from django.forms import TextInput, Textarea
 
 @admin.register(TenantGroup)
 class TenantGroupAdmin(AccountScopedAdminMixin, DraggableMPTTAdmin):
@@ -29,11 +31,16 @@ class TenantGroupAdmin(AccountScopedAdminMixin, DraggableMPTTAdmin):
             'group_label',
             'node_type',
             'tenant',
+            'ftp_drop_folder_path',
         ]
         
         if obj or not request.session.get("account_id"):
             fields = ["account"] + fields
         return fields
+
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size': '80'})},  # default size is ~20
+    }
 
     def get_changeform_initial_data(self, request):
         """

@@ -18,13 +18,17 @@ from django.views.decorators.csrf import csrf_protect
 
 # Local app
 from .models import Account, Tenant, UserAccount, AccountTableData, AccountJob
-from .forms import TenantForm
+from .forms import TenantForm, SFTPUploadForm
 from .utils import get_current_tenant
 
 from canonical.widgets import ExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import run_etl_preview
 from canonical.models import Job, FieldMapping
+
+import paramiko
+from django.contrib import messages
+
 
 def select_tenant(request):
     user = request.user
@@ -237,3 +241,40 @@ def accountjob_preview(request, pk):
     }
 
     return render(request, "canonical/table_preview.html", context)
+
+def sftp_drop_dashboard_view(request):
+    if request.method == "POST":
+        form = SFTPUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data['file']
+            remote_path = os.path.join('/remote/folder', file.name)
+            try:
+                upload_to_sftp(file, remote_path)
+                messages.success(request, f"{file.name} uploaded successfully!")
+            except Exception as e:
+                messages.error(request, f"Upload failed: {e}")
+            return redirect('sftp-drop')
+    else:
+        form = SFTPUploadForm()
+
+    return render(request, "tenants/sftp_drop.html", {"form": form})
+
+
+def upload_to_sftp(file_obj, remote_path):
+    """
+    Uploads a file to an SFTP server using Paramiko.
+    """
+    host = settings.SFTP_HOST
+    port = getattr(settings, 'SFTP_PORT', 22)
+    username = settings.SFTP_USERNAME
+    password = settings.SFTP_PASSWORD  # or use key authentication
+
+    transport = paramiko.Transport((host, port))
+    transport.connect(username=username, password=password)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    # Upload the file
+    sftp.putfo(file_obj, remote_path)  # file_obj should be a file-like object
+
+    sftp.close()
+    transport.close()

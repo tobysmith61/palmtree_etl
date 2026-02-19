@@ -3,10 +3,8 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Hello World</h1>
-
 {% if user.is_superuser %}
-    <p>You are a superuser!</p>
+    <p>(As a superuser you are not associated with any particular Tenant)</p>
 {% else %}
     {% if tenant_desc %}
         <p>Your tenant: {{ tenant.desc }}</p>
@@ -14,7 +12,16 @@
         <p>You are not associated with any tenant yet.</p>
     {% endif %}
 {% endif %}
-
-<p>...</p>
+<br/>
+<h1>
+    <a href="{% url 'tenants:sftp-drop-dashboard' %}" 
+       style="text-decoration: none; 
+              color: white; 
+              background-color: #4CAF50; 
+              padding: 10px 20px; 
+              border-radius: 5px;">
+        sFTP Drop Dashboard
+    </a>
+</h1>
 
 {% endblock %}

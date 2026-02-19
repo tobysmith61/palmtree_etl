@@ -120,6 +120,7 @@ class CanonicalField(models.Model):
 
     class Meta:
         unique_together = ("schema", "name")
+        unique_together = ("schema", "source_field", "data_type", "format_type")
         ordering = ["order"]
 
     def __str__(self):
