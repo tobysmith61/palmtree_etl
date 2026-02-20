@@ -85,7 +85,7 @@ TEMPLATES = [
                 'tenants.context_processors.account_context',
                 'tenants.context_processors.tenant_context',
                 'palmtree_etl.context_processors.developer_quick_login_buttons',
-
+                'core.context_processors.app_version',
             ],
         },
     },
@@ -201,3 +201,5 @@ SFTP_REMOTE_DIR = env('SFTP_REMOTE_DIR')
 LOCAL_MASTER_KEY = env('LOCAL_MASTER_KEY')
 
 LOGIN_URL = '/login'
+
+APP_VERSION = "0.101"
