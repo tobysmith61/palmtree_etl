@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}My Page{% endblock %}
+
+{% block content %}
+<h1>Instructions for creating a sFTP account on the target server</h1>
+<br/>
+<style>
+    .cmd {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      font-family: monospace;
+      max-width: 500px;
+      background: #f4f4f4;
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+    .cmd code {
+      flex: 1;
+      overflow-x: auto;
+    }
+    .copy-icon {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      fill: #4f46e5;
+      transition: fill 0.2s;
+      margin-left: 6px;
+    }
+    .copy-icon:hover {
+      fill: #3730a3;
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tiptext {
+      visibility: hidden;
+      width: 60px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 2px 5px;
+      position: absolute;
+      z-index: 1;
+      top: -25px;
+      left: 50%;
+      margin-left: -30px;
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tooltip:hover .tiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+  
+  <div id="commands-container"></div>
+  
+  <script>
+    const commands = [
+      'sudo groupadd sftpusers',
+      'sudo useradd -g sftpusers -s /sbin/nologin acme',
+      'sudo passwd acme',
+      'sudo mkdir -p /sftp/acme/uploads',
+      'sudo chown root:root /sftp/acme',
+      'sudo chmod 755 /sftp/acme',
+      'sudo chown acme:sftpusers /sftp/acme/uploads',
+      'sudo chmod 755 /sftp/acme/uploads',
+      'sudo nano /etc/ssh/sshd_config',
+      'sudo systemctl restart sshd'
+    ];
+  
+    const container = document.getElementById('commands-container');
+  
+    commands.forEach(cmd => {
+      const div = document.createElement('div');
+      div.className = 'cmd';
+      div.innerHTML = `
+        <code>${cmd}</code>
+        <span class="tooltip" onclick="navigator.clipboard.writeText('${cmd.replace(/'/g,"\\'")}')">
+          <svg class="copy-icon" viewBox="0 0 24 24">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+          </svg>
+          <span class="tiptext">Copy</span>
+        </span>
+      `;
+      container.appendChild(div);
+    });
+  </script>
+  
+{% endblock %}

@@ -187,6 +187,7 @@ class SFTPDropZone(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     sftp_parent_folder = models.CharField(max_length=50) #e.g. DMS001
     desc = models.CharField(max_length=200)
+    scope = models.TextField(max_length=1000)
 
     class Meta:
         verbose_name = "sFTP drop zone"
@@ -195,6 +196,14 @@ class SFTPDropZone(models.Model):
     def __str__(self):
         return f"{self.desc} ({self.account})"
 
+class SFTPDropZoneScopedTenant(models.Model):
+    sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE)
+    scoped_tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="scoped_tenants"
+    )
+    
 class AccountTableData(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)

@@ -52,9 +52,8 @@ INSTALLED_APPS = [
     'django_celery_results',
 
     "mptt",
-    "sandbox",
-
-
+    #"sandbox",
+    "vendor",
 ]
 
 MIDDLEWARE = [
@@ -201,3 +200,4 @@ SFTP_REMOTE_DIR = env('SFTP_REMOTE_DIR')
 
 LOCAL_MASTER_KEY = env('LOCAL_MASTER_KEY')
 
+LOGIN_URL = '/login'

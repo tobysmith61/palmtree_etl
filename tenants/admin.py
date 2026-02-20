@@ -13,13 +13,15 @@ from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
 from .forms import AccountTableDataForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
-from .models import AccountJob, SFTPDropZone, AccountTableData
+from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData
 
-from sandbox.models import TenantGroup, TenantGroupType
+#from sandbox.models import TenantGroup, TenantGroupType
 from canonical.models import TableData
 from .local_kms import generate_encrypted_dek
 
 import json
+
+
 
 register_extra_admin_urls(admin.site)
 
@@ -137,7 +139,7 @@ class UserAccountInline(admin.TabularInline):
 class SFTPDropZoneInline(AccountScopedInlineMixin, admin.TabularInline):
     model = SFTPDropZone
     extra = 1
-    fields = ('sftp_parent_folder', 'desc')
+    fields = ('sftp_parent_folder', 'desc', 'scope')
     show_change_link = True  # optional
     classes = ['collapse'] 
 
@@ -356,11 +358,15 @@ class TenantMappingAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+class SFTPDropZoneScopedTenantInline(admin.TabularInline):
+    model = SFTPDropZoneScopedTenant
+    extra = 1  # number of empty forms to show
+    autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
+
 @admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     list_display = ('account', 'sftp_parent_folder', 'desc')
-
-
+    inlines = [SFTPDropZoneScopedTenantInline]
 
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):

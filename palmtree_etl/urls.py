@@ -18,9 +18,5 @@ urlpatterns = [
     path('canonical/', include('canonical.urls')),
     path("contracts/", include("contracts.urls")),
     path("tenants/", include("tenants.urls")),
-    
-
-    
-    
-    #path('rawdataeditor/edit/<int:table_id>/', views.edit_table, name='edit_table'),
+    path("vendor/", include("vendor.urls")),
 ]
