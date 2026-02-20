@@ -16,17 +16,13 @@ jobs:
           echo "${{ secrets.PALMTREE_ETL_EC2_SSH_KEY_TEST }}" > key.pem
           chmod 600 key.pem
 
-          # Make SSH know the host key (trust EC2 host)
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-          # SSH and deploy
-          ssh -i key.pem ubuntu@35.178.99.172 "
+          # Use temporary known_hosts file
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@35.178.99.172 "
             cd /var/www/palmtree_etl &&
             git pull &&
             sudo systemctl restart palmtree_etl
           "
 
-          # Clean up
+          # Cleanup
           rm -f key.pem
+          
