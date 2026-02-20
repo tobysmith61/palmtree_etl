@@ -9,7 +9,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+        with:
+          submodules: recursive
+          ssh-strict: false
       - name: Deploy to EC2 Test Environment
         run: |
           # Write private key from secret
