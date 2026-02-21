@@ -20,9 +20,9 @@ django_celery_results==2.6.0
 dotenv==0.9.9
 invoke==2.2.1
 kombu==5.6.2
-numpy==2.2.6
+numpy==1.26.4
 packaging==26.0
-pandas==3.0.0
+pandas==2.3.3
 paramiko==4.0.0
 pillow==12.1.0
 prompt_toolkit==3.0.52
