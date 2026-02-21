@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # 1. Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup SSH key for EC2
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -20,13 +22,18 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 52.56.242.200 >> ~/.ssh/known_hosts
 
-      - name: Ensure system packages on EC2
+      # 3. Ensure system packages on EC2
+      - name: Install system dependencies on EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
             sudo apt update
-            sudo apt install -y python3.10 python3.10-venv python3-pip build-essential libpq-dev libffi-dev libssl-dev git
+            sudo apt install -y \
+              python3.10 python3.10-venv python3-pip \
+              python3-distutils build-essential \
+              libpq-dev libffi-dev libssl-dev git
           EOF
 
+      # 4. Deploy to EC2
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
@@ -37,21 +44,18 @@ jobs:
             echo "Pulling latest code..."
             git pull origin main
 
-            echo "Removing old virtualenv if it exists..."
+            echo "Removing old virtualenv..."
             rm -rf venv
 
-            echo "Creating new virtualenv with Python 3.10..."
+            echo "Creating new Python 3.10 virtualenv..."
             python3.10 -m venv --upgrade-deps venv
             source venv/bin/activate
 
-            echo "Upgrading pip, setuptools, wheel inside venv..."
+            echo "Upgrading pip, setuptools, wheel..."
             pip install --upgrade pip setuptools wheel
 
-            echo "Installing critical packages first..."
-            pip install numpy pandas psycopg2-binary
-
-            echo "Installing remaining dependencies..."
-            pip install -r requirements.txt --use-pep517
+            echo "Installing dependencies from requirements.txt..."
+            pip install -r requirements.txt
 
             echo "Running migrations..."
             python manage.py migrate --noinput
