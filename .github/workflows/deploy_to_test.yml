@@ -20,42 +20,36 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
 
-      - name: Ensure Python and build tools on EC2
+      - name: Ensure system dependencies on EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             sudo apt update
-            sudo apt install -y \
-              python3.12 python3.12-venv python3.12-dev \
-              build-essential libpq-dev libffi-dev libssl-dev git
+            sudo apt install -y python3.12 python3.12-venv python3-pip build-essential libpq-dev libffi-dev libssl-dev git
           EOF
 
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             set -e
-
             cd /home/ubuntu/palmtree_etl
 
             echo "Pulling latest code..."
             git pull origin main
 
-            # Recreate virtual environment every deploy
-            if [ -d "venv" ]; then
-              echo "Removing old virtualenv..."
-              rm -rf venv
-            fi
+            echo "Removing old virtualenv..."
+            rm -rf venv
 
-            echo "Creating virtualenv with Python 3.12..."
-            python3.12 -m venv venv
+            echo "Creating new virtualenv with upgraded dependencies..."
+            python3.12 -m venv --upgrade-deps venv
             source venv/bin/activate
 
-            echo "Upgrading pip, setuptools, wheel inside venv..."
+            echo "Upgrading pip, setuptools, wheel..."
             pip install --upgrade pip setuptools wheel
 
             echo "Installing critical packages first..."
-            pip install --upgrade numpy pandas psycopg2-binary
+            pip install numpy pandas psycopg2-binary
 
-            echo "Installing remaining dependencies..."
+            echo "Installing remaining requirements..."
             pip install -r requirements.txt
 
             echo "Running Django migrations..."
@@ -64,7 +58,7 @@ jobs:
             echo "Collecting static files..."
             python manage.py collectstatic --noinput
 
-            echo "Restarting Gunicorn..."
+            echo "Restarting gunicorn..."
             sudo systemctl restart gunicorn
 
             echo "Deployment complete."
