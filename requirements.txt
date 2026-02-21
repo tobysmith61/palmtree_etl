@@ -28,7 +28,7 @@ ipaddress==1.0.23
 jdcal==1.4.1
 jsonschema==3.2.0
 mysql-connector-python==8.0.33
-numpy==2.4.2
+numpy==1.26.4
 odfpy==1.4.1
 openpyxl==2.6.4
 pandas==0.24.2
