@@ -1,52 +1,49 @@
-name: Deploy PalmTree ETL to Test EC2
+name: Deploy to EC2
 
 on:
-  workflow_dispatch:       # manual trigger
   push:
     branches:
-      - main              # optional: auto deploy on push to main
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # 1️⃣ Add GitHub host key for SSH (needed if SSH repo/submodules)
-      - name: Add GitHub to known_hosts
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
+          echo "${{ secrets.EC2_SSH_GITHUB }}" > ~/.ssh/githubactions
+          chmod 600 ~/.ssh/githubactions
+          ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
 
-      # 2️⃣ Checkout the repo
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      # 3️⃣ Set up SSH key and deploy
-      - name: Deploy to EC2 Test Environment
+      - name: Deploy to EC2
         run: |
-          # Write private key from secret
-          echo "${{ secrets.PALMTREE_ETL_EC2_SSH_KEY_TEST }}" > key.pem
-          chmod 600 key.pem
-
-          # SSH into EC2 and deploy
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@35.178.99.172 "
+          ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             set -e
-            cd /var/www/palmtree_etl
-            git reset --hard origin/main
+
+            cd /home/ubuntu/app
+
+            echo "Pulling latest code..."
             git pull origin main
-            sudo systemctl restart palmtree_etl
-          "
 
-          # Clean up SSH key
-          rm -f key.pem
+            echo "Activating venv..."
+            source venv/bin/activate
 
-      # 4️⃣ Optional: show deployed commit
-      - name: Show deployed version
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@35.178.99.172 "
-            cd /var/www/palmtree_etl
-            git rev-parse HEAD
-          "
+            echo "Installing dependencies..."
+            pip install -r requirements.txt
+
+            echo "Running migrations..."
+            python manage.py migrate --noinput
+
+            echo "Collecting static files..."
+            python manage.py collectstatic --noinput
+
+            echo "Restarting gunicorn..."
+            sudo systemctl restart gunicorn
+
+            echo "Deployment complete."
+          EOF
