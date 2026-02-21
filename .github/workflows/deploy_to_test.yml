@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to EC2 Test
 
 on:
   push:
@@ -25,13 +25,19 @@ jobs:
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             set -e
 
-            cd /home/ubuntu/app
+            cd /home/ubuntu/palmtree_etl
 
             echo "Pulling latest code..."
             git pull origin main
 
-            echo "Activating venv..."
-            source venv/bin/activate
+            echo "Activating virtualenv..."
+            if [ -d "venv" ]; then
+              source venv/bin/activate
+            else
+              echo "Creating virtualenv..."
+              python3 -m venv venv
+              source venv/bin/activate
+            fi
 
             echo "Installing dependencies..."
             pip install -r requirements.txt
