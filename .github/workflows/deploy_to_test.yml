@@ -20,6 +20,12 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
 
+      - name: Ensure venv dependencies on EC2
+        run: |
+          ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
+            sudo apt update
+            sudo apt install -y python3-venv python3-pip
+          EOF
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
