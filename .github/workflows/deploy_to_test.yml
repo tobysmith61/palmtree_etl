@@ -20,14 +20,17 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
 
-      - name: Ensure Python 3.12 and system build tools on EC2
+      - name: Ensure Python, setuptools, and build tools on EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             sudo apt update
             sudo apt install -y \
-              python3.12 python3.12-venv python3-pip python3-setuptools python3-wheel \
-              build-essential libpq-dev libffi-dev libssl-dev \
-              git
+              python3.12 python3.12-venv python3.12-dev python3-pip \
+              build-essential libpq-dev libffi-dev libssl-dev git
+
+            # Ensure ensurepip is available and setuptools installed
+            sudo python3.12 -m ensurepip
+            sudo python3.12 -m pip install --upgrade pip setuptools wheel
           EOF
 
       - name: Deploy to EC2
@@ -50,7 +53,7 @@ jobs:
             python3.12 -m venv venv
             source venv/bin/activate
 
-            echo "Upgrading pip, setuptools, wheel..."
+            echo "Upgrading pip, setuptools, wheel inside venv..."
             pip install --upgrade pip setuptools wheel
 
             echo "Installing critical packages first..."
