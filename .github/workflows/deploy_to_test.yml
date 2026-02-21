@@ -20,7 +20,7 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 35.178.99.172 >> ~/.ssh/known_hosts
 
-      - name: Ensure Python 3.12 venv deps on EC2
+      - name: Ensure Python 3.12 dependencies on EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@35.178.99.172 << 'EOF'
             sudo apt update
@@ -37,7 +37,7 @@ jobs:
             echo "Pulling latest code..."
             git pull origin main
 
-            # Create or activate venv with Python 3.12
+            # Create or activate virtualenv
             if [ -d "venv" ]; then
               source venv/bin/activate
             else
@@ -46,13 +46,14 @@ jobs:
               source venv/bin/activate
             fi
 
-            echo "Upgrading pip, setuptools, and wheel..."
-            pip install --upgrade pip setuptools wheel
+            echo "Upgrading pip, wheel, and setuptools..."
+            pip install --upgrade pip wheel
+            pip install --force-reinstall setuptools
 
-            echo "Installing Python packages compatible with Python 3.12..."
-            # Upgrade numpy and pandas to Python 3.12 compatible versions
+            echo "Installing critical Python packages first..."
             pip install --upgrade numpy pandas psycopg2-binary
-            # Install remaining dependencies
+
+            echo "Installing remaining requirements..."
             pip install -r requirements.txt
 
             echo "Running migrations..."
