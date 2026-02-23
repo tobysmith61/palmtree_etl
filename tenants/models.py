@@ -4,6 +4,11 @@ import uuid
 from django.conf import settings
 from canonical.models import Job, TableData
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
+
+import os
+import random
+import string
 
 class Marque(models.Model):
     name = models.CharField(max_length=30)
@@ -188,7 +193,64 @@ class SFTPDropZone(models.Model):
     sftp_parent_folder = models.CharField(max_length=50) #e.g. DMS001
     desc = models.CharField(max_length=200)
     scope = models.TextField(max_length=1000)
+    sftp_user = models.CharField(max_length=50, editable=False)
+    folder_path = models.CharField(max_length=200, editable=False)
 
+    # temporary password for display
+    _plaintext_password = None
+
+    def clean(self):
+        """
+        Model validation: check that account and folder name are provided
+        """
+        if not self.account:
+            raise ValidationError("Account cannot be empty.")
+        if not self.sftp_parent_folder:
+            raise ValidationError("SFTP parent folder cannot be empty.")
+
+        base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
+        if not base_path:
+            raise ValidationError("SFTP_BASE_PATH must be configured in settings.")
+        
+    def save(self, *args, **kwargs):
+        # Run validation
+        self.full_clean()
+
+        is_new = self._state.adding
+        if is_new:
+            # folder path
+            base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
+            folder_name = f"{self.account.short}_{self.sftp_parent_folder}"
+            self.folder_path = os.path.join(base_path, folder_name)
+
+            if not self.folder_path.strip():
+                raise ValidationError("Folder path cannot be empty.")
+
+            os.makedirs(self.folder_path, exist_ok=True)
+
+            # generate SFTP username & password
+            self.sftp_user = f"{self.account.short}_{self.sftp_parent_folder}".lower()
+            password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            self._plaintext_password = password  # only in memory
+
+        super().save(*args, **kwargs)
+
+    @property
+    def linux_command(self):
+        """
+        Returns the exact Linux command to create this SFTP user.
+        Admin can copy-paste it in terminal.
+        """
+        if not self._plaintext_password or not self.folder_path or not self.sftp_user:
+            return ""
+        return (
+            f"sudo useradd -d {self.folder_path} -m -p $(openssl passwd -6 '{self._plaintext_password}') "
+            f"{self.sftp_user}"
+        )
+
+    def __str__(self):
+        return f"{self.account.short} - {self.sftp_parent_folder}"
+    
     class Meta:
         verbose_name = "sFTP drop zone"
         verbose_name_plural = "sFTP drop zones"

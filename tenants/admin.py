@@ -160,7 +160,7 @@ class AccountAdmin(RedirectOnSaveAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        account_id = request.session.get("account_id")
+        account_id = request.session.get('account_id')
         if account_id:
             return qs.filter(**{f"id": account_id})
         return qs
@@ -191,8 +191,8 @@ class AccountAdmin(RedirectOnSaveAdmin):
         if not obj.pk:
             return "Save account to view structure"
 
-        tree_data = build_account_organisational_tree(obj)
-        tree_json = json.dumps(tree_data)
+        #tree_data = build_account_organisational_tree(obj)
+        tree_json = {}#json.dumps(tree_data)
 
         return format_html(
             """
@@ -298,7 +298,7 @@ class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         #filter sftp_drop_zone
         if db_field.name == "sftp_drop_zone":
-            account_id = request.session.get("account_id")
+            account_id = request.session.get('account_id')
 
             if account_id:
                 kwargs["queryset"] = SFTPDropZone.objects.filter(
@@ -309,7 +309,7 @@ class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 
         #filter tenant_mapping
         if db_field.name == "tenant_mapping":
-            account_id = request.session.get("account_id")
+            account_id = request.session.get('account_id')
 
             if account_id:
                 kwargs["queryset"] = TenantMapping.objects.filter(
@@ -328,7 +328,7 @@ class TenantMappingCodeInline(admin.TabularInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "mapped_tenant":
-            account_id = request.session.get("account_id")
+            account_id = request.session.get('account_id')
 
             if account_id:
                 kwargs["queryset"] = Tenant.objects.filter(
@@ -349,7 +349,7 @@ class TenantMappingAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Only restrict the tenant dropdown
         if db_field.name == "mapped_tenant":
-            account_id = request.session.get("account_id")
+            account_id = request.session.get('account_id')
             if account_id:
                 kwargs["queryset"] = Tenant.objects.filter(account_id=account_id)
             else:
@@ -364,9 +364,56 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
 @admin.register(SFTPDropZone)
-class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
-    list_display = ('account', 'sftp_parent_folder', 'desc')
+class SFTPDropZoneAdmin(admin.ModelAdmin):
+    readonly_fields = ('sftp_user', 'folder_path', 'linux_command')
+    list_display = ('account', 'sftp_parent_folder', 'sftp_user', 'folder_path')
     inlines = [SFTPDropZoneScopedTenantInline]
+
+    # Prevent editing existing rows
+    def has_change_permission(self, request, obj=None):
+        return obj is None
+
+    # Allow deletion
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    def get_queryset(self, request):
+        """
+        Filter SFTPDropZone by account stored in session.
+        """
+        qs = super().get_queryset(request)
+
+        account_id = request.session.get('account_id')
+        if account_id:
+            return qs.filter(account_id=account_id)
+        else:
+            # No account in session => no results
+            messages.warning(request, "No account selected in session; showing no SFTP zones.")
+            return qs.none()
+
+    # Override save_model to show detailed messages
+    def save_model(self, request, obj, form, change):
+        is_new = obj._state.adding
+
+        try:
+            super().save_model(request, obj, form, change)
+
+            if is_new:
+                # Compose detailed message
+                message = (
+                    f"SFTP Drop Zone created successfully!\n"
+                    f"Folder path: {obj.folder_path}\n"
+                    f"SFTP username: {obj.sftp_user}\n"
+                    f"One-time password: {obj._plaintext_password}\n\n"
+                    f"Run this Linux command to create the SFTP user:\n{obj.linux_command}"
+                )
+                # Show message in Django admin
+                messages.success(request, message)
+            else:
+                messages.info(request, "SFTP Drop Zone updated (read-only fields cannot be changed).")
+
+        except Exception as e:
+            messages.error(request, f"Error creating SFTP Drop Zone: {e}")
 
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
