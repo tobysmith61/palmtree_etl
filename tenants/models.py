@@ -203,19 +203,19 @@ class SFTPDropZone(models.Model):
         is_new = self._state.adding
 
         if is_new:
-            # Ensure zone_folder is filled
+            # Validate required input fields first
             if not (self.zone_folder or "").strip():
                 raise ValidationError("Zone folder cannot be empty.")
 
-            # Generate folder path BEFORE full_clean
+            # Populate derived fields BEFORE full_clean()
             base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
             self.folder_path = f"{base_path}/{self.account.short.lower()}/{self.zone_folder}/drop"
-
-            # Generate SFTP user
             self.sftp_user = f"{self.account.short}_{self.zone_folder}".lower()
 
-        # Now run validation
+        # Now run model validation
         self.full_clean()
+
+        # Finally, save
         super().save(*args, **kwargs)
         
 class SFTPDropZoneScopedTenant(models.Model):
