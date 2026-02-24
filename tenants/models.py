@@ -204,22 +204,19 @@ class SFTPDropZone(models.Model):
         is_new = self._state.adding
 
         if is_new:
+            # Ensure zone_folder is filled
             if not (self.zone_folder or "").strip():
-                raise ValidationError("Folder path cannot be empty.")
+                raise ValidationError("Zone folder cannot be empty.")
 
-            # Generate Linux commands
-            self.folder_path = f"/srv/sftp/{self.account.short.lower()}/{self.zone_folder}/drop"
-            create_folder_command = f"sudo mkdir -p {self.folder_path}"
-            ownership_command = f"sudo chown -R ubuntu:ubuntu /srv/sftp/{self.account.short.lower()}/{self.zone_folder}"
-            permissions_command = f"sudo chmod -R 750 /srv/sftp/{self.account.short.lower()}/{self.zone_folder}"
+            # Generate folder path automatically
+            base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
+            self.folder_path = f"{base_path}/{self.account.short.lower()}/{self.zone_folder}/drop"
 
-            # Store SFTP credentials
+            # You can also create the folder on the server here
+            # os.makedirs(self.folder_path, exist_ok=True)
+
+            # Generate SFTP user
             self.sftp_user = f"{self.account.short}_{self.zone_folder}".lower()
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-            self._plaintext_password = password
-
-            # Store the commands for display
-            self._linux_commands = [create_folder_command, ownership_command, permissions_command]
 
         super().save(*args, **kwargs)
         
