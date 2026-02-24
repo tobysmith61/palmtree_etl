@@ -22,7 +22,6 @@ from .local_kms import generate_encrypted_dek
 import json
 
 
-
 register_extra_admin_urls(admin.site)
 
 User = get_user_model()
@@ -139,7 +138,7 @@ class UserAccountInline(admin.TabularInline):
 class SFTPDropZoneInline(AccountScopedInlineMixin, admin.TabularInline):
     model = SFTPDropZone
     extra = 1
-    fields = ('sftp_parent_folder', 'desc', 'scope')
+    fields = ('zone_folder', 'desc', 'scope')
     show_change_link = True  # optional
     classes = ['collapse'] 
 
@@ -363,57 +362,20 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     extra = 1  # number of empty forms to show
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
-@admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(admin.ModelAdmin):
-    readonly_fields = ('sftp_user', 'folder_path', 'linux_command')
-    list_display = ('account', 'sftp_parent_folder', 'sftp_user', 'folder_path')
-    inlines = [SFTPDropZoneScopedTenantInline]
+    list_display = ("desc", "account", "zone_folder", "sftp_user", "folder_path")
 
-    # Prevent editing existing rows
-    def has_change_permission(self, request, obj=None):
-        return obj is None
-
-    # Allow deletion
-    def has_delete_permission(self, request, obj=None):
-        return True
-
-    def get_queryset(self, request):
-        """
-        Filter SFTPDropZone by account stored in session.
-        """
-        qs = super().get_queryset(request)
-
-        account_id = request.session.get('account_id')
-        if account_id:
-            return qs.filter(account_id=account_id)
-        else:
-            # No account in session => no results
-            messages.warning(request, "No account selected in session; showing no SFTP zones.")
-            return qs.none()
-
-    # Override save_model to show detailed messages
     def save_model(self, request, obj, form, change):
-        is_new = obj._state.adding
+        super().save_model(request, obj, form, change)
 
-        try:
-            super().save_model(request, obj, form, change)
+        # Only show commands for new objects
+        if getattr(obj, "_linux_commands", None):
+            msg = "Linux commands to create this drop location:\n" + "\n".join(obj._linux_commands)
+            if obj._plaintext_password:
+                msg += f"\nTemporary password for {obj.sftp_user}: {obj._plaintext_password}"
+            messages.info(request, msg)
 
-            if is_new:
-                # Compose detailed message
-                message = (
-                    f"SFTP Drop Zone created successfully!\n"
-                    f"Folder path: {obj.folder_path}\n"
-                    f"SFTP username: {obj.sftp_user}\n"
-                    f"One-time password: {obj._plaintext_password}\n\n"
-                    f"Run this Linux command to create the SFTP user:\n{obj.linux_command}"
-                )
-                # Show message in Django admin
-                messages.success(request, message)
-            else:
-                messages.info(request, "SFTP Drop Zone updated (read-only fields cannot be changed).")
-
-        except Exception as e:
-            messages.error(request, f"Error creating SFTP Drop Zone: {e}")
+admin.site.register(SFTPDropZone, SFTPDropZoneAdmin)
 
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
