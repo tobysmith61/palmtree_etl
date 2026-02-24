@@ -205,8 +205,8 @@ class SFTPDropZone(models.Model):
 
         if is_new:
             # Ensure zone_folder is filled
-            if not (self.zone_folder or "").strip():
-                raise ValidationError("Zone folder cannot be empty.")
+            # if not (self.zone_folder or "").strip():
+            #     raise ValidationError("Zone folder cannot be empty.")
 
             # Generate folder path automatically
             base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
