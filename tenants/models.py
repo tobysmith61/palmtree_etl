@@ -204,7 +204,7 @@ class SFTPDropZone(models.Model):
         is_new = self._state.adding
 
         if is_new:
-            if not self.zone_folder.strip():
+            if not (self.zone_folder or "").strip():
                 raise ValidationError("Folder path cannot be empty.")
 
             # Generate Linux commands
