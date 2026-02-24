@@ -25,12 +25,13 @@ jobs:
       # 3. Ensure system packages on EC2
       - name: Install system dependencies on EC2
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
-            sudo apt update
-            sudo apt install -y \
-              python3.10 python3.10-venv python3-pip \
-              python3-distutils build-essential \
-              libpq-dev libffi-dev libssl-dev git
+          sudo apt update
+          sudo apt install -y \
+            python3.10 python3.10-venv python3-pip \
+            python3-distutils build-essential \
+            libpq-dev libffi-dev libssl-dev git
           EOF
 
       # 4. Deploy to EC2
