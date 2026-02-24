@@ -30,6 +30,7 @@ SECRET_KEY = 'django-insecure-(@gg-007zxuwbwb8#klttm3fnai0&0&l!_$a@jh7aif5b!js)@
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    "127.0.0.1",
     "palmtree-test.bitsprout.co.uk",
 ]
 CSRF_TRUSTED_ORIGINS = [
