@@ -197,22 +197,6 @@ class SFTPDropZone(models.Model):
     sftp_user = models.CharField(max_length=50, editable=False)
     folder_path = models.CharField(max_length=200, editable=False)
 
-    _plaintext_password = None
-
-    def save(self, *args, **kwargs):
-        is_new = self._state.adding
-        if is_new:
-            # Populate derived fields BEFORE full_clean()
-            base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
-            self.folder_path = f"{base_path}/{self.account.short.lower()}/{self.zone_folder}/drop"
-            self.sftp_user = f"{self.account.short}_{self.zone_folder}".lower()
-
-        # Now validate the model
-        self.full_clean()
-
-        # Save to DB
-        super().save(*args, **kwargs)
-        
 class SFTPDropZoneScopedTenant(models.Model):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE)
     scoped_tenant = models.ForeignKey(

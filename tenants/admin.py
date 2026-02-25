@@ -14,8 +14,8 @@ from .forms import AccountTableDataForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
 from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData
+from .services.sftp import provision_sftp
 
-#from sandbox.models import TenantGroup, TenantGroupType
 from canonical.models import TableData
 from .local_kms import generate_encrypted_dek
 
@@ -362,20 +362,17 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     extra = 1  # number of empty forms to show
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
+@admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(admin.ModelAdmin):
-    list_display = ("desc", "account", "zone_folder", "sftp_user", "folder_path")
-
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
+        if "_create_sftp" in request.POST:
+            username, password = provision_sftp(obj)
+            messages.success(
+                request,
+                f"SFTP created.\nUsername: {username}\nPassword: {password}"
+            )
 
-        # Only show commands for new objects
-        if getattr(obj, "_linux_commands", None):
-            msg = "Linux commands to create this drop location:\n" + "\n".join(obj._linux_commands)
-            if obj._plaintext_password:
-                msg += f"\nTemporary password for {obj.sftp_user}: {obj._plaintext_password}"
-            messages.info(request, msg)
-
-admin.site.register(SFTPDropZone, SFTPDropZoneAdmin)
 
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
