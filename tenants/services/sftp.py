@@ -12,8 +12,8 @@ def provision_sftp(dropzone):
 
     os.makedirs(folder_path, exist_ok=True)
 
-    subprocess.run(["sudo", "useradd", "-m", "-d", folder_path, "-s", "/usr/sbin/nologin", username])
-    subprocess.run(["sudo", "chpasswd"], input=f"{username}:{password}".encode())
+    subprocess.run(["sudo", "useradd", "-m", "-d", folder_path, "-s", "/usr/sbin/nologin", username], check=True)
+    subprocess.run(["sudo", "chpasswd"], input=f"{username}:{password}".encode(), check=True)
 
     dropzone.folder_path = folder_path
     dropzone.sftp_user = username

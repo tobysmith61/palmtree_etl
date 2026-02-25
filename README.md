@@ -21,3 +21,7 @@ celery -A palmtree_etl worker -l info
 
 FOLDER WATCHER (on separate terminal)
 python manage.py watch_incoming
+
+CREATE SFTP DROP FOLDER
+sudo mkdir -p /srv/sftp_drops
+sudo chown -R ubuntu:ubuntu /srv/sftp_drops
