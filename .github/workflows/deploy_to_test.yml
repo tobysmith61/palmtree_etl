@@ -39,7 +39,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
             set -e
-
             cd /home/ubuntu/palmtree_etl
 
             echo "Pulling latest code..."
@@ -64,8 +63,9 @@ jobs:
             echo "Collecting static files..."
             python manage.py collectstatic --noinput
 
-            echo "Restarting gunicorn..."
-            sudo systemctl restart palmtree.service
+            echo "Restarting palmtree service..."
+            sudo systemctl --no-pager --full restart palmtree.service
+            sudo systemctl --no-pager --full status palmtree.service | tail -n 20
 
             echo "Deployment complete."
           EOF
