@@ -192,11 +192,14 @@ class TenantMappingCode(models.Model):
 class SFTPDropZone(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     zone_folder = models.CharField(max_length=50)  # e.g. DMS001
-    desc = models.CharField(max_length=200)
-    scope = models.TextField(max_length=1000)
+    desc = models.CharField(max_length=200, blank=True, null=True)
+    scope = models.TextField(max_length=1000, blank=True, null=True)
     sftp_user = models.CharField(max_length=50, editable=False)
     folder_path = models.CharField(max_length=200, editable=False)
 
+    def __str__(self):
+        return self.zone_folder
+    
 class SFTPDropZoneScopedTenant(models.Model):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE)
     scoped_tenant = models.ForeignKey(

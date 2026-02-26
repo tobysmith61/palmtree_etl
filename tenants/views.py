@@ -1,34 +1,33 @@
-# canonical/views.py
-
-# Standard library
-from uuid import UUID
 
 # Django
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import login, logout, get_user_model
+from django.contrib import messages
+from django.http import HttpResponse, JsonResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
-from django.contrib.auth import login, logout, get_user_model
 from django.conf import settings
-from django.http import Http404
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.utils.timezone import make_aware
 
 # Local app
-from .models import Account, Tenant, UserAccount, AccountTableData, AccountJob
+from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone
 from .forms import TenantForm, SFTPUploadForm
 from .utils import get_current_tenant
 
 from canonical.widgets import ExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import run_etl_preview
-from canonical.models import Job, FieldMapping
+from canonical.models import Job
 
 import paramiko
-from django.contrib import messages
-
+import os
+import datetime
+from uuid import UUID
 
 def select_tenant(request):
     user = request.user
@@ -278,3 +277,31 @@ def upload_to_sftp(file_obj, remote_path):
 
     sftp.close()
     transport.close()
+
+
+@staff_member_required
+def dropzone_files_api(request, pk):
+    dropzone = get_object_or_404(SFTPDropZone, pk=pk)
+    folder = dropzone.folder_path
+
+    files = []
+
+    try:
+        for f in os.listdir(folder):
+            full_path = os.path.join(folder, f)
+            if os.path.isfile(full_path):
+                stat = os.stat(full_path)
+                files.append({
+                    "name": f,
+                    "size": stat.st_size,
+                    "modified": make_aware(
+                        datetime.datetime.fromtimestamp(stat.st_mtime)
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                })
+    except FileNotFoundError:
+        pass
+
+    # newest first
+    files.sort(key=lambda x: x["modified"], reverse=True)
+
+    return JsonResponse({"files": files})

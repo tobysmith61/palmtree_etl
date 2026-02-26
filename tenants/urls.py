@@ -2,7 +2,7 @@ from django.urls import path
 from .views import whoami
 from .views import TenantListView, TenantCreateView, TenantUpdateView
 from .views import select_tenant, dev_login_as, no_tenant, custom_logout, admin_account_switch
-from .views import sftp_drop_dashboard_view
+from .views import sftp_drop_dashboard_view, dropzone_files_api
 from . import views
 
 app_name = "tenants"
@@ -23,5 +23,5 @@ urlpatterns = [
     path('accountjobpreview/<int:pk>/', views.accountjob_preview, name='accountjob_preview'),
 
     path('sftp-drop-dashboard/', sftp_drop_dashboard_view, name='sftp-drop-dashboard'),
-
+    path('admin/dropzone-files/<int:pk>/', dropzone_files_api, name='dropzone_files_api'),
 ]

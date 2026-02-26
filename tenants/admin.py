@@ -19,8 +19,6 @@ from .services.sftp import provision_sftp
 from canonical.models import TableData
 from .local_kms import generate_encrypted_dek
 
-import json
-
 
 register_extra_admin_urls(admin.site)
 
@@ -364,6 +362,9 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
 
 @admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(admin.ModelAdmin):
+    readonly_fields = ('sftp_user', 'folder_path')
+    fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path')
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if "_create_sftp" in request.POST:
