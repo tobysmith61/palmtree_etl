@@ -1,6 +1,7 @@
 import os
 from celery import Celery
 from celery.schedules import crontab
+import tenants.tasks
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "palmtree_etl.settings")
 
