@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. Checkout the code
+      # 1️⃣ Checkout repository (required by GitHub Actions)
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup SSH key for EC2
+      # 2️⃣ Setup SSH access to EC2
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -22,50 +22,50 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 52.56.242.200 >> ~/.ssh/known_hosts
 
-      # 3. Ensure system packages on EC2
-      - name: Install system dependencies on EC2
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
-          sudo apt update
-          sudo apt install -y \
-            python3.10 python3.10-venv python3-pip \
-            python3-distutils build-essential \
-            libpq-dev libffi-dev libssl-dev git
-          EOF
-
-      # 4. Deploy to EC2
+      # 3️⃣ Deploy application
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
             set -e
-            cd /home/ubuntu/palmtree_etl
 
-            echo "Pulling latest code..."
-            git pull origin main
+            APP_DIR=/home/ubuntu/palmtree_etl
+            VENV_DIR=$APP_DIR/venv
 
-            echo "Removing old virtualenv..."
-            rm -rf venv
+            echo "---- Starting deployment ----"
 
-            echo "Creating new Python 3.10 virtualenv..."
-            python3.10 -m venv --upgrade-deps venv
-            source venv/bin/activate
+            cd $APP_DIR
 
-            echo "Upgrading pip, setuptools, wheel..."
-            pip install --upgrade pip setuptools wheel
+            echo "Fetching latest code..."
+            git fetch origin
+            git reset --hard origin/main
 
-            echo "Installing dependencies from requirements.txt..."
+            echo "Checking Python version..."
+            python3.10 --version
+
+            echo "Ensuring virtual environment exists..."
+            if [ ! -d "$VENV_DIR" ]; then
+                python3.10 -m venv $VENV_DIR
+            fi
+
+            source $VENV_DIR/bin/activate
+
+            echo "Upgrading pip..."
+            pip install --upgrade pip
+
+            echo "Installing dependencies..."
             pip install -r requirements.txt
 
             echo "Running migrations..."
-            python manage.py migrate --noinput --database=migrate
+            python manage.py migrate --noinput
 
             echo "Collecting static files..."
             python manage.py collectstatic --noinput
 
-            echo "Restarting palmtree service..."
-            sudo systemctl --no-pager --full restart palmtree.service
+            echo "Restarting palmtree.service..."
+            sudo systemctl restart palmtree.service
+
+            echo "Verifying service status..."
             sudo systemctl --no-pager --full status palmtree.service | tail -n 20
 
-            echo "Deployment complete."
+            echo "---- Deployment complete ----"
           EOF
