@@ -363,7 +363,7 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
 @admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(admin.ModelAdmin):
     readonly_fields = ('sftp_user', 'folder_path')
-    fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path')
+    fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path', 'retention_period_days')
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
