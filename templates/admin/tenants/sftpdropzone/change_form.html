@@ -57,8 +57,17 @@
                 return;
             }
 
+            function getRowColor(filePath) {
+                if (filePath.includes('/drop/')) return 'black';
+                if (filePath.includes('/ready/')) return 'orange';
+                if (filePath.includes('/processed/')) return 'green';
+                if (filePath.includes('/failed/')) return 'red';
+                return 'black'; // default
+            }
+            
             data.files.forEach(file => {
                 const row = document.createElement("tr");
+                row.style.color = getRowColor(file.path);  // <-- this sets the text color
 
                 row.innerHTML = `
                     <td>${file.path}</td>
@@ -74,6 +83,8 @@
                 "<tr><td colspan='3'>Error loading files</td></tr>";
         }
     }
+
+    
 
     loadFiles();
     setInterval(loadFiles, 5000);
