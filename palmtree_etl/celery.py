@@ -12,6 +12,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "promote_dropzone_files_every_minute": {
         "task": "tenants.tasks.promote_dropzone_files",
-        "schedule": crontab(minute="*"),
+        "schedule": 5.0,  # run every 5 seconds
     },
 }

@@ -71,5 +71,9 @@ jobs:
             sudo systemctl --no-pager --full restart celery.service
             sudo systemctl --no-pager --full status celery.service | tail -n 20
 
+            echo "Restarting celery beat..."
+            sudo systemctl restart celery-beat.service
+            sudo systemctl --no-pager --full status celery-beat.service | tail -n 20
+
             echo "Deployment complete."
           EOF
