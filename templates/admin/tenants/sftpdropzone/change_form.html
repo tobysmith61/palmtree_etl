@@ -21,9 +21,10 @@
     <table style="width:100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="text-align:left;">Folder / File</th>
-                <th style="text-align:left;">Size</th>
-                <th style="text-align:left;">Last Modified</th>
+                <th style="text-align:left;">Drop</th>
+                <th style="text-align:left;">Ready</th>
+                <th style="text-align:left;">Processed</th>
+                <th style="text-align:left;">Failed</th>
             </tr>
         </thead>
         <tbody id="dropzone-file-list">
@@ -33,62 +34,75 @@
 </div>
 
 <script>
-(function() {
-    const apiUrl = "{% url 'tenants:dropzone_files_api' original.pk %}";
-    const tableBody = document.getElementById("dropzone-file-list");
-
-    function formatSize(bytes) {
-        if (bytes < 1024) return bytes + " B";
-        if (bytes < 1024 * 1024)
-            return (bytes / 1024).toFixed(1) + " KB";
-        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-    }
-
-    async function loadFiles() {
-        try {
-            const response = await fetch(apiUrl);
-            const data = await response.json();
-
-            tableBody.innerHTML = "";
-
-            if (!data.files || data.files.length === 0) {
-                tableBody.innerHTML =
-                    "<tr><td colspan='3'>No files found</td></tr>";
-                return;
-            }
-
-            function getRowColor(filePath) {
-                if (filePath.startsWith('drop/')) return 'black';
-                if (filePath.startsWith('ready/')) return 'orange';
-                if (filePath.startsWith('processed/')) return 'green';
-                if (filePath.startsWith('failed/')) return 'red';
-                return 'black'; // default
-            }
-            
-            data.files.forEach(file => {
-                const row = document.createElement("tr");
-                const color = getRowColor(file.path);
-
-                row.innerHTML = `
-                    <td style="color: ${color} !important;">${file.path}</td>
-                    <td style="color: ${color} !important;">${formatSize(file.size)}</td>
-                    <td style="color: ${color} !important;">${file.modified}</td>
-                `;
-
-                tableBody.appendChild(row);
-            });
-
-        } catch (err) {
-            tableBody.innerHTML =
-                "<tr><td colspan='3'>Error loading files</td></tr>";
-        }
-    }
-
+    (function() {
+        const apiUrl = "{% url 'tenants:dropzone_files_api' original.pk %}";
+        const tableBody = document.getElementById("dropzone-file-list");
     
-
-    loadFiles();
-    setInterval(loadFiles, 5000);
-})();
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + " B";
+            if (bytes < 1024 * 1024)
+                return (bytes / 1024).toFixed(1) + " KB";
+            return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+        }
+    
+        async function loadFiles() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+    
+                tableBody.innerHTML = "";
+    
+                if (!data.files || data.files.length === 0) {
+                    tableBody.innerHTML =
+                        "<tr><td colspan='4'>No files found</td></tr>";
+                    return;
+                }
+    
+                // Initialize 4 arrays for each folder type
+                const dropFiles = [];
+                const readyFiles = [];
+                const processedFiles = [];
+                const failedFiles = [];
+    
+                data.files.forEach(file => {
+                    if (file.path.startsWith('drop/')) dropFiles.push(file);
+                    else if (file.path.startsWith('ready/')) readyFiles.push(file);
+                    else if (file.path.startsWith('processed/')) processedFiles.push(file);
+                    else if (file.path.startsWith('failed/')) failedFiles.push(file);
+                });
+    
+                // Determine max number of rows needed
+                const maxRows = Math.max(dropFiles.length, readyFiles.length, processedFiles.length, failedFiles.length);
+    
+                for (let i = 0; i < maxRows; i++) {
+                    const row = document.createElement("tr");
+    
+                    function cellContent(fileArray, index, color) {
+                        if (fileArray[index]) {
+                            return `<td style="color: ${color} !important;">${fileArray[index].path}</td>`;
+                        }
+                        return "<td></td>"; // empty cell if no file
+                    }
+    
+                    row.innerHTML = `
+                        ${cellContent(dropFiles, i, 'black')}
+                        ${cellContent(readyFiles, i, 'orange')}
+                        ${cellContent(processedFiles, i, 'green')}
+                        ${cellContent(failedFiles, i, 'red')}
+                    `;
+    
+                    tableBody.appendChild(row);
+                }
+    
+            } catch (err) {
+                tableBody.innerHTML =
+                    "<tr><td colspan='4'>Error loading files</td></tr>";
+            }
+        }
+    
+        loadFiles();
+        setInterval(loadFiles, 5000);
+    })();
 </script>
 
 {% endif %}
