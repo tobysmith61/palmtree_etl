@@ -13,6 +13,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "promote_dropzone_files_every_minute": {
         "task": "tenants.tasks.promote_dropzone_files",
-        "schedule": 5.0,  # run every 5 seconds
+        "schedule": 60.0,  # run every minute
     },
 }
