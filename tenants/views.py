@@ -282,26 +282,34 @@ def upload_to_sftp(file_obj, remote_path):
 @staff_member_required
 def dropzone_files_api(request, pk):
     dropzone = get_object_or_404(SFTPDropZone, pk=pk)
-    folder = dropzone.folder_path
+
+    # If folder_path ends in /drop, go to parent
+    base_folder = os.path.dirname(dropzone.folder_path)
 
     files = []
 
     try:
-        for f in os.listdir(folder):
-            full_path = os.path.join(folder, f)
-            if os.path.isfile(full_path):
-                stat = os.stat(full_path)
-                files.append({
-                    "name": f,
-                    "size": stat.st_size,
-                    "modified": make_aware(
-                        datetime.datetime.fromtimestamp(stat.st_mtime)
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                })
+        for root, dirs, filenames in os.walk(base_folder):
+            for f in filenames:
+                full_path = os.path.join(root, f)
+
+                if os.path.isfile(full_path):
+                    stat = os.stat(full_path)
+
+                    relative_path = os.path.relpath(full_path, base_folder)
+
+                    files.append({
+                        "name": f,
+                        "path": relative_path,  # includes drop/ready/etc
+                        "size": stat.st_size,
+                        "modified": make_aware(
+                            datetime.datetime.fromtimestamp(stat.st_mtime)
+                        ).strftime("%Y-%m-%d %H:%M:%S"),
+                    })
+
     except FileNotFoundError:
         pass
 
-    # newest first
     files.sort(key=lambda x: x["modified"], reverse=True)
 
     return JsonResponse({"files": files})

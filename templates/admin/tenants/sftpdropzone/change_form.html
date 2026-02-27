@@ -21,7 +21,7 @@
     <table style="width:100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="text-align:left;">Name</th>
+                <th style="text-align:left;">Folder / File</th>
                 <th style="text-align:left;">Size</th>
                 <th style="text-align:left;">Last Modified</th>
             </tr>
@@ -61,7 +61,7 @@
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
-                    <td>${file.name}</td>
+                    <td>${file.path}</td>
                     <td>${formatSize(file.size)}</td>
                     <td>${file.modified}</td>
                 `;
