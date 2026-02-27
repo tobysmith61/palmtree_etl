@@ -39,36 +39,32 @@ jobs:
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@52.56.242.200 << 'EOF'
             set -e
-
             cd /home/ubuntu/palmtree_etl
 
             echo "Pulling latest code..."
-            git fetch origin
-            git reset --hard origin/main
+            git pull origin main
 
-            echo "Ensuring virtualenv exists..."
-            if [ ! -d "venv" ]; then
-                python3.10 -m venv venv
-            fi
+            echo "Removing old virtualenv..."
+            rm -rf venv
 
+            echo "Creating new Python 3.10 virtualenv..."
+            python3.10 -m venv --upgrade-deps venv
             source venv/bin/activate
 
-            echo "Upgrading pip..."
-            pip install --upgrade pip
+            echo "Upgrading pip, setuptools, wheel..."
+            pip install --upgrade pip setuptools wheel
 
-            echo "Installing dependencies..."
+            echo "Installing dependencies from requirements.txt..."
             pip install -r requirements.txt
 
             echo "Running migrations..."
-            python manage.py migrate --noinput
+            python manage.py migrate --noinput --database=migrate
 
-            echo "Collecting static..."
+            echo "Collecting static files..."
             python manage.py collectstatic --noinput
 
-            echo "Restarting palmtree.service..."
-            sudo systemctl restart palmtree.service
-
-            echo "Checking service status..."
+            echo "Restarting palmtree service..."
+            sudo systemctl --no-pager --full restart palmtree.service
             sudo systemctl --no-pager --full status palmtree.service | tail -n 20
 
             echo "Deployment complete."
