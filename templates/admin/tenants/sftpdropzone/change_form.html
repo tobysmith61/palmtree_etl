@@ -58,10 +58,10 @@
             }
 
             function getRowColor(filePath) {
-                if (filePath.includes('/drop/')) return 'black';
-                if (filePath.includes('/ready/')) return 'orange';
-                if (filePath.includes('/processed/')) return 'green';
-                if (filePath.includes('/failed/')) return 'red';
+                if (filePath.startsWith('drop/')) return 'black';
+                if (filePath.startsWith('ready/')) return 'orange';
+                if (filePath.startsWith('processed/')) return 'green';
+                if (filePath.startsWith('failed/')) return 'red';
                 return 'black'; // default
             }
             
