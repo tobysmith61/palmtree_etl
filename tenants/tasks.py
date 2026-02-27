@@ -1,29 +1,13 @@
-# tenants/tasks.py
-from celery import shared_task
 from pathlib import Path
-from datetime import datetime, timedelta
-from django.utils import timezone
-from .models import SFTPDropZone
+import shutil
 
-@shared_task
+DROP_FOLDER = Path("/srv/sftp_drops/voltaris/777/drop")
+READY_FOLDER = Path("/srv/sftp_drops/voltaris/777/ready")  # <- correct
+
 def promote_dropzone_files():
-    """
-    Move files from drop -> ready for all SFTPDropZones.
-    """
-    for dz in SFTPDropZone.objects.all():
-        base = Path(dz.folder_path)
-        drop = base / "drop"
-        ready = base / "ready"
-        ready.mkdir(exist_ok=True)
-
-        # Move files atomically
-        for f in drop.iterdir():
-            if f.is_file() and not f.name.endswith(".tmp"):
-                target = ready / f.name
-                f.rename(target)
-
-        # Optional: remove old files in ready/ past retention
-        cutoff = timezone.now() - timedelta(days=dz.retention_period_days)
-        for f in ready.iterdir():
-            if f.is_file() and datetime.fromtimestamp(f.stat().st_mtime) < cutoff:
-                f.unlink()
+    READY_FOLDER.mkdir(exist_ok=True)  # ensure folder exists
+    for file_path in DROP_FOLDER.iterdir():
+        if file_path.is_file():
+            shutil.move(str(file_path), READY_FOLDER / file_path.name)
+            print(f"Moved {file_path.name} to ready")
+            
