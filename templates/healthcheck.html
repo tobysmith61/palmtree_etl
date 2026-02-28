@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Healthcheck Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Healthcheck Dashboard</h1>
+
+    <!-- Summary Banner -->
+    {% if status.celery_worker == 'running' and status.celery_beat == 'running' and status.database == 'ok' %}
+        <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-6 font-semibold flex items-center">
+            ✅ All systems nominal
+        </div>
+    {% else %}
+        <div class="bg-red-100 text-red-800 px-4 py-2 rounded mb-6 font-semibold flex items-center">
+            ❌ Some systems are down!
+        </div>
+    {% endif %}
+
+    <!-- Services Section -->
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-2">Services</h2>
+        <table class="min-w-full border border-gray-200 bg-white shadow-sm rounded">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left">Service</th>
+                    <th class="px-4 py-2 text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t">
+                    <td class="px-4 py-2">Celery Worker</td>
+                    <td class="px-4 py-2 {{ status.celery_worker_class }}">{{ status.celery_worker }}</td>
+                </tr>
+                <tr class="border-t">
+                    <td class="px-4 py-2">Celery Beat</td>
+                    <td class="px-4 py-2 {{ status.celery_beat_class }}">{{ status.celery_beat }}</td>
+                </tr>
+                <tr class="border-t">
+                    <td class="px-4 py-2">Database</td>
+                    <td class="px-4 py-2 {{ status.database_class }}">{{ status.database }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- System Resources Section -->
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-2">System Resources</h2>
+        <table class="min-w-full border border-gray-200 bg-white shadow-sm rounded">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left">Resource</th>
+                    <th class="px-4 py-2 text-left">Used / Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t">
+                    <td class="px-4 py-2">Disk (GB)</td>
+                    <td class="px-4 py-2">{{ status.disk.used_gb }} / {{ status.disk.total_gb }} (Free: {{ status.disk.free_gb }})</td>
+                </tr>
+                <tr class="border-t">
+                    <td class="px-4 py-2">Memory (MB)</td>
+                    <td class="px-4 py-2">{{ status.memory.used_mb }} / {{ status.memory.total_mb }} (Free: {{ status.memory.free_mb }})</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

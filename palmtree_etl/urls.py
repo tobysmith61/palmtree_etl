@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from tenants.views import home, custom_logout
+import palmtree_etl.views as views
 
 urlpatterns = [
     #path('', lambda request: redirect('/canonical/schema-overview/', permanent=True)),  #home
@@ -19,4 +20,5 @@ urlpatterns = [
     path("contracts/", include("contracts.urls")),
     path("tenants/", include("tenants.urls")),
     path("vendor/", include("vendor.urls")),
+    path("healthcheck/", views.healthcheck_page, name="healthcheck"),
 ]

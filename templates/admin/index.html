@@ -1,21 +1,26 @@
 {% extends "admin/index.html" %}
 
 {% block content %}
-  <div class="module">
-    <h2>DEVELOPER TOOLS</h2>
-    <ul>
-      <li>
-        <a href="{% url 'admin:tenants_simulate_testaccount' %}">
-          Simulate TestAccount
-        </a>
-      </li>
-      <li>
-        <a href="{% url 'vendor:create_sftp_account_instructions' %}">
-          Vendor sFTP account instructions page
-        </a>
-      </li>
-    </ul>
-  </div>
+    <div class="module">
+        <h2>DEVELOPER TOOLS</h2>
+        <ul>
+            <li>
+                <a href="{% url 'healthcheck' %}">
+                    Healthcheck Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin:tenants_simulate_testaccount' %}">
+                    Simulate TestAccount
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'vendor:create_sftp_account_instructions' %}">
+                    Vendor sFTP account instructions page
+                </a>
+            </li>
+        </ul>
+    </div>
 
-  {{ block.super }}
+{{ block.super }}
 {% endblock %}
