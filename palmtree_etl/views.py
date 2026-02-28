@@ -21,6 +21,16 @@ def is_process_running(name):
             continue
     return False
 
+def is_celery_beat_running():
+    for proc in psutil.process_iter(["cmdline"]):
+        try:
+            cmdline = proc.info.get("cmdline") or []
+            if "celery" in [c.lower() for c in cmdline] and "beat" in [c.lower() for c in cmdline]:
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return False
+
 def get_db_status():
     db_conn = connections["default"]
     try:
@@ -35,7 +45,7 @@ def healthcheck_page(request):
 
     # Services
     status["celery_worker"] = "running" if is_process_running("celery") else "stopped"
-    status["celery_beat"] = "running" if is_process_running("celery beat") else "stopped"
+    status["celery_beat"] = "running" if is_celery_beat_running() else "stopped"
     status["database"] = get_db_status()
 
     # Map CSS classes for template
