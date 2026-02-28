@@ -5,6 +5,8 @@ import shutil
 from celery import Celery
 from django.db import connections
 from django.db.utils import OperationalError
+import subprocess
+
 
 app = Celery("palmtree_etl")
 app.config_from_object("django.conf:settings", namespace="CELERY")
@@ -22,14 +24,11 @@ def is_process_running(name):
     return False
 
 def is_celery_beat_running():
-    for proc in psutil.process_iter(["cmdline"]):
-        try:
-            cmdline = proc.info.get("cmdline") or []
-            if "celery" in [c.lower() for c in cmdline] and "beat" in [c.lower() for c in cmdline]:
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            continue
-    return False
+    try:
+        output = subprocess.check_output(['pgrep', '-af', 'celery'], text=True)
+        return any('beat' in line for line in output.splitlines())
+    except subprocess.CalledProcessError:
+        return False
 
 def get_db_status():
     db_conn = connections["default"]
