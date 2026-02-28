@@ -361,7 +361,7 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
 @admin.register(SFTPDropZone)
-class SFTPDropZoneAdmin(admin.ModelAdmin):
+class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     readonly_fields = ('sftp_user', 'folder_path')
     fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path', 'retention_period_days')
 
