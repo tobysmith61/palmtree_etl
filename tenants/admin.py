@@ -315,6 +315,17 @@ class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
             else:
                 kwargs["queryset"] = TenantMapping.objects.none()
 
+        #filter account_table_data
+        if db_field.name == "account_table_data":
+            account_id = request.session.get('account_id')
+
+            if account_id:
+                kwargs["queryset"] = AccountTableData.objects.filter(
+                    account_id=account_id
+                )
+            else:
+                kwargs["queryset"] = AccountTableData.objects.none()
+
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class TenantMappingCodeInline(admin.TabularInline):
