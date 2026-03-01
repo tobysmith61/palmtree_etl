@@ -14,6 +14,9 @@ from pathlib import Path
 import sys
 import environ
 
+APP_VERSION = "0.104"
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
@@ -209,4 +212,10 @@ LOCAL_MASTER_KEY = env('LOCAL_MASTER_KEY')
 
 LOGIN_URL = '/login'
 
-APP_VERSION = "0.103"
+# UK date/time formatting
+USE_L10N = False  # ensures Django uses your format instead of locale
+USE_TZ = True
+
+DATETIME_FORMAT = 'd/m/Y H:i'  # 01/03/2026 13:04
+DATE_FORMAT = 'd/m/Y'
+TIME_FORMAT = 'H:i'

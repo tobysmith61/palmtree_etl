@@ -70,4 +70,19 @@ class SoftDeleteFKAdminMixin:
             # Only show non-deleted rows
             kwargs["queryset"] = related_model.objects.filter(deleted=False)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+class TimeStampedAdminMixin:
+    """
+    Adds created_at and updated_at to list_display for any TimeStampedModel
+    """
+    def get_readonly_fields(self, request, obj=None):
+        # Include parent readonly_fields
+        fields = list(super().get_readonly_fields(request, obj))
+        
+        if hasattr(self.model, 'created_at') and 'created_at' not in fields:
+            fields.append('created_at')
+        if hasattr(self.model, 'updated_at') and 'updated_at' not in fields:
+            fields.append('updated_at')
+        
+        return fields
     
