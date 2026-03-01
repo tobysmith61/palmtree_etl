@@ -1,7 +1,8 @@
 from django.db import models
+from core.models import CoreModel
 
 
-class Marque(models.Model):
+class Marque(CoreModel):
     name = models.CharField(max_length=30)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
 
@@ -13,7 +14,7 @@ class Marque(models.Model):
     def __str__(self):
         return self.name
     
-class Brand(models.Model):
+class Brand(CoreModel):
     marque = models.ForeignKey(Marque, on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 

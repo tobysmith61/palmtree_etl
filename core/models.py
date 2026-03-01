@@ -7,6 +7,16 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+class SoftDeleteModel(models.Model):
+    deleted = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+class CoreModel(TimeStampedModel, SoftDeleteModel):
+    class Meta:
+        abstract = True
+
 class Address(models.Model):
     address_line_1 = models.CharField(
         max_length=255,

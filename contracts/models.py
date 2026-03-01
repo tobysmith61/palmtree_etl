@@ -1,6 +1,6 @@
 from django.db import models
 from tenants.models import Tenant
-from core.models import TimeStampedModel
+from core.models import CoreModel
 
 OPT_IN_TRI_STATE_CHOICES = [
     ('true', 'True'),
@@ -9,7 +9,7 @@ OPT_IN_TRI_STATE_CHOICES = [
     ('missing', 'Missing'),          # source data didn’t provide it
 ]
 
-class Customer(TimeStampedModel):
+class Customer(CoreModel):
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,
@@ -158,7 +158,7 @@ class Customer(TimeStampedModel):
         return f"{self.external_customer_id} ({self.tenant})"
 
 
-class Vehicle(TimeStampedModel):
+class Vehicle(CoreModel):
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,

@@ -1,10 +1,11 @@
 from django.db import models
-from core.models import TimeStampedModel, Address
+from core.models import CoreModel, Address
 import uuid
 from django.conf import settings
 from canonical.models import Job, TableData
 from django.utils.timezone import now
 from global_data.models import Brand
+from core.models import CoreModel
 
 class Account(models.Model):
     name = models.CharField(max_length=255)
@@ -70,7 +71,7 @@ class Location(Address):
     def __str__(self):
         return self.short + ' / ' + self.postcode
 
-class Tenant(TimeStampedModel):
+class Tenant(CoreModel):
     account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.CASCADE)
     rls_key = models.UUIDField(
         primary_key=True, 
