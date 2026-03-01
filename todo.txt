@@ -41,3 +41,40 @@ space needed for 17 char VIN:
 base64_chars = ceil((P + 28) * 4 / 3)
 needs to be baked into models, e.g. 50 chars for address line 1 may be 78*4/3 = 104 ish
 
+review these models for natural keys rather than id based FKs
+=============================================================
+./value_mappings/models.py:3:class ValueMappingGroup(models.Model):
+./value_mappings/models.py:11:class ValueMapping(models.Model):
+./core/models.py:3:class TimeStampedModel(models.Model):
+./core/models.py:10:class SoftDeleteModel(models.Model):
+./core/models.py:16:class CoreModel(TimeStampedModel, SoftDeleteModel):
+./core/models.py:20:class Address(models.Model):
+./canonical/models.py:6:class CanonicalSchema(models.Model):
+./canonical/models.py:15:class SourceSchema(models.Model):
+./canonical/models.py:22:class FieldMapping(models.Model): # rename as it not longer maps! it is just a list of fields
+./canonical/models.py:63:class CanonicalField(models.Model):
+./canonical/models.py:143:class TableData(models.Model):
+./canonical/models.py:171:class Job(models.Model):
+./contracts/models.py:12:class Customer(CoreModel):
+./contracts/models.py:161:class Vehicle(CoreModel):
+./tenants/models.py:10:class Account(models.Model):
+./tenants/models.py:22:class AccountEncryption(models.Model):
+./tenants/models.py:35:class TenantGroupType(models.TextChoices):
+./tenants/models.py:59:class Location(Address):
+./tenants/models.py:74:class Tenant(CoreModel):
+./tenants/models.py:105:class UserAccount(models.Model):
+./tenants/models.py:115:class TenantMapping(models.Model):
+./tenants/models.py:142:class TenantMappingCode(models.Model):
+./tenants/models.py:163:class SFTPDropZone(models.Model):
+./tenants/models.py:178:class SFTPDropZoneScopedTenant(models.Model):
+./tenants/models.py:186:class AccountTableData(models.Model):
+./tenants/models.py:214:class AccountJob(models.Model):
+./tenants/models.py:224:class Role(models.Model):
+./global_data/models.py:5:class Marque(CoreModel):
+./global_data/models.py:17:class Brand(CoreModel):
+./sandbox/models.py:7:class TenantGroupType(models.TextChoices):
+./sandbox/models.py:38:class TenantGroup(MPTTModel):
+./sandbox/models.py:95:    class MPTTMeta:
+./file_ingestion/models.py:4:class IngestedFile(models.Model):
+
+implement loaddata and savedata for std data

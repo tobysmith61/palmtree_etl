@@ -25,3 +25,7 @@ python manage.py watch_incoming
 CREATE SFTP DROP FOLDER
 sudo mkdir -p /srv/sftp_drops
 sudo chown -R ubuntu:ubuntu /srv/sftp_drops
+
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO palmtree_app;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO palmtree_app;
