@@ -17,6 +17,10 @@ class CoreModel(TimeStampedModel, SoftDeleteModel):
     class Meta:
         abstract = True
 
+class FixtureControlledModel(models.Model):
+    class Meta:
+        abstract = True
+        
 class Address(models.Model):
     address_line_1 = models.CharField(
         max_length=255,

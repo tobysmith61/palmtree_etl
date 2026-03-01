@@ -1,0 +1,46 @@
+[
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.615Z",
+            "deleted": false,
+            "name": "Stellantis",
+            "short": "STELLANT",
+            "updated_at": "2026-03-01T13:04:45.624Z"
+        },
+        "model": "global_data.marque",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:24:22.510Z",
+            "deleted": true,
+            "name": "Monkey Marque",
+            "short": "MONKEY",
+            "updated_at": "2026-03-01T14:38:36.440Z"
+        },
+        "model": "global_data.marque",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.615Z",
+            "deleted": false,
+            "name": "BMW",
+            "short": "BMW",
+            "updated_at": "2026-03-01T20:44:52.211Z"
+        },
+        "model": "global_data.marque",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T20:45:20.410Z",
+            "deleted": true,
+            "name": "DELETE_ME",
+            "short": "DELETEME",
+            "updated_at": "2026-03-01T20:45:54.492Z"
+        },
+        "model": "global_data.marque",
+        "pk": 4
+    }
+]

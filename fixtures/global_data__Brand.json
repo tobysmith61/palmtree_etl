@@ -1,0 +1,74 @@
+[
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
+            "marque": 1,
+            "name": "Peugeot",
+            "short": "PEUGEOT",
+            "updated_at": "2026-03-01T13:04:45.612Z"
+        },
+        "model": "global_data.brand",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
+            "marque": 1,
+            "name": "Hyundai",
+            "short": "HYUNDAI",
+            "updated_at": "2026-03-01T13:04:45.612Z"
+        },
+        "model": "global_data.brand",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
+            "marque": 2,
+            "name": "BMW",
+            "short": "BMW",
+            "updated_at": "2026-03-01T13:04:45.612Z"
+        },
+        "model": "global_data.brand",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
+            "marque": 2,
+            "name": "BMWi",
+            "short": "BMWI",
+            "updated_at": "2026-03-01T13:04:45.612Z"
+        },
+        "model": "global_data.brand",
+        "pk": 5
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:24:24.331Z",
+            "deleted": true,
+            "marque": 3,
+            "name": "Monkey Brand",
+            "short": "MONKEY",
+            "updated_at": "2026-03-01T13:24:29.981Z"
+        },
+        "model": "global_data.brand",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
+            "marque": 1,
+            "name": "Fiat",
+            "short": "FIAT",
+            "updated_at": "2026-03-01T20:44:41.388Z"
+        },
+        "model": "global_data.brand",
+        "pk": 3
+    }
+]

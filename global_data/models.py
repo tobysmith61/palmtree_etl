@@ -1,8 +1,8 @@
 from django.db import models
-from core.models import CoreModel
+from core.models import CoreModel, FixtureControlledModel
 
 
-class Marque(CoreModel):
+class Marque(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=30)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
 
@@ -14,7 +14,7 @@ class Marque(CoreModel):
     def __str__(self):
         return self.name
     
-class Brand(CoreModel):
+class Brand(CoreModel, FixtureControlledModel):
     marque = models.ForeignKey(Marque, on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
