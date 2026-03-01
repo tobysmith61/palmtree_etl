@@ -4,14 +4,14 @@ from django.utils.html import format_html
 
 
 class SoftDeleteListFilter(admin.SimpleListFilter):
-    title = "Status"
+    title = "Active / Deleted Status"
     parameter_name = "status"
 
     def lookups(self, request, model_admin):
         return (
             ("active", "Active"),
-            ("deleted", "Deleted"),
-            ("all", "All"),
+            ("deleted", "Soft deleted"),
+            ("all", "All (Active & Soft deleted)"),
         )
 
     def queryset(self, request, queryset):
@@ -27,7 +27,6 @@ class SoftDeleteListFilter(admin.SimpleListFilter):
         return queryset.filter(deleted=False)
     
 class SoftDeleteAdminMixin:
-
     def get_list_display(self, request):
         lst = super().get_list_display(request)
         if hasattr(self.model, 'deleted') and 'deleted_display' not in lst:
@@ -58,3 +57,17 @@ class SoftDeleteAdminMixin:
 
     deleted_display.short_description = "Deleted"
     deleted_display.admin_order_field = "deleted"
+
+class SoftDeleteFKAdminMixin:
+    """
+    Automatically filters ForeignKey dropdowns to exclude rows
+    where 'deleted=True', for any related model that has a 'deleted' field.
+    """
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        related_model = db_field.related_model
+        if hasattr(related_model, "deleted"):
+            # Only show non-deleted rows
+            kwargs["queryset"] = related_model.objects.filter(deleted=False)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    

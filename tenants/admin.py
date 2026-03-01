@@ -15,10 +15,10 @@ from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
 from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData
 from .services.sftp import provision_sftp
+from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
-from .local_kms import generate_encrypted_dek
-#from global_data.models import Brand, Marque
+from core.admin_mixins import SoftDeleteFKAdminMixin
 
 register_extra_admin_urls(admin.site)
 
@@ -53,40 +53,21 @@ class RedirectOnSaveAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(next_url)
         return super().response_change(request, obj)
 
-from django.contrib import admin
-#from global.models import Marque, Brand
-
-
-# @admin.register(Marque)
-# class MarqueAdmin(admin.ModelAdmin):
-#     list_display = ('name', 'short')
-#     search_fields = ('name', 'short')
-#     ordering = ('name',)
-
-
-# @admin.register(Brand)
-# class BrandAdmin(admin.ModelAdmin):
-#     list_display = ('name', 'short', 'marque')
-#     list_filter = ('marque',)
-#     search_fields = ('name', 'short', 'marque__name')
-#     ordering = ('marque', 'name')
-
 
 @admin.register(Location)
 class LocationAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     pass
 
 @admin.register(Tenant)
-class TenantAdmin(AccountScopedAdminMixin, RedirectOnSaveAdmin):
+class TenantAdmin(SoftDeleteFKAdminMixin, AccountScopedAdminMixin, RedirectOnSaveAdmin):
     fields = (
-        "rls_key",
+        'rls_key',
         'account',
         'brand',
         'location',
-        "desc",
-        "internal_tenant_code",
-        "external_tenant_code",
-        #"group",
+        'desc',
+        'internal_tenant_code',
+        'external_tenant_code',
         'logo_path',
         'is_live',
     )

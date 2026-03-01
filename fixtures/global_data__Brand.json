@@ -27,10 +27,22 @@
         "fields": {
             "created_at": "2026-03-01T13:04:45.592Z",
             "deleted": false,
+            "marque": 1,
+            "name": "Fiat",
+            "short": "FIAT",
+            "updated_at": "2026-03-01T20:44:41.388Z"
+        },
+        "model": "global_data.brand",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-01T13:04:45.592Z",
+            "deleted": false,
             "marque": 2,
             "name": "BMW",
             "short": "BMW",
-            "updated_at": "2026-03-01T13:04:45.612Z"
+            "updated_at": "2026-03-01T21:37:13.481Z"
         },
         "model": "global_data.brand",
         "pk": 4
@@ -54,21 +66,9 @@
             "marque": 3,
             "name": "Monkey Brand",
             "short": "MONKEY",
-            "updated_at": "2026-03-01T13:24:29.981Z"
+            "updated_at": "2026-03-01T21:30:28.230Z"
         },
         "model": "global_data.brand",
         "pk": 6
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-01T13:04:45.592Z",
-            "deleted": false,
-            "marque": 1,
-            "name": "Fiat",
-            "short": "FIAT",
-            "updated_at": "2026-03-01T20:44:41.388Z"
-        },
-        "model": "global_data.brand",
-        "pk": 3
     }
 ]
