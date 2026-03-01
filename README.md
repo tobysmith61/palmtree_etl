@@ -26,6 +26,9 @@ CREATE SFTP DROP FOLDER
 sudo mkdir -p /srv/sftp_drops
 sudo chown -R ubuntu:ubuntu /srv/sftp_drops
 
-
+after adding new tables and deploying:
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO palmtree_app;
 GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO palmtree_app;
+
+get latest fixtures
+python manage.py import_fixtures --dir=fixtures
