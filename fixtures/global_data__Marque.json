@@ -5,7 +5,7 @@
             "deleted": false,
             "name": "Stellantis",
             "short": "STELLANT",
-            "updated_at": "2026-03-01T21:37:25.868Z"
+            "updated_at": "2026-03-01T21:51:30.916Z"
         },
         "model": "global_data.marque",
         "pk": 1
@@ -16,7 +16,7 @@
             "deleted": false,
             "name": "BMW",
             "short": "BMW",
-            "updated_at": "2026-03-01T20:44:52.211Z"
+            "updated_at": "2026-03-01T21:51:30.970Z"
         },
         "model": "global_data.marque",
         "pk": 2
@@ -27,7 +27,7 @@
             "deleted": true,
             "name": "Monkey Marque",
             "short": "MONKEY",
-            "updated_at": "2026-03-01T21:31:01.567Z"
+            "updated_at": "2026-03-01T21:51:30.978Z"
         },
         "model": "global_data.marque",
         "pk": 3
@@ -38,7 +38,7 @@
             "deleted": true,
             "name": "DELETE_ME",
             "short": "DELETEME",
-            "updated_at": "2026-03-01T20:45:54.492Z"
+            "updated_at": "2026-03-01T21:51:30.988Z"
         },
         "model": "global_data.marque",
         "pk": 4

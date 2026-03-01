@@ -6,7 +6,7 @@
             "marque": 1,
             "name": "Peugeot",
             "short": "PEUGEOT",
-            "updated_at": "2026-03-01T13:04:45.612Z"
+            "updated_at": "2026-03-01T21:51:31.002Z"
         },
         "model": "global_data.brand",
         "pk": 1
@@ -18,7 +18,7 @@
             "marque": 1,
             "name": "Hyundai",
             "short": "HYUNDAI",
-            "updated_at": "2026-03-01T13:04:45.612Z"
+            "updated_at": "2026-03-01T21:51:31.019Z"
         },
         "model": "global_data.brand",
         "pk": 2
@@ -30,7 +30,7 @@
             "marque": 1,
             "name": "Fiat",
             "short": "FIAT",
-            "updated_at": "2026-03-01T20:44:41.388Z"
+            "updated_at": "2026-03-01T21:51:31.029Z"
         },
         "model": "global_data.brand",
         "pk": 3
@@ -42,7 +42,7 @@
             "marque": 2,
             "name": "BMW",
             "short": "BMW",
-            "updated_at": "2026-03-01T21:37:13.481Z"
+            "updated_at": "2026-03-01T21:51:31.041Z"
         },
         "model": "global_data.brand",
         "pk": 4
@@ -54,7 +54,7 @@
             "marque": 2,
             "name": "BMWi",
             "short": "BMWI",
-            "updated_at": "2026-03-01T13:04:45.612Z"
+            "updated_at": "2026-03-01T21:51:31.067Z"
         },
         "model": "global_data.brand",
         "pk": 5
@@ -66,7 +66,7 @@
             "marque": 3,
             "name": "Monkey Brand",
             "short": "MONKEY",
-            "updated_at": "2026-03-01T21:30:28.230Z"
+            "updated_at": "2026-03-01T21:51:31.074Z"
         },
         "model": "global_data.brand",
         "pk": 6
