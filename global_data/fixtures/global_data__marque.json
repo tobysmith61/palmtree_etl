@@ -1,0 +1,18 @@
+[
+{
+  "model": "global_data.marque",
+  "pk": 1,
+  "fields": {
+    "name": "Stellantis",
+    "short": "STELLANT"
+  }
+},
+{
+  "model": "global_data.marque",
+  "pk": 2,
+  "fields": {
+    "name": "BMW",
+    "short": "BMW"
+  }
+}
+]

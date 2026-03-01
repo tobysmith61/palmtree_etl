@@ -18,7 +18,7 @@ from .services.sftp import provision_sftp
 
 from canonical.models import TableData
 from .local_kms import generate_encrypted_dek
-
+#from global_data.models import Brand, Marque
 
 register_extra_admin_urls(admin.site)
 
@@ -54,22 +54,22 @@ class RedirectOnSaveAdmin(admin.ModelAdmin):
         return super().response_change(request, obj)
 
 from django.contrib import admin
-from .models import Marque, Brand
+#from global.models import Marque, Brand
 
 
-@admin.register(Marque)
-class MarqueAdmin(admin.ModelAdmin):
-    list_display = ('name', 'short')
-    search_fields = ('name', 'short')
-    ordering = ('name',)
+# @admin.register(Marque)
+# class MarqueAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'short')
+#     search_fields = ('name', 'short')
+#     ordering = ('name',)
 
 
-@admin.register(Brand)
-class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'short', 'marque')
-    list_filter = ('marque',)
-    search_fields = ('name', 'short', 'marque__name')
-    ordering = ('marque', 'name')
+# @admin.register(Brand)
+# class BrandAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'short', 'marque')
+#     list_filter = ('marque',)
+#     search_fields = ('name', 'short', 'marque__name')
+#     ordering = ('marque', 'name')
 
 
 @admin.register(Location)

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "mptt",
     #"sandbox",
     "vendor",
+    "global_data",
 ]
 
 MIDDLEWARE = [

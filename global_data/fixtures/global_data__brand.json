@@ -1,0 +1,47 @@
+[
+{
+  "model": "global_data.brand",
+  "pk": 1,
+  "fields": {
+    "marque": 1,
+    "name": "Peugeot",
+    "short": "PEUGEOT"
+  }
+},
+{
+  "model": "global_data.brand",
+  "pk": 2,
+  "fields": {
+    "marque": 1,
+    "name": "Hyundai",
+    "short": "HYUNDAI"
+  }
+},
+{
+  "model": "global_data.brand",
+  "pk": 3,
+  "fields": {
+    "marque": 1,
+    "name": "Fiat",
+    "short": "FIAT"
+  }
+},
+{
+  "model": "global_data.brand",
+  "pk": 4,
+  "fields": {
+    "marque": 2,
+    "name": "BMW",
+    "short": "BMW"
+  }
+},
+{
+  "model": "global_data.brand",
+  "pk": 5,
+  "fields": {
+    "marque": 2,
+    "name": "BMWi",
+    "short": "BMWI"
+  }
+}
+]
