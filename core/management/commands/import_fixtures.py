@@ -29,9 +29,6 @@ class Command(BaseCommand):
         models = self.sort_models_by_fk_dependency(models)
 
         for model in models:
-            if not issubclass(model, FixtureControlledModel) or model._meta.abstract:
-                continue
-
             fixture_file = fixture_dir / f"{model._meta.app_label}__{model.__name__}.json"
             if not fixture_file.exists():
                 continue
@@ -43,30 +40,66 @@ class Command(BaseCommand):
                 for obj in fixture_data:
                     fields = obj["fields"].copy()
 
-                    # Resolve ForeignKey fields
-                    for field_name, value in fields.items():
+                    # Assign ForeignKeys using raw _id (no DB lookup)
+                    for field_name, value in list(fields.items()):
                         field = model._meta.get_field(field_name)
+
                         if isinstance(field, ForeignKey) and value is not None:
-                            related_model = field.remote_field.model
-                            # Support natural keys if available
-                            if hasattr(related_model, "natural_key_fields") and isinstance(value, (list, tuple)):
-                                value = related_model.objects.get(
-                                    **dict(zip(related_model.natural_key_fields(), value))
-                                )
-                            else:
-                                value = related_model.objects.get(pk=value)
-                            fields[field_name] = value
+                            fields[f"{field_name}_id"] = value
+                            del fields[field_name]
 
                     # Determine unique identifier
-                    if hasattr(model, "natural_key"):
-                        nk_fields = dict(
-                            zip(model.natural_key_fields(), model(**fields).natural_key())
-                        )
+                    if hasattr(model, "natural_key_fields"):
+                        nk_fields = {
+                            field: fields[field]
+                            for field in model.natural_key_fields()
+                        }
                     else:
                         nk_fields = {"pk": obj["pk"]}
 
-                    # Upsert row
-                    model.objects.update_or_create(defaults=fields, **nk_fields)
+                    model.objects.update_or_create(
+                        defaults=fields,
+                        **nk_fields
+                    )
 
-            self.stdout.write(f"{model._meta.app_label}.{model.__name__}: {len(fixture_data)} rows synced")
-            
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{model._meta.app_label}.{model.__name__}: {len(fixture_data)} rows synced"
+                )
+            )
+
+    # --------------------------------------------------------
+    # Dependency Sorting
+    # --------------------------------------------------------
+
+    def sort_models_by_fk_dependency(self, models):
+        """
+        Topologically sort models so FK dependencies are created first.
+        """
+        sorted_models = []
+        models = set(models)
+
+        while models:
+            progressed = False
+
+            for model in list(models):
+                dependencies = {
+                    field.remote_field.model
+                    for field in model._meta.get_fields()
+                    if isinstance(field, ForeignKey)
+                }
+
+                dependencies = dependencies.intersection(models)
+
+                if not dependencies:
+                    sorted_models.append(model)
+                    models.remove(model)
+                    progressed = True
+
+            if not progressed:
+                raise Exception(
+                    "Circular dependency detected in fixture models."
+                )
+
+        return sorted_models
+    
