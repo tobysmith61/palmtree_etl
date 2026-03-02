@@ -163,7 +163,7 @@ class TenantMappingCode(CoreModel, FixtureControlledModel):
         verbose_name = "Tenant mapping code"
         verbose_name_plural = "Tenant mapping codes"
 
-class SFTPDropZone(CoreModel):
+class SFTPDropZone(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     zone_folder = models.CharField(max_length=50)  # e.g. DMS001
     desc = models.CharField(max_length=200, blank=True, null=True)
@@ -178,7 +178,7 @@ class SFTPDropZone(CoreModel):
     def __str__(self):
         return self.zone_folder
     
-class SFTPDropZoneScopedTenant(CoreModel):
+class SFTPDropZoneScopedTenant(CoreModel, FixtureControlledModel):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE)
     scoped_tenant = models.ForeignKey(
         Tenant,
