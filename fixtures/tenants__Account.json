@@ -1,0 +1,35 @@
+[
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.552Z",
+            "deleted": false,
+            "name": "Stellantis UK (Account)",
+            "short": "STELLANT",
+            "updated_at": "2026-03-02T08:47:13.575Z"
+        },
+        "model": "tenants.account",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.552Z",
+            "deleted": false,
+            "name": "Group1 (Account)",
+            "short": "GROUP1",
+            "updated_at": "2026-03-02T14:48:20.945Z"
+        },
+        "model": "tenants.account",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.552Z",
+            "deleted": false,
+            "name": "palmTree",
+            "short": "PALMTREE",
+            "updated_at": "2026-03-02T08:47:13.575Z"
+        },
+        "model": "tenants.account",
+        "pk": 6
+    }
+]

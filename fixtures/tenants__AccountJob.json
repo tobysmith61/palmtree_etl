@@ -1,0 +1,44 @@
+[
+    {
+        "fields": {
+            "account": 1,
+            "account_table_data": null,
+            "created_at": "2026-03-02T08:47:13.612Z",
+            "deleted": false,
+            "job": 1,
+            "sftp_drop_zone": 17,
+            "tenant_mapping": 1,
+            "updated_at": "2026-03-02T08:47:13.639Z"
+        },
+        "model": "tenants.accountjob",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "account": 2,
+            "account_table_data": 1,
+            "created_at": "2026-03-02T08:47:13.612Z",
+            "deleted": false,
+            "job": 1,
+            "sftp_drop_zone": null,
+            "tenant_mapping": null,
+            "updated_at": "2026-03-02T08:47:13.639Z"
+        },
+        "model": "tenants.accountjob",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "account": 2,
+            "account_table_data": 1,
+            "created_at": "2026-03-02T08:47:13.612Z",
+            "deleted": false,
+            "job": 2,
+            "sftp_drop_zone": null,
+            "tenant_mapping": null,
+            "updated_at": "2026-03-02T14:48:03.140Z"
+        },
+        "model": "tenants.accountjob",
+        "pk": 3
+    }
+]

@@ -1,0 +1,36 @@
+[
+    {
+        "fields": {
+            "account": 1,
+            "address_line_1": "Stellantis Godalming",
+            "address_line_2": "Hurtmore Road",
+            "address_line_3": "Godalming",
+            "address_line_4": null,
+            "address_line_5": null,
+            "created_at": "2026-03-02T08:47:13.679Z",
+            "deleted": false,
+            "postcode": "GU7 1SB",
+            "short": "GODALMNG",
+            "updated_at": "2026-03-02T08:47:13.696Z"
+        },
+        "model": "tenants.location",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "account": 2,
+            "address_line_1": "Hindhead",
+            "address_line_2": null,
+            "address_line_3": null,
+            "address_line_4": null,
+            "address_line_5": null,
+            "created_at": "2026-03-02T08:47:13.679Z",
+            "deleted": false,
+            "postcode": "HH1 1HH",
+            "short": "HINDHEAD",
+            "updated_at": "2026-03-02T14:48:27.757Z"
+        },
+        "model": "tenants.location",
+        "pk": 2
+    }
+]

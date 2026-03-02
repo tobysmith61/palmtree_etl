@@ -5,9 +5,9 @@ from django.conf import settings
 from canonical.models import Job, TableData
 from django.utils.timezone import now
 from global_data.models import Brand
-from core.models import CoreModel
+from core.models import CoreModel, FixtureControlledModel
 
-class Account(CoreModel):
+class Account(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=255)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
     
@@ -59,7 +59,7 @@ class TenantGroupType(models.TextChoices):
             self.CALLCENTRE: "📞", # Special case for where Tenants cross multiple accounts
         }[self]
     
-class Location(CoreModel, Address):
+class Location(CoreModel, Address, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     short = models.CharField(
         max_length=8,
@@ -74,7 +74,7 @@ class Location(CoreModel, Address):
     def __str__(self):
         return self.short + ' / ' + self.postcode
 
-class Tenant(CoreModel):
+class Tenant(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.CASCADE)
     rls_key = models.UUIDField(
         primary_key=True, 
@@ -105,7 +105,7 @@ class Tenant(CoreModel):
             self.internal_tenant_code = f"{self.account.short}/{self.location.short}/{self.brand.short}"
         super().save(*args, **kwargs)
 
-class UserAccount(CoreModel):
+class UserAccount(CoreModel, FixtureControlledModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
@@ -115,7 +115,7 @@ class UserAccount(CoreModel):
     def __str__(self):
         return f"{self.user} → {self.account}"
 
-class TenantMapping(CoreModel):
+class TenantMapping(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -142,7 +142,7 @@ class TenantMapping(CoreModel):
 
         return mapping.mapped_tenant.internal_tenant_code if mapping else None
     
-class TenantMappingCode(CoreModel):
+class TenantMappingCode(CoreModel, FixtureControlledModel):
     tenant_mapping = models.ForeignKey(
         TenantMapping,
         on_delete=models.CASCADE,
@@ -186,7 +186,7 @@ class SFTPDropZoneScopedTenant(CoreModel):
         related_name="scoped_tenants"
     )
     
-class AccountTableData(CoreModel):
+class AccountTableData(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     table_data_copied_from = models.OneToOneField(
@@ -214,7 +214,7 @@ class AccountTableData(CoreModel):
         verbose_name = "Account table data"
         verbose_name_plural = "Account table data"
 
-class AccountJob(CoreModel):
+class AccountJob(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
@@ -224,6 +224,6 @@ class AccountJob(CoreModel):
     def __str__(self):
         return f"{self.job}"
 
-class Role(CoreModel):
+class Role(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)

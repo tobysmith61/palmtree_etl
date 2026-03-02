@@ -18,7 +18,8 @@ from .services.sftp import provision_sftp
 from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
-from core.admin_mixins import SoftDeleteFKAdminMixin
+from core.admin_mixins import SoftDeletedFKAdminMixin, SoftDeleteAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
+
 
 register_extra_admin_urls(admin.site)
 
@@ -55,11 +56,16 @@ class RedirectOnSaveAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class LocationAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     pass
 
 @admin.register(Tenant)
-class TenantAdmin(SoftDeleteFKAdminMixin, AccountScopedAdminMixin, RedirectOnSaveAdmin):
+class TenantAdmin(SoftDeletedFKAdminMixin, AccountScopedAdminMixin, RedirectOnSaveAdmin):
     fields = (
         'rls_key',
         'account',
@@ -263,7 +269,12 @@ def build_account_tree(account,  group_type):
     return [node_to_dict(root) for root in roots]
 
 @admin.register(AccountJob)
-class AccountJobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class AccountJobAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
     list_display_links = ("job",)
     fieldsets = (
@@ -330,7 +341,12 @@ class TenantMappingCodeInline(admin.TabularInline):
 
 
 @admin.register(TenantMapping)
-class TenantMappingAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class TenantMappingAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     list_display = ('account', 'desc')
     search_fields = ('account__name', 'desc')  # assuming Account has a name field
     inlines = [TenantMappingCodeInline]
@@ -353,7 +369,11 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
 @admin.register(SFTPDropZone)
-class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class SFTPDropZoneAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    admin.ModelAdmin
+):
     readonly_fields = ('sftp_user', 'folder_path')
     fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path', 'retention_period_days')
 
@@ -368,7 +388,12 @@ class SFTPDropZoneAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(AccountTableData)
-class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class AccountTableDataAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     form = AccountTableDataForm
     list_display = ('account', 'name', 'table_data_copied_from')
     change_form_template = "admin/tenants/accounttabledata/change_form.html"
@@ -432,7 +457,11 @@ class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(AccountEncryption)
-class AccountEncryptionAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
+class AccountEncryptionAdmin(AccountScopedAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    admin.ModelAdmin
+):
     readonly_fields = ("model_description",)
 
     fieldsets = (
