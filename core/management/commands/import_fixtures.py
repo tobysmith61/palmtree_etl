@@ -21,7 +21,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fixture_dir = Path(options["dir"])
 
-        for model in apps.get_models():
+        models = [
+            m for m in apps.get_models()
+            if issubclass(m, FixtureControlledModel) and not m._meta.abstract
+        ]
+
+        models = self.sort_models_by_fk_dependency(models)
+
+        for model in models:
             if not issubclass(model, FixtureControlledModel) or model._meta.abstract:
                 continue
 
