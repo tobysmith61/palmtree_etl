@@ -78,3 +78,9 @@ review these models for natural keys rather than id based FKs
 ./file_ingestion/models.py:4:class IngestedFile(models.Model):
 
 implement loaddata and savedata for std data
+
+all apps have models that need CoreModel inhereted
+these apps have tables that need FixtureControlledModel also on the basis they'd be maintained locally on dev and deployed
+Canonical
+
+Value_Mappings

@@ -31,6 +31,9 @@ class AccountEncryption(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return str(self.account)
+    
 # For various collections of Tenants
 class TenantGroupType(models.TextChoices):
     ACCOUNT = "billing", "Account / Billing Group" # Account details is at Group root node
