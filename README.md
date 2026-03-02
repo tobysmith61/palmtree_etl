@@ -32,3 +32,8 @@ GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO palmtree_app;
 
 get latest fixtures
 python manage.py import_fixtures --dir=fixtures
+
+because gunicorn runs as ubuntu and ftps drop folders need correc perms do this:
+sudo chown -R ubuntu:ubuntu /srv/sftp_drops
+
+NB sftpdropzone rows are created on dev/staging and deployed, then sftp account on remote admin
