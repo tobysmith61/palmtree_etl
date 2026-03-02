@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from global_data.models import Brand
 from core.models import CoreModel
 
-class Account(models.Model):
+class Account(CoreModel):
     name = models.CharField(max_length=255)
     short = models.CharField(max_length=8, blank=True) #remove blank=True, 
     
@@ -19,7 +19,7 @@ class Account(models.Model):
     def __str__(self):
         return self.name
 
-class AccountEncryption(models.Model):
+class AccountEncryption(CoreModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
     encrypted_dek = models.BinaryField()
@@ -59,7 +59,7 @@ class TenantGroupType(models.TextChoices):
             self.CALLCENTRE: "📞", # Special case for where Tenants cross multiple accounts
         }[self]
     
-class Location(Address):
+class Location(CoreModel, Address):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     short = models.CharField(
         max_length=8,
@@ -105,7 +105,7 @@ class Tenant(CoreModel):
             self.internal_tenant_code = f"{self.account.short}/{self.location.short}/{self.brand.short}"
         super().save(*args, **kwargs)
 
-class UserAccount(models.Model):
+class UserAccount(CoreModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
@@ -115,7 +115,7 @@ class UserAccount(models.Model):
     def __str__(self):
         return f"{self.user} → {self.account}"
 
-class TenantMapping(models.Model):
+class TenantMapping(CoreModel):
     account = models.ForeignKey(
         Account,
         on_delete=models.PROTECT,
@@ -142,7 +142,7 @@ class TenantMapping(models.Model):
 
         return mapping.mapped_tenant.internal_tenant_code if mapping else None
     
-class TenantMappingCode(models.Model):
+class TenantMappingCode(CoreModel):
     tenant_mapping = models.ForeignKey(
         TenantMapping,
         on_delete=models.CASCADE,
@@ -163,7 +163,7 @@ class TenantMappingCode(models.Model):
         verbose_name = "Tenant mapping code"
         verbose_name_plural = "Tenant mapping codes"
 
-class SFTPDropZone(models.Model):
+class SFTPDropZone(CoreModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     zone_folder = models.CharField(max_length=50)  # e.g. DMS001
     desc = models.CharField(max_length=200, blank=True, null=True)
@@ -178,7 +178,7 @@ class SFTPDropZone(models.Model):
     def __str__(self):
         return self.zone_folder
     
-class SFTPDropZoneScopedTenant(models.Model):
+class SFTPDropZoneScopedTenant(CoreModel):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE)
     scoped_tenant = models.ForeignKey(
         Tenant,
@@ -186,7 +186,7 @@ class SFTPDropZoneScopedTenant(models.Model):
         related_name="scoped_tenants"
     )
     
-class AccountTableData(models.Model):
+class AccountTableData(CoreModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     table_data_copied_from = models.OneToOneField(
@@ -214,7 +214,7 @@ class AccountTableData(models.Model):
         verbose_name = "Account table data"
         verbose_name_plural = "Account table data"
 
-class AccountJob(models.Model):
+class AccountJob(CoreModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
@@ -224,6 +224,6 @@ class AccountJob(models.Model):
     def __str__(self):
         return f"{self.job}"
 
-class Role(models.Model):
+class Role(CoreModel):
     name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
