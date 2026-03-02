@@ -1,6 +1,8 @@
 # admin_mixins.py
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.timesince import timesince
+from django.utils.timezone import localtime
 from django.conf import settings
 
 
@@ -74,18 +76,36 @@ class SoftDeleteFKAdminMixin:
 
 class TimeStampedAdminMixin:
     """
-    Adds created_at and updated_at to list_display for any TimeStampedModel
+    Adds formatted created_at and updated_at fields
+    to any TimeStampedModel in admin.
     """
+
     def get_readonly_fields(self, request, obj=None):
-        # Include parent readonly_fields
         fields = list(super().get_readonly_fields(request, obj))
-        
-        if hasattr(self.model, 'created_at') and 'created_at' not in fields:
-            fields.append('created_at')
-        if hasattr(self.model, 'updated_at') and 'updated_at' not in fields:
-            fields.append('updated_at')
-        
+
+        if hasattr(self.model, "created_at"):
+            fields.append("created_at_display")
+
+        if hasattr(self.model, "updated_at"):
+            fields.append("updated_at_display")
+
         return fields
+
+    def created_at_display(self, obj):
+        if not obj or not obj.created_at:
+            return "-"
+        dt = localtime(obj.created_at)
+        return f"{dt.strftime('%d/%m/%Y %H:%M')} ({timesince(obj.created_at)} ago)"
+
+    created_at_display.short_description = "Created at"
+
+    def updated_at_display(self, obj):
+        if not obj or not obj.updated_at:
+            return "-"
+        dt = localtime(obj.updated_at)
+        return f"{dt.strftime('%d/%m/%Y %H:%M')} ({timesince(obj.updated_at)} ago)"
+
+    updated_at_display.short_description = "Updated at"
 
 
 class StagingReadOnlyAdminMixin:
