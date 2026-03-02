@@ -432,6 +432,6 @@ class AccountTableDataAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(AccountEncryption)
-class JobAdmin(admin.ModelAdmin):
+class JobAdmin(AccountScopedAdminMixin, admin.ModelAdmin):
     pass
     
