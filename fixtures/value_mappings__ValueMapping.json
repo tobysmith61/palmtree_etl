@@ -1,0 +1,50 @@
+[
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.942Z",
+            "deleted": false,
+            "from_code": "P",
+            "group": 1,
+            "to_code": "PETROL",
+            "updated_at": "2026-03-02T13:14:50.348Z"
+        },
+        "model": "value_mappings.valuemapping",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.942Z",
+            "deleted": false,
+            "from_code": "D",
+            "group": 1,
+            "to_code": "DIESEL",
+            "updated_at": "2026-03-02T08:47:13.958Z"
+        },
+        "model": "value_mappings.valuemapping",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.942Z",
+            "deleted": false,
+            "from_code": "E",
+            "group": 1,
+            "to_code": "ELECTRIC",
+            "updated_at": "2026-03-02T08:47:13.958Z"
+        },
+        "model": "value_mappings.valuemapping",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.942Z",
+            "deleted": false,
+            "from_code": "H",
+            "group": 1,
+            "to_code": "HYBRID",
+            "updated_at": "2026-03-02T08:47:13.958Z"
+        },
+        "model": "value_mappings.valuemapping",
+        "pk": 4
+    }
+]

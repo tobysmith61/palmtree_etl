@@ -1,10 +1,10 @@
 from django.db import models
 from value_mappings.models import ValueMappingGroup
 from django.core.exceptions import ValidationError
-from core.models import CoreModel
+from core.models import CoreModel, FixtureControlledModel
 
 
-class CanonicalSchema(CoreModel):
+class CanonicalSchema(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
     contract = models.CharField(max_length=100, blank=True)
@@ -13,14 +13,14 @@ class CanonicalSchema(CoreModel):
     def __str__(self):
         return self.name
     
-class SourceSchema(CoreModel):
+class SourceSchema(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50)
     system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
     
     def __str__(self):
         return f"{self.system} - {self.name}"
 
-class FieldMapping(CoreModel): # rename as it not longer maps! it is just a list of fields
+class FieldMapping(CoreModel, FixtureControlledModel): # rename as it not longer maps! it is just a list of fields
     source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")
     source_field_name = models.CharField(max_length=100, null=True, blank=True)
     order = models.PositiveIntegerField()
@@ -61,7 +61,7 @@ class FieldMapping(CoreModel): # rename as it not longer maps! it is just a list
         ).exists()
 
 
-class CanonicalField(CoreModel):
+class CanonicalField(CoreModel, FixtureControlledModel):
     FORMAT_NONE = "none"
     FORMAT_EMAIL = "email"
     FORMAT_UK_POSTCODE_FULL = "postcode_full"
@@ -141,7 +141,7 @@ class CanonicalField(CoreModel):
                 "value_mapping_group": "Only mapped string fields can have a value mapping group."
             })
   
-class TableData(CoreModel):
+class TableData(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=100)
     source_schema = models.OneToOneField(
         SourceSchema,
@@ -169,7 +169,7 @@ class TableData(CoreModel):
         verbose_name_plural = "Table data"
 
 
-class Job(CoreModel):
+class Job(CoreModel, FixtureControlledModel):
     desc = models.CharField(max_length=100)
     canonical_schema = models.ForeignKey(CanonicalSchema, on_delete=models.CASCADE)
     source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE)

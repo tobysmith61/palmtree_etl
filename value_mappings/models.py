@@ -1,7 +1,7 @@
 from django.db import models
-from core.models import CoreModel
+from core.models import CoreModel, FixtureControlledModel
 
-class ValueMappingGroup(CoreModel):
+class ValueMappingGroup(CoreModel, FixtureControlledModel):
     code = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     convert_source_to_lowercase_first = models.BooleanField(default=True)
@@ -9,7 +9,7 @@ class ValueMappingGroup(CoreModel):
     def __str__(self):
         return self.code
     
-class ValueMapping(CoreModel):
+class ValueMapping(CoreModel, FixtureControlledModel):
     """
     Generic value mapping table.
     Each mapping belongs to a group (e.g., 'fuel types') and maps from a source code to a canonical code/value.

@@ -81,6 +81,9 @@ implement loaddata and savedata for std data
 
 all apps have models that need CoreModel inhereted
 these apps have tables that need FixtureControlledModel also on the basis they'd be maintained locally on dev and deployed
-Canonical
 
-Value_Mappings
+FixtureControlledModel
+
+SoftDeleteAdminMixin
+TimeStampedAdminMixin
+SoftDeleteFKAdminMixin

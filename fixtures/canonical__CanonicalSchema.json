@@ -1,0 +1,28 @@
+[
+    {
+        "fields": {
+            "contract": "contracts.Customer",
+            "created_at": "2026-03-02T08:47:13.396Z",
+            "deleted": false,
+            "description": "",
+            "name": "Canonical DMS Customer",
+            "requires_tenant_mapping": true,
+            "updated_at": "2026-03-02T08:47:13.407Z"
+        },
+        "model": "canonical.canonicalschema",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "contract": "contracts.Vehicle",
+            "created_at": "2026-03-02T08:47:13.396Z",
+            "deleted": false,
+            "description": "",
+            "name": "Canonical DMS Vehicle",
+            "requires_tenant_mapping": true,
+            "updated_at": "2026-03-02T13:15:28.640Z"
+        },
+        "model": "canonical.canonicalschema",
+        "pk": 2
+    }
+]

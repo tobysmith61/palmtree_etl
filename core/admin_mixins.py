@@ -1,6 +1,7 @@
 # admin_mixins.py
 from django.contrib import admin
 from django.utils.html import format_html
+from django.conf import settings
 
 
 class SoftDeleteListFilter(admin.SimpleListFilter):
@@ -85,4 +86,47 @@ class TimeStampedAdminMixin:
             fields.append('updated_at')
         
         return fields
+
+
+class StagingReadOnlyAdminMixin:
+    """
+    Makes admin read-only when IS_STAGING_SERVER = True.
+    """
+
+    def is_readonly_environment(self):
+        return not getattr(settings, "IS_STAGING_SERVER", False)
+
+    def has_add_permission(self, request):
+        if self.is_readonly_environment():
+            return False
+        return super().has_add_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        if self.is_readonly_environment():
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        # Allow viewing in staging
+        if self.is_readonly_environment():
+            if request.method in ("GET", "HEAD"):
+                return True
+            return False
+        return super().has_change_permission(request, obj)
+
+    def get_readonly_fields(self, request, obj=None):
+        if self.is_readonly_environment():
+            return [f.name for f in self.model._meta.fields]
+        return super().get_readonly_fields(request, obj)
+    
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        if self.is_readonly_environment():
+            extra_context = extra_context or {}
+            extra_context.update({
+                "show_save": False,
+                "show_save_and_continue": False,
+                "show_save_and_add_another": False,
+                "show_delete": False,
+            })
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
     

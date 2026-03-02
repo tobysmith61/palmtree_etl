@@ -219,3 +219,6 @@ USE_TZ = True
 DATETIME_FORMAT = 'd/m/Y H:i'  # 01/03/2026 13:04
 DATE_FORMAT = 'd/m/Y'
 TIME_FORMAT = 'H:i'
+
+IS_STAGING_SERVER = env.bool("IS_STAGING_SERVER", default=False)
+
