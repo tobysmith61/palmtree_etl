@@ -168,8 +168,8 @@ class SFTPDropZone(CoreModel):
     zone_folder = models.CharField(max_length=50)  # e.g. DMS001
     desc = models.CharField(max_length=200, blank=True, null=True)
     scope = models.TextField(max_length=1000, blank=True, null=True)
-    sftp_user = models.CharField(max_length=50, editable=False)
-    folder_path = models.CharField(max_length=200, editable=False)
+    sftp_user = models.CharField(max_length=50, blank=True, null=True)
+    folder_path = models.CharField(max_length=200, blank=True, null=True)
     retention_period_days = models.PositiveIntegerField(
         default=7,
         help_text="Number of days to keep files before automatic cleanup"

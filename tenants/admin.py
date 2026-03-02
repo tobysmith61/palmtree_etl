@@ -377,14 +377,16 @@ class SFTPDropZoneAdmin(AccountScopedAdminMixin,
     readonly_fields = ('sftp_user', 'folder_path')
     fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path', 'retention_period_days')
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if "_create_sftp" in request.POST:
-            username, password = provision_sftp(obj)
-            messages.success(
-                request,
-                f"SFTP created.\nUsername: {username}\nPassword: {password}"
-            )
+    # def save_model(self, request, obj, form, change):
+    #     super().save_model(request, obj, form, change)
+    #     if "_create_sftp" in request.POST:
+    #         username, password = provision_sftp(obj)
+    #         messages.success(
+    #             request,
+    #             f"SFTP created.\nUsername: {username}\nPassword: {password}"
+    #         )
+
+    # provision_sftp is now done on fixture import on target site (test/prod) and not on dev/staging site
 
 
 @admin.register(AccountTableData)
