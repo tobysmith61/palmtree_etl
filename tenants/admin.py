@@ -21,6 +21,20 @@ from canonical.models import TableData
 from core.admin_mixins import SoftDeletedFKAdminMixin, SoftDeleteAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
 
 
+
+
+
+from django.urls import path
+from django.shortcuts import redirect
+from django.contrib import messages
+
+import os
+import subprocess
+from django.conf import settings
+from django.utils.crypto import get_random_string
+
+
+
 register_extra_admin_urls(admin.site)
 
 User = get_user_model()
@@ -368,25 +382,82 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     extra = 1  # number of empty forms to show
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
+
+
+
 @admin.register(SFTPDropZone)
-class SFTPDropZoneAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
+class SFTPDropZoneAdmin(
+    AccountScopedAdminMixin,
+    SoftDeleteAdminMixin,
+    TimeStampedAdminMixin,
     admin.ModelAdmin
 ):
     readonly_fields = ('sftp_user', 'folder_path')
-    fields = ('account', 'zone_folder', 'desc', 'sftp_user', 'folder_path', 'retention_period_days')
+    fields = (
+        'account',
+        'zone_folder',
+        'desc',
+        'sftp_user',
+        'folder_path',
+        'retention_period_days'
+    )
 
-    # def save_model(self, request, obj, form, change):
-    #     super().save_model(request, obj, form, change)
-    #     if "_create_sftp" in request.POST:
-    #         username, password = provision_sftp(obj)
-    #         messages.success(
-    #             request,
-    #             f"SFTP created.\nUsername: {username}\nPassword: {password}"
-    #         )
 
-    # provision_sftp is now done on fixture import on target site (test/prod) and not on dev/staging site
+    def provision_sftp(self, dropzone):        
+        base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
+        folder_path = f"{base_path}/{dropzone.account.short.lower()}/{dropzone.zone_folder}/drop"
+        username = f"{dropzone.account.short}_{dropzone.zone_folder}".lower()
+        password = get_random_string(16)
+
+        os.makedirs(folder_path, exist_ok=True)
+
+        subprocess.run(["sudo", "useradd", "-m", "-d", folder_path, "-s", "/usr/sbin/nologin", username], check=True)
+        subprocess.run(["sudo", "chpasswd"], input=f"{username}:{password}".encode(), check=True)
+
+        dropzone.folder_path = folder_path
+        dropzone.sftp_user = username
+        dropzone.save(update_fields=["folder_path", "sftp_user"])
+
+        return username, password
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<int:object_id>/provision-sftp/",
+                self.admin_site.admin_view(self.provision_sftp_view),
+                name="yourapp_sftpdropzone_provision_sftp",
+            ),
+        ]
+        return custom_urls + urls
+
+    def provision_sftp_view(self, request, object_id):    
+        if getattr(settings, "IS_STAGING_SERVER", False):
+            messages.warning(
+                request,
+                f"This action can only be performed on the live site!"
+            )
+            return redirect("..")
+        
+        obj = self.get_object(request, object_id)
+        if not obj:
+            messages.error(request, "Object not found.")
+            return redirect("..")
+
+        if obj.sftp_user:
+            messages.warning(request, "SFTP already provisioned.")
+            return redirect("..")
+
+        username, password = self.provision_sftp(obj)
+
+        messages.success(
+            request,
+            f"SFTP created — Username: {username} | Password: {password}"
+        )
+
+        return redirect("..")
+    
+
 
 
 @admin.register(AccountTableData)
