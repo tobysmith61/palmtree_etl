@@ -14,7 +14,6 @@ from .forms import AccountTableDataForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
 from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData
-#from .services.sftp import provision_sftp
 from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
@@ -390,6 +389,7 @@ class SFTPDropZoneAdmin(
     AccountScopedAdminMixin,
     SoftDeleteAdminMixin,
     TimeStampedAdminMixin,
+    StagingReadOnlyAdminMixin,
     admin.ModelAdmin
 ):
     readonly_fields = ('sftp_user', 'folder_path')
