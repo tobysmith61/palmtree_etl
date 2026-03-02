@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Marque, Brand
-from core.admin_mixins import SoftDeleteAdminMixin, SoftDeleteFKAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
+from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
 
 
 @admin.register(Marque)
@@ -17,7 +17,7 @@ class MarqueAdmin(
 
 @admin.register(Brand)
 class BrandAdmin(
-    SoftDeleteFKAdminMixin, 
+    SoftDeletedFKAdminMixin, 
     SoftDeleteAdminMixin, 
     TimeStampedAdminMixin, 
     StagingReadOnlyAdminMixin, 

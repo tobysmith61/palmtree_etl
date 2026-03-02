@@ -103,7 +103,7 @@
             "deleted": false,
             "name": "Customer Vehicle test data",
             "source_schema": 1,
-            "updated_at": "2026-03-02T13:16:34.849Z"
+            "updated_at": "2026-03-02T14:26:52.715Z"
         },
         "model": "canonical.tabledata",
         "pk": 2

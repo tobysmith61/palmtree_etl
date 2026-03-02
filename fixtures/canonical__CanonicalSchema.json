@@ -20,7 +20,7 @@
             "description": "",
             "name": "Canonical DMS Vehicle",
             "requires_tenant_mapping": true,
-            "updated_at": "2026-03-02T13:15:28.640Z"
+            "updated_at": "2026-03-02T14:26:29.502Z"
         },
         "model": "canonical.canonicalschema",
         "pk": 2

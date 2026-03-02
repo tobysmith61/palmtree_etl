@@ -61,7 +61,7 @@ class SoftDeleteAdminMixin:
     deleted_display.short_description = "Deleted"
     deleted_display.admin_order_field = "deleted"
 
-class SoftDeleteFKAdminMixin:
+class SoftDeletedFKAdminMixin:
     """
     Automatically filters ForeignKey dropdowns to exclude rows
     where 'deleted=True', for any related model that has a 'deleted' field.
@@ -106,7 +106,6 @@ class TimeStampedAdminMixin:
         return f"{dt.strftime('%d/%m/%Y %H:%M')} ({timesince(obj.updated_at)} ago)"
 
     updated_at_display.short_description = "Updated at"
-
 
 class StagingReadOnlyAdminMixin:
     """

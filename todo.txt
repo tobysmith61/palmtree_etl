@@ -86,4 +86,6 @@ FixtureControlledModel
 
 SoftDeleteAdminMixin
 TimeStampedAdminMixin
-SoftDeleteFKAdminMixin
+SoftDeletedFKAdminMixin
+
+done for all except Account/Tenant app

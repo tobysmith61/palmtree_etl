@@ -24,7 +24,7 @@
             "source_filename_pattern": "",
             "source_schema": 1,
             "test_table": 2,
-            "updated_at": "2026-03-02T13:15:47.421Z"
+            "updated_at": "2026-03-02T14:26:36.492Z"
         },
         "model": "canonical.job",
         "pk": 2

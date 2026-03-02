@@ -12,6 +12,7 @@ import pandas as pd
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
+from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
 
 
 class CanonicalFieldInlineFormSet(BaseInlineFormSet):
@@ -50,7 +51,12 @@ class CanonicalFieldInline(admin.TabularInline):
     formset = CanonicalFieldInlineFormSet
 
 @admin.register(CanonicalSchema)
-class CanonicalSchemaAdmin(admin.ModelAdmin):
+class CanonicalSchemaAdmin(
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     list_display = ("name", "description", "contract")
     search_fields = ("name", "description", "contract")
     inlines = [CanonicalFieldInline]
@@ -255,7 +261,12 @@ class FieldMappingInline(admin.TabularInline):
         return InjectSourceSchemaFormSet
 
 @admin.register(SourceSchema)
-class SourceSchemaAdmin(admin.ModelAdmin):
+class SourceSchemaAdmin(
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     inlines = [FieldMappingInline]
 
     def get_urls(self): #redundant fn
@@ -364,7 +375,12 @@ class SourceSchemaAdmin(admin.ModelAdmin):
         )
 
 @admin.register(TableData)
-class TableDataAdmin(admin.ModelAdmin):
+class TableDataAdmin(
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     form = TableDataForm
 
     class Media:
@@ -383,7 +399,11 @@ class TableDataAdmin(admin.ModelAdmin):
     )
 
 @admin.register(Job)
-class JobAdmin(admin.ModelAdmin):
+class JobAdmin(
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
+    admin.ModelAdmin
+):
     change_form_template = "admin/canonical/job/change_form.html"
     fields = ("desc", "source_schema", "canonical_schema", "test_table")
-    
