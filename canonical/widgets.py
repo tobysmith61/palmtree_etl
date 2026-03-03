@@ -18,12 +18,69 @@ class ExcelWidget(forms.Widget):
         )
 
     def render(self, name, value, attrs=None, renderer=None):
+        # Ensure value is a 2D array
+        try:
+            if isinstance(value, str):
+                value = json.loads(value)
+            elif value is None:
+                value = []
+        except Exception:
+            value = []
+
+        # Default header + empty row if empty
+        if not value:
+            value = [["Column 1", "Column 2"], ["", ""]]
+
+        hidden_value = json.dumps(value)
+        read_only_js = "readOnly: true," if self.readonly else ""
+
         html = f'''
-            <div id="hot_container_{name}" style="width:100%;height:300px;"></div>
-            <p id="debug_{name}" style="color:red;">[EC2 Debug] Widget HTML rendered</p>
-            <script>
-                console.log("[EC2 Debug] Inline script loaded for {name}");
-            </script>
+        <div id="hot_container_{name}" style="width: 100%; height: 300px; margin-bottom: 10px;"></div>
+        <input type="hidden" name="{name}" id="id_{name}" value='{hidden_value}'>
+        <script>
+            (function() {{
+                function initHandsontable() {{
+                    const container = document.getElementById("hot_container_{name}");
+                    if (!container) return;
+                    const input = document.getElementById("id_{name}");
+                    const hot = new Handsontable(container, {{
+                        data: {hidden_value},
+                        rowHeaders: true,
+                        colHeaders: false,
+                        {read_only_js}
+                        contextMenu: true,
+                        manualColumnResize: true,
+                        manualRowResize: true,
+                        minSpareRows: 1,
+                        minSpareCols: 1,
+                        stretchH: 'none',
+                        autoRowSize: true,
+                        height: 300,
+                        licenseKey: "non-commercial-and-evaluation",
+                        afterChange: function(changes, source) {{
+                            if(!{str(self.readonly).lower()} && source !== 'loadData') {{
+                                input.value = JSON.stringify(hot.getData());
+                            }}
+                        }},
+                        afterRenderer: function(TD, row, col, prop, value, cellProperties) {{
+                            if(row === 0) {{
+                                TD.style.background = '#f0f0f0';
+                                TD.style.fontWeight = 'bold';
+                                TD.style.fontSize = '90%';
+                            }}
+                        }}
+                    }});
+                    // Force initial value and redraw
+                    input.value = JSON.stringify(hot.getData());
+                    setTimeout(() => hot.render(), 200);  // <--- fixes "click header to see data"
+                }}
+
+                if (document.readyState !== 'loading') {{
+                    initHandsontable();
+                }} else {{
+                    document.addEventListener('DOMContentLoaded', initHandsontable);
+                }}
+            }})();
+        </script>
         '''
         return mark_safe(html)
-
