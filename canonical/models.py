@@ -185,4 +185,4 @@ class Job(CoreModel, FixtureControlledModel):
 
     def __str__(self):
         return self.desc
-    
+
