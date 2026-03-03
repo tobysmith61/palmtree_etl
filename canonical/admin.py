@@ -376,9 +376,9 @@ class SourceSchemaAdmin(
 
 @admin.register(TableData)
 class TableDataAdmin(
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    StagingReadOnlyAdminMixin, 
+    # SoftDeleteAdminMixin, 
+    # TimeStampedAdminMixin, 
+    # StagingReadOnlyAdminMixin, 
     admin.ModelAdmin
 ):
     form = TableDataForm
