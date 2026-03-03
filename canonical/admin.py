@@ -376,9 +376,9 @@ class SourceSchemaAdmin(
 
 @admin.register(TableData)
 class TableDataAdmin(
-    # SoftDeleteAdminMixin, 
-    # TimeStampedAdminMixin, 
-    # StagingReadOnlyAdminMixin, 
+    SoftDeleteAdminMixin, 
+    TimeStampedAdminMixin, 
+    StagingReadOnlyAdminMixin, 
     admin.ModelAdmin
 ):
     form = TableDataForm
@@ -397,7 +397,14 @@ class TableDataAdmin(
             'fields': ('name', 'source_schema', 'data'),
         }),
     )
-
+    
+    def get_readonly_fields(self, request, obj=None):
+        readonly = super().get_readonly_fields(request, obj)
+        if "data" in readonly:
+            readonly.remove("data")  # allow ExcelWidget to render
+        return readonly
+    
+    
 @admin.register(Job)
 class JobAdmin(
     SoftDeleteAdminMixin, 
