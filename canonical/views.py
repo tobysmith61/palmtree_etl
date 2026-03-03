@@ -127,3 +127,14 @@ def job_preview(request, pk):
     }
 
     return render(request, "canonical/table_preview.html", context)
+
+
+
+
+
+
+from django.shortcuts import render
+
+def hot_demo(request):
+    return render(request, "canonical/hot_demo.html")
+

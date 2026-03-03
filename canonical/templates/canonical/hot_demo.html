@@ -1,0 +1,58 @@
+<!-- templates/hot_demo.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Handsontable Demo</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.1.1/dist/handsontable.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        #hot {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Super Simple Handsontable Demo</h1>
+
+<div id="hot"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const container = document.getElementById("hot");
+
+        const data = [
+            ["company", "customer_id", "first_name", "surname"],
+            ["01", "123456", "Sally", "Cinnamon"],
+            ["02", "234321", "Ferghal", "O'Reilly"]
+        ];
+
+        new Handsontable(container, {
+            data: data,
+            rowHeaders: true,
+            colHeaders: true,
+            contextMenu: true,
+            manualColumnResize: true,
+            manualRowResize: true,
+            minSpareRows: 1,
+            minSpareCols: 1,
+            stretchH: "all",
+            height: 400,
+            licenseKey: "non-commercial-and-evaluation"
+        });
+
+    });
+</script>
+
+</body>
+</html>
