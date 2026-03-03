@@ -36,4 +36,32 @@ python manage.py import_fixtures --dir=fixtures
 because gunicorn runs as ubuntu and ftps drop folders need correc perms do this:
 sudo chown -R ubuntu:ubuntu /srv/sftp_drops
 
+
+
 NB sftpdropzone rows are created on dev/staging and deployed, then sftp account on remote admin
+
+sFTP folders:
+=============
+✅ Set ownership
+sudo chown root:root /srv/sftp_drops
+sudo chown root:root /srv/sftp_drops/stellant
+sudo chown root:root /srv/sftp_drops/stellant/dms002
+sudo chown stellant_dms002:stellant_dms002 /srv/sftp_drops/stellant/dms002/drop
+
+✅ Set permissions
+sudo chmod 755 /srv/sftp_drops
+sudo chmod 755 /srv/sftp_drops/stellant
+sudo chmod 755 /srv/sftp_drops/stellant/dms002
+sudo chmod 755 /srv/sftp_drops/stellant/dms002/drop
+
+🔎 Verify everything in one go
+ls -ld /srv/sftp_drops \
+       /srv/sftp_drops/stellant \
+       /srv/sftp_drops/stellant/dms002 \
+       /srv/sftp_drops/stellant/dms002/drop
+
+You should see:
+drwxr-xr-x root root
+drwxr-xr-x root root
+drwxr-xr-x root root
+drwxr-xr-x stellant_dms002 stellant_dms002
