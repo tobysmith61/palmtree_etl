@@ -30,7 +30,7 @@ TEMP_FILES_DIR = env("TEMP_FILES_DIR")
 SECRET_KEY = 'django-insecure-(@gg-007zxuwbwb8#klttm3fnai0&0&l!_$a@jh7aif5b!js)@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
