@@ -2,9 +2,14 @@ from django import forms
 from django.utils.safestring import mark_safe
 import json
 
+from django.conf import settings
+
+
 class ExcelWidget(forms.Widget):
     def __init__(self, readonly=False, attrs=None):
         super().__init__(attrs)
+        readonly = not getattr(settings, "IS_STAGING_SERVER", False)
+
         self.readonly = readonly
 
     class Media:

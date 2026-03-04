@@ -12,7 +12,7 @@ class TableDataForm(forms.ModelForm):
         model = TableData
         fields = ['name', 'source_schema', 'data']
         widgets = {
-            'data': ExcelWidget(),
+            'data': ExcelWidget(readonly=True),
         }
 
     def to_snake_case(self, value):
