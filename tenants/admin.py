@@ -18,7 +18,6 @@ from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
 from core.admin_mixins import PalmTreeGenericAdminMixin
-from tenants.admin_mixins import AccountTableDataScopedMixin
 
 from django.urls import path
 from django.shortcuts import redirect
@@ -286,7 +285,6 @@ def build_account_tree(account,  group_type):
 class AccountJobAdmin(
     AccountScopedAdminMixin, 
     PalmTreeGenericAdminMixin, 
-    AccountTableDataScopedMixin,
 ):
     list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
     list_display_links = ("job",)
@@ -298,45 +296,26 @@ class AccountJobAdmin(
     )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Determine account_id
         account_id = None
 
-        # If editing existing object
         object_id = request.resolver_match.kwargs.get("object_id")
         if object_id:
             try:
-                obj = AccountJob.objects.get(pk=object_id)
+                obj = self.model.objects.get(pk=object_id)
                 account_id = obj.account_id
-            except AccountJob.DoesNotExist:
+            except self.model.DoesNotExist:
                 pass
 
-        # If adding new object
         if not account_id:
-            account_id = (
-                request.GET.get("account")
-                or request.session.get("account_id")
-            )
+            account_id = request.GET.get("account") or request.session.get("account_id")
 
-        # Apply filtering
-        if db_field.name == "sftp_drop_zone":
-            if account_id:
-                kwargs["queryset"] = SFTPDropZone.objects.filter(account_id=account_id)
-            else:
-                kwargs["queryset"] = SFTPDropZone.objects.none()
-
-        elif db_field.name == "tenant_mapping":
-            if account_id:
-                kwargs["queryset"] = TenantMapping.objects.filter(account_id=account_id)
-            else:
-                kwargs["queryset"] = TenantMapping.objects.none()
-
-        elif db_field.name == "account_table_data":
-            if account_id:
-                kwargs["queryset"] = AccountTableData.objects.filter(account_id=account_id)
-            else:
-                kwargs["queryset"] = AccountTableData.objects.none()
+        # Only filter relevant fields
+        if db_field.name in ["sftp_drop_zone", "tenant_mapping", "account_table_data"]:
+            qs = kwargs.get("queryset") or db_field.remote_field.model.objects.all()
+            kwargs["queryset"] = qs.filter(account_id=account_id) if account_id else qs.none()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
     
 class TenantMappingCodeInline(admin.TabularInline):
     model = TenantMappingCode

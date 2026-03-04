@@ -60,20 +60,19 @@ class SoftDeleteAdminMixin:
 
     deleted_display.short_description = "Deleted"
     deleted_display.admin_order_field = "deleted"
-
+    
 class SoftDeletedFKAdminMixin:
     """
-    Automatically filters ForeignKey dropdowns to exclude rows
-    where 'deleted=True', for any related model that has a 'deleted' field.
+    Exclude soft-deleted items from FK dropdowns.
     """
-
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        related_model = db_field.related_model
-        if hasattr(related_model, "deleted"):
-            # Only show non-deleted rows
-            kwargs["queryset"] = related_model.objects.filter(deleted=False)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+        # Only apply for models with 'deleted' field
+        qs = kwargs.get("queryset")
+        if qs is not None and hasattr(qs.model, "deleted"):
+            kwargs["queryset"] = qs.filter(deleted=False)
 
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
 class TimeStampedAdminMixin:
     """
     Adds formatted created_at and updated_at fields
