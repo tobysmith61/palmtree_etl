@@ -21,8 +21,8 @@
             "deleted": false,
             "job": 1,
             "sftp_drop_zone": null,
-            "tenant_mapping": null,
-            "updated_at": "2026-03-02T08:47:13.639Z"
+            "tenant_mapping": 2,
+            "updated_at": "2026-03-03T22:49:53.629Z"
         },
         "model": "tenants.accountjob",
         "pk": 2
@@ -35,8 +35,8 @@
             "deleted": false,
             "job": 2,
             "sftp_drop_zone": null,
-            "tenant_mapping": null,
-            "updated_at": "2026-03-02T14:48:03.140Z"
+            "tenant_mapping": 2,
+            "updated_at": "2026-03-03T22:49:46.417Z"
         },
         "model": "tenants.accountjob",
         "pk": 3

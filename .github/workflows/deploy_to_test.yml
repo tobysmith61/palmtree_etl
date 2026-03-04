@@ -75,5 +75,8 @@ jobs:
             sudo systemctl restart celery-beat.service
             sudo systemctl --no-pager --full status celery-beat.service | tail -n 20
 
+            echo "Importing fixtures..."
+            python manage.py import_fixtures --dir=fixtures
+
             echo "Deployment complete."
           EOF
