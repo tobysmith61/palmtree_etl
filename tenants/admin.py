@@ -297,64 +297,47 @@ class AccountJobAdmin(
         }),
     )
 
-    def get_form(self, request, obj=None, **kwargs):
-        #account_table_data drop down list should be filtered to the account
-        form = super().get_form(request, obj, **kwargs)
-
-        # Determine account
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
         account_id = None
 
-        if obj:  # Editing existing object
-            account_id = obj.account_id
-        else:
-            # When adding new, try to get from request GET or session
-            account_id = request.GET.get("account") or request.session.get("account_id")
+        # If editing existing object
+        object_id = request.resolver_match.kwargs.get("object_id")
+        if object_id:
+            try:
+                obj = AccountJob.objects.get(pk=object_id)
+                account_id = obj.account_id
+            except AccountJob.DoesNotExist:
+                pass
 
-        if account_id:
-            form.base_fields["account_table_data"].queryset = AccountTableData.objects.filter(
-                account_id=account_id
+        # If adding new object
+        if not account_id:
+            account_id = (
+                request.GET.get("account")
+                or request.session.get("account_id")
             )
-        else:
-            form.base_fields["account_table_data"].queryset = AccountTableData.objects.none()
 
-        return form
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        #filter sftp_drop_zone
+        # Apply filtering
         if db_field.name == "sftp_drop_zone":
-            account_id = request.session.get('account_id')
-
             if account_id:
-                kwargs["queryset"] = SFTPDropZone.objects.filter(
-                    account_id=account_id
-                )
+                kwargs["queryset"] = SFTPDropZone.objects.filter(account_id=account_id)
             else:
                 kwargs["queryset"] = SFTPDropZone.objects.none()
 
-        #filter tenant_mapping
-        if db_field.name == "tenant_mapping":
-            account_id = request.session.get('account_id')
-
+        elif db_field.name == "tenant_mapping":
             if account_id:
-                kwargs["queryset"] = TenantMapping.objects.filter(
-                    account_id=account_id
-                )
+                kwargs["queryset"] = TenantMapping.objects.filter(account_id=account_id)
             else:
                 kwargs["queryset"] = TenantMapping.objects.none()
 
-        #filter account_table_data
-        if db_field.name == "account_table_data":
-            account_id = request.session.get('account_id')
-
+        elif db_field.name == "account_table_data":
             if account_id:
-                kwargs["queryset"] = AccountTableData.objects.filter(
-                    account_id=account_id
-                )
+                kwargs["queryset"] = AccountTableData.objects.filter(account_id=account_id)
             else:
                 kwargs["queryset"] = AccountTableData.objects.none()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
+    
+    
 class TenantMappingCodeInline(admin.TabularInline):
     model = TenantMappingCode
     extra = 1  # Number of extra blank rows
