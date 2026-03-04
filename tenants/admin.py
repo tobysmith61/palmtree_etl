@@ -500,23 +500,9 @@ class AccountTableDataAdmin(
 class AccountEncryptionAdmin(
     AccountScopedAdminMixin, 
     PalmTreeGenericAdminMixin,
-):
-    readonly_fields = ("model_description",)
-
+): 
     fieldsets = (
-        (None, {
-            "fields": ("model_description",)
-        }),
         (None, {
             "fields": ("account", "dek_kms_key_id", "dek_algorithm",)
         }),
     )
-
-    def model_description(self, obj=None):
-        return (
-            "Stores the encrypted Data Encryption Key (DEK) for an account. "
-            "The DEK is encrypted using a KMS key and used for field-level encryption."
-        )
-
-    model_description.short_description = "Description"
-    
