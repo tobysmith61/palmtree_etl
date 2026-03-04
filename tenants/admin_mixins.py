@@ -7,6 +7,15 @@ class AccountScopedMixin:
             return qs.filter(**{f"{self.account_field}_id": account_id})
         return qs
 
+class AccountTableDataScopedMixin:
+    account_field = "account_table_data"
+
+    def filter_by_account(self, request, qs):
+        account_id = request.session.get("account_id")
+        if account_id:
+            return qs.filter(**{f"{self.account_field}_id": account_id})
+        return qs
+    
 class AccountScopedAdminMixin(AccountScopedMixin):
     # -------------------------
     # Queryset filtering
@@ -16,7 +25,7 @@ class AccountScopedAdminMixin(AccountScopedMixin):
         return self.filter_by_account(request, qs)
 
     # -------------------------
-    # Make account read-only if session account is set
+    # Make account field read-only if session account is set
     # -------------------------
     def get_readonly_fields(self, request, obj=None):
         readonly = list(super().get_readonly_fields(request, obj))
