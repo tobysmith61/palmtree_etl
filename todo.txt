@@ -89,3 +89,6 @@ TimeStampedAdminMixin
 SoftDeletedFKAdminMixin
 
 done for all except Account/Tenant app
+
+docuemnt and review all AdminMixin's
+

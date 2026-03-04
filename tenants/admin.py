@@ -17,7 +17,8 @@ from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountT
 from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
-from core.admin_mixins import SoftDeletedFKAdminMixin, SoftDeleteAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
+from core.admin_mixins import PalmTreeGenericAdminMixin
+from tenants.admin_mixins import AccountTableDataScopedMixin
 
 from django.urls import path
 from django.shortcuts import redirect
@@ -65,16 +66,18 @@ class RedirectOnSaveAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    StagingReadOnlyAdminMixin, 
-    admin.ModelAdmin
+class LocationAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
 ):
     pass
 
 @admin.register(Tenant)
-class TenantAdmin(SoftDeletedFKAdminMixin, AccountScopedAdminMixin, RedirectOnSaveAdmin):
+class TenantAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
+    RedirectOnSaveAdmin
+):
     fields = (
         'rls_key',
         'account',
@@ -144,7 +147,10 @@ class AccountJobInline(AccountScopedInlineMixin, admin.TabularInline):
     classes = ['collapse'] 
 
 @admin.register(Account)
-class AccountAdmin(RedirectOnSaveAdmin):
+class AccountAdmin(
+    PalmTreeGenericAdminMixin, 
+    RedirectOnSaveAdmin
+):
     search_fields = ("name",)
     ordering = ("name",)
     change_form_template = "admin/tenants/account/change_form.html"
@@ -253,7 +259,6 @@ class AccountAdmin(RedirectOnSaveAdmin):
             obj.encrypted_dek = encrypted_dek
         super().save_model(request, obj, form, change)
 
-
 def build_account_organisational_tree(account):
     return build_account_tree(account, TenantGroupType.OPERATING)
 
@@ -278,11 +283,10 @@ def build_account_tree(account,  group_type):
     return [node_to_dict(root) for root in roots]
 
 @admin.register(AccountJob)
-class AccountJobAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    StagingReadOnlyAdminMixin, 
-    admin.ModelAdmin
+class AccountJobAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
+    AccountTableDataScopedMixin,
 ):
     list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
     list_display_links = ("job",)
@@ -292,6 +296,28 @@ class AccountJobAdmin(AccountScopedAdminMixin,
                 ('account', 'job', 'sftp_drop_zone', 'tenant_mapping', 'account_table_data'),
         }),
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        #account_table_data drop down list should be filtered to the account
+        form = super().get_form(request, obj, **kwargs)
+
+        # Determine account
+        account_id = None
+
+        if obj:  # Editing existing object
+            account_id = obj.account_id
+        else:
+            # When adding new, try to get from request GET or session
+            account_id = request.GET.get("account") or request.session.get("account_id")
+
+        if account_id:
+            form.base_fields["account_table_data"].queryset = AccountTableData.objects.filter(
+                account_id=account_id
+            )
+        else:
+            form.base_fields["account_table_data"].queryset = AccountTableData.objects.none()
+
+        return form
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         #filter sftp_drop_zone
@@ -348,13 +374,9 @@ class TenantMappingCodeInline(admin.TabularInline):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-
 @admin.register(TenantMapping)
 class TenantMappingAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    StagingReadOnlyAdminMixin, 
-    admin.ModelAdmin
+    PalmTreeGenericAdminMixin
 ):
     list_display = ('account', 'desc')
     search_fields = ('account__name', 'desc')  # assuming Account has a name field
@@ -377,16 +399,10 @@ class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     extra = 1  # number of empty forms to show
     autocomplete_fields = ["scoped_tenant"]  # optional, if you have many tenants
 
-
-
-
 @admin.register(SFTPDropZone)
 class SFTPDropZoneAdmin(
-    AccountScopedAdminMixin,
-    SoftDeleteAdminMixin,
-    TimeStampedAdminMixin,
-    StagingReadOnlyAdminMixin,
-    admin.ModelAdmin
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
 ):
     readonly_fields = ('sftp_user', 'folder_path')
     fields = (
@@ -397,7 +413,6 @@ class SFTPDropZoneAdmin(
         'folder_path',
         'retention_period_days'
     )
-
 
     def provision_sftp(self, dropzone):        
         base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
@@ -452,16 +467,11 @@ class SFTPDropZoneAdmin(
         )
 
         return redirect("..")
-    
-
-
 
 @admin.register(AccountTableData)
-class AccountTableDataAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    StagingReadOnlyAdminMixin, 
-    admin.ModelAdmin
+class AccountTableDataAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
 ):
     form = AccountTableDataForm
     list_display = ('account', 'name', 'table_data_copied_from')
@@ -524,12 +534,10 @@ class AccountTableDataAdmin(AccountScopedAdminMixin,
         extra_context["canonical_tabledata"] = TableData.objects.all()
         return super().change_view(request, object_id, form_url, extra_context)
 
-
 @admin.register(AccountEncryption)
-class AccountEncryptionAdmin(AccountScopedAdminMixin, 
-    SoftDeleteAdminMixin, 
-    TimeStampedAdminMixin, 
-    admin.ModelAdmin
+class AccountEncryptionAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin,
 ):
     readonly_fields = ("model_description",)
 
