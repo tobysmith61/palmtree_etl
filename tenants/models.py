@@ -189,7 +189,7 @@ class SFTPDropZoneScopedTenant(CoreModel, FixtureControlledModel):
 class AccountTableData(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    table_data_copied_from = models.OneToOneField(
+    table_data_copied_from = models.ForeignKey(
         TableData,
         on_delete=models.PROTECT,
         related_name="account_table_data",
