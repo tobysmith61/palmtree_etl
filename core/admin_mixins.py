@@ -148,4 +148,12 @@ class StagingReadOnlyAdminMixin:
                 "show_delete": False,
             })
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
-    
+
+class PalmTreeGenericAdminMixin(
+    SoftDeleteAdminMixin,
+    SoftDeletedFKAdminMixin,
+    TimeStampedAdminMixin,
+    StagingReadOnlyAdminMixin,
+    admin.ModelAdmin,
+):
+    pass
