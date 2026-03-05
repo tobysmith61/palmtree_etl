@@ -36,7 +36,7 @@
             "job": 2,
             "sftp_drop_zone": null,
             "tenant_mapping": 2,
-            "updated_at": "2026-03-04T22:47:37.163Z"
+            "updated_at": "2026-03-05T13:38:19.151Z"
         },
         "model": "tenants.accountjob",
         "pk": 3

@@ -252,12 +252,7 @@ class AccountAdmin(
         extra_context = extra_context or {}
         extra_context["disable_account_dropdown"] = True
         return super().add_view(request, form_url, extra_context=extra_context)
-    def save_model(self, request, obj, form, change):
-        if not change:
-            dek, encrypted_dek = generate_encrypted_dek()
-            obj.encrypted_dek = encrypted_dek
-        super().save_model(request, obj, form, change)
-
+    
 def build_account_organisational_tree(account):
     return build_account_tree(account, TenantGroupType.OPERATING)
 
@@ -506,3 +501,12 @@ class AccountEncryptionAdmin(
             "fields": ("account", "dek_kms_key_id", "dek_algorithm",)
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        #############################
+        # auto generate encrypted_dek
+        #############################
+        if not obj.encrypted_dek:
+            dek, encrypted_dek = generate_encrypted_dek()
+            obj.encrypted_dek = encrypted_dek
+        super().save_model(request, obj, form, change)
