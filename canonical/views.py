@@ -2,7 +2,7 @@ from canonical.models import CanonicalSchema, TableData, Job, FieldMapping, Cano
 import json
 from django.shortcuts import render, get_object_or_404
 from .widgets import ExcelWidget
-from .etl import run_etl_preview
+from .etl import etl_transform
 from datetime import date
 
 
@@ -95,19 +95,19 @@ def canonical_json_to_excel_style_table(canonical_rows):
     return canonical_data
 
 
-def job_preview(request, pk):
+def job_preview(request, job_pk):
     job = Job.objects.select_related(
         "canonical_schema",
         "source_schema",
         "test_table"
-    ).get(pk=pk)
+    ).get(pk=job_pk)
     table_data = job.test_table
     source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
     source_fields = job.source_schema.field_mappings.all()
     tenant_mapping = None
 
     canonical_fields = job.canonical_schema.fields.all()
-    canonical_rows, raw_json_rows, display_rows = run_etl_preview(
+    canonical_rows, raw_json_rows, display_rows = etl_transform(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
         table_data=table_data,

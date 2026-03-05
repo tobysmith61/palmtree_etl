@@ -21,7 +21,7 @@ from .utils import get_current_tenant
 
 from canonical.widgets import ExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
-from canonical.etl import run_etl_preview
+from canonical.etl import etl_transform
 from canonical.models import Job
 
 import paramiko
@@ -206,29 +206,34 @@ def admin_account_switch(request):
 
     return redirect(request.META.get("HTTP_REFERER", "/admin/"))
 
-def accountjob_preview(request, pk):
-    accountjob = get_object_or_404(AccountJob, pk=pk)
-
+###############################################################
+# reusable fn to run an ETL transformation from a given dataset
+###############################################################
+def accountjob_transform(accountjob, untransformed_data):
     job = Job.objects.select_related(
         "canonical_schema",
         "source_schema",
         "test_table"
     ).get(pk=accountjob.job.pk)
-    table_data = accountjob.account_table_data
-    source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
     source_fields = job.source_schema.field_mappings.all()
     tenant_mapping = accountjob.tenant_mapping
 
     canonical_fields = job.canonical_schema.fields.all()
-    canonical_rows, raw_json_rows, display_rows = run_etl_preview(
+    canonical_rows, raw_json_rows, display_rows = etl_transform(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
-        table_data=table_data,
+        table_data=untransformed_data,
         tenant_mapping=tenant_mapping
     )
+    return canonical_rows, raw_json_rows, display_rows
+
+def accountjob_preview(request, accountjob_pk):
+    accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
+    canonical_rows, raw_json_rows, display_rows = accountjob_transform(accountjob, accountjob.account_table_data)
 
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
     display_table_data = canonical_json_to_excel_style_table(display_rows)
+    source_data = strip_empty_columns(strip_empty_rows(accountjob.account_table_data.data or []))
     table_widget = ExcelWidget(readonly=True)
 
     context = {

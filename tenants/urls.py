@@ -20,7 +20,7 @@ urlpatterns = [
     path('logout/', custom_logout, name='logout'),
 
     path("admin/account-switch/", admin_account_switch, name="admin-account-switch"),
-    path('accountjobpreview/<int:pk>/', views.accountjob_preview, name='accountjob_preview'),
+    path('accountjobpreview/<int:accountjob_pk>/', views.accountjob_preview, name='accountjob_preview'),
 
     path('sftp-drop-dashboard/', sftp_drop_dashboard_view, name='sftp-drop-dashboard'),
     path('admin/dropzone-files/<int:pk>/', dropzone_files_api, name='dropzone_files_api'),

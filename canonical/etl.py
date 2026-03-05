@@ -65,7 +65,7 @@ def hash_with_platform_secret(data: dict) -> str:
         hashlib.sha256
     ).hexdigest()
 
-def run_etl_preview(source_fields, canonical_fields, table_data, tenant_mapping=None):
+def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=None):
     if not table_data or not table_data.data:
         return []
 
