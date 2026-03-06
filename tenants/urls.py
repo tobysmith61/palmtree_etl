@@ -16,11 +16,13 @@ urlpatterns = [
     path("select/", select_tenant, name="select_tenant"),
     path("dev/login-as/<str:username>/", dev_login_as, name="dev_login_as"),
     path("no-tenant/", no_tenant, name="no_tenant"),
-
     path('logout/', custom_logout, name='logout'),
 
     path("admin/account-switch/", admin_account_switch, name="admin-account-switch"),
     path('accountjobpreview/<int:accountjob_pk>/', views.accountjob_preview, name='accountjob_preview'),
+    path('simulate_sftp_drop_during_dev_only/<int:accountjob_pk>/', 
+         views.simulate_sftp_drop_during_dev_only, 
+         name='simulate_sftp_drop_during_dev_only'),
 
     path('sftp-drop-dashboard/', sftp_drop_dashboard_view, name='sftp-drop-dashboard'),
     path('admin/dropzone-files/<int:pk>/', dropzone_files_api, name='dropzone_files_api'),

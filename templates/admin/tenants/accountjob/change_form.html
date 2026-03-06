@@ -4,8 +4,18 @@
     {{ block.super }}
     {% if original.id %}
         <li>
-            <a class="button" href="{% url 'tenants:accountjob_preview' original.id %}">
+            <a 
+            class="button"
+            href="{% url 'tenants:accountjob_preview' original.id %}">
                 Preview Transformations (incl Tenant mappings)
+            </a>
+        </li>
+        <br/>
+        <li>
+            <a 
+            class="button"
+            href="{% url 'tenants:simulate_sftp_drop_during_dev_only' original.pk %}">
+                Simulate sFTP drop (during dev only)
             </a>
         </li>
     {% endif %}

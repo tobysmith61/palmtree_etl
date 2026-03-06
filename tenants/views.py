@@ -7,7 +7,7 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView
 from django.conf import settings
 from django.views.decorators.http import require_POST
@@ -26,8 +26,12 @@ from canonical.models import Job
 
 import paramiko
 import os
-import datetime
+from datetime import datetime
+
 from uuid import UUID
+import csv
+from io import StringIO
+from dotenv import load_dotenv
 
 def select_tenant(request):
     user = request.user
@@ -245,6 +249,66 @@ def accountjob_preview(request, accountjob_pk):
     }
 
     return render(request, "canonical/table_preview.html", context)
+
+def tabledata_to_pipe_csv(json_array):
+    rows = json_array
+
+    output = StringIO()
+    writer = csv.writer(output, delimiter="|")
+
+    for row in rows:
+        writer.writerow(row)
+
+    return output.getvalue()
+
+def simulate_sftp_drop_during_dev_only(request, accountjob_pk):
+    accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
+    load_dotenv()
+
+    HOST = "52.56.242.200"
+    PORT = 22
+    USERNAME = os.getenv("SFTP_TEST_USERNAME")
+    PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
+    REMOTE_DIR = "drop"  # because user home is already the drop root
+
+    try:
+        # Create a local test file
+        filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        local_path = os.path.join("/tmp", filename)
+
+        psv = tabledata_to_pipe_csv(accountjob.job.test_table.data)
+        with open(local_path, "w") as f:
+            f.write(psv)
+
+        print(f"Created local test file: {local_path}")
+
+        transport = paramiko.Transport((HOST, PORT))
+        transport.connect(username=USERNAME, password=PASSWORD)
+
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        remote_path = f"{REMOTE_DIR}/{filename}"
+
+        print(f"Uploading to {remote_path} ...")
+        sftp.put(local_path, remote_path)
+
+        print("Upload successful ✅")
+        messages.success(
+            request,
+            "Upload successful ✅"
+            )
+        sftp.close()
+        transport.close()
+    except Exception as e:
+        messages.error(
+            request,
+            f"Upload failed: {e}"
+        )
+
+    return redirect(
+        reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
+    )
+
 
 def sftp_drop_dashboard_view(request):
     if request.method == "POST":
