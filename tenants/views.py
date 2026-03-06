@@ -32,6 +32,8 @@ from uuid import UUID
 import csv
 from io import StringIO
 from dotenv import load_dotenv
+import traceback
+
 
 def select_tenant(request):
     user = request.user
@@ -347,7 +349,6 @@ def upload_to_sftp(file_obj, remote_path):
     sftp.close()
     transport.close()
 
-import traceback
 
 @staff_member_required
 def dropzone_files_api(request, pk):
@@ -369,8 +370,8 @@ def dropzone_files_api(request, pk):
                         "name": f,
                         "path": os.path.relpath(full_path, base_folder),
                         "size": stat.st_size,
-                        "modified": datetime.datetime.fromtimestamp(
-                            stat.st_mtime
+                        "modified": make_aware(
+                            datetime.datetime.fromtimestamp(stat.st_mtime)
                         ).strftime("%Y-%m-%d %H:%M:%S"),
                     })
 
