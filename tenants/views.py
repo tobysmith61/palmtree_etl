@@ -347,19 +347,21 @@ def upload_to_sftp(file_obj, remote_path):
     sftp.close()
     transport.close()
 
+import traceback
+
 @staff_member_required
 def dropzone_files_api(request, pk):
-    dropzone = get_object_or_404(SFTPDropZone, pk=pk)
+    try:
+        dropzone = get_object_or_404(SFTPDropZone, pk=pk)
 
-    base_folder = os.path.dirname(dropzone.folder_path)
+        base_folder = os.path.dirname(dropzone.folder_path)
 
-    files = []
+        files = []
 
-    for root, dirs, filenames in os.walk(base_folder):
-        for f in filenames:
-            full_path = os.path.join(root, f)
+        for root, dirs, filenames in os.walk(base_folder):
+            for f in filenames:
+                full_path = os.path.join(root, f)
 
-            try:
                 if os.path.isfile(full_path):
                     stat = os.stat(full_path)
 
@@ -371,9 +373,14 @@ def dropzone_files_api(request, pk):
                             stat.st_mtime
                         ).strftime("%Y-%m-%d %H:%M:%S"),
                     })
-            except PermissionError:
-                continue
 
-    files.sort(key=lambda x: x["modified"], reverse=True)
+        files.sort(key=lambda x: x["modified"], reverse=True)
 
-    return JsonResponse({"files": files})
+        return JsonResponse({"files": files})
+
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }, status=500)
+    
