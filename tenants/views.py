@@ -349,39 +349,30 @@ def upload_to_sftp(file_obj, remote_path):
     sftp.close()
     transport.close()
 
-
 @staff_member_required
 def dropzone_files_api(request, pk):
+    dropzone = get_object_or_404(SFTPDropZone, pk=pk)
+    base_folder = os.path.dirname(dropzone.folder_path)
+    files = []
+
     try:
-        dropzone = get_object_or_404(SFTPDropZone, pk=pk)
-
-        base_folder = os.path.dirname(dropzone.folder_path)
-
-        files = []
-
         for root, dirs, filenames in os.walk(base_folder):
             for f in filenames:
                 full_path = os.path.join(root, f)
-
                 if os.path.isfile(full_path):
                     stat = os.stat(full_path)
-
+                    relative_path = os.path.relpath(full_path, base_folder)
                     files.append({
                         "name": f,
-                        "path": os.path.relpath(full_path, base_folder),
+                        "path": relative_path,
                         "size": stat.st_size,
-                        "modified": make_aware(
-                            datetime.fromtimestamp(stat.st_mtime)
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
+                        "modified": make_aware(datetime.fromtimestamp(stat.st_mtime))
+                                    .strftime("%Y-%m-%d %H:%M:%S"),
                     })
+    except FileNotFoundError:
+        pass
 
-        files.sort(key=lambda x: x["modified"], reverse=True)
+    files.sort(key=lambda x: x["modified"], reverse=True)
 
-        return JsonResponse({"files": files})
-
-    except Exception as e:
-        return JsonResponse({
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }, status=500)
-    
+    # return array directly
+    return JsonResponse(files, safe=False)
