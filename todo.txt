@@ -90,5 +90,8 @@ SoftDeletedFKAdminMixin
 
 done for all except Account/Tenant app
 
-docuemnt and review all AdminMixin's
+document and review all AdminMixin's
+
+for simulated data from the DMS (CustomerVehicles) exclude dupe customers and vehicles until required
+consider using data8 for this task - although expensive
 
