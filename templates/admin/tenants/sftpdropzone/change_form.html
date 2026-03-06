@@ -68,10 +68,10 @@
                 const failedFiles = [];
     
                 data.files.forEach(file => {
-                    if (file.path.startsWith('drop/')) dropFiles.push(file);
-                    else if (file.path.startsWith('ready/')) readyFiles.push(file);
-                    else if (file.path.startsWith('processed/')) processedFiles.push(file);
-                    else if (file.path.startsWith('failed/')) failedFiles.push(file);
+                    if (file.path.contains('/drop/')) dropFiles.push(file);
+                    else if (file.path.contains('/ready/')) readyFiles.push(file);
+                    else if (file.path.contains('/processed/')) processedFiles.push(file);
+                    else if (file.path.contains('/failed/')) failedFiles.push(file);
                 });
     
                 // Determine max number of rows needed
