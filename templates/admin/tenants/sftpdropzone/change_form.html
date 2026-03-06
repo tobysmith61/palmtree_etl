@@ -43,8 +43,7 @@
     
         function formatSize(bytes) {
             if (bytes < 1024) return bytes + " B";
-            if (bytes < 1024 * 1024)
-                return (bytes / 1024).toFixed(1) + " KB";
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
             return (bytes / (1024 * 1024)).toFixed(1) + " MB";
         }
     
@@ -55,7 +54,7 @@
     
                 tableBody.innerHTML = "";
     
-                if (!data.files || data.files.length === 0) {
+                if (!data || data.length === 0) {
                     tableBody.innerHTML =
                         "<tr><td colspan='4'>No files found</td></tr>";
                     return;
@@ -67,11 +66,11 @@
                 const processedFiles = [];
                 const failedFiles = [];
     
-                data.files.forEach(file => {
-                    if (file.path.contains('/drop/')) dropFiles.push(file);
-                    else if (file.path.contains('/ready/')) readyFiles.push(file);
-                    else if (file.path.contains('/processed/')) processedFiles.push(file);
-                    else if (file.path.contains('/failed/')) failedFiles.push(file);
+                data.forEach(file => {
+                    if (file.path.includes('/drop/')) dropFiles.push(file);
+                    else if (file.path.includes('/ready/')) readyFiles.push(file);
+                    else if (file.path.includes('/processed/')) processedFiles.push(file);
+                    else if (file.path.includes('/failed/')) failedFiles.push(file);
                 });
     
                 // Determine max number of rows needed
@@ -98,6 +97,7 @@
                 }
     
             } catch (err) {
+                console.error(err);
                 tableBody.innerHTML =
                     "<tr><td colspan='4'>Error loading files</td></tr>";
             }
