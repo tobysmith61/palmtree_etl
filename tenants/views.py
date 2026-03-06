@@ -371,7 +371,7 @@ def dropzone_files_api(request, pk):
                         "path": os.path.relpath(full_path, base_folder),
                         "size": stat.st_size,
                         "modified": make_aware(
-                            datetime.datetime.fromtimestamp(stat.st_mtime)
+                            datetime.fromtimestamp(stat.st_mtime)
                         ).strftime("%Y-%m-%d %H:%M:%S"),
                     })
 
