@@ -368,21 +368,25 @@ class SFTPDropZoneAdmin(
         'desc',
         'sftp_user',
         'folder_path',
-        'retention_period_days'
+        'retention_period_days',
+        'deleted'
     )
 
-    def provision_sftp(self, dropzone):        
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change) # save account
         base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
-        folder_path = f"{base_path}/{dropzone.account.short.lower()}/{dropzone.zone_folder}/drop"
+        obj.folder_path = f"{base_path}/{obj.account.short.lower()}/{obj.zone_folder}/drop"
+        obj.save(update_fields=["folder_path"])
+    
+    def provision_sftp(self, dropzone):        
         username = f"{dropzone.account.short}_{dropzone.zone_folder}".lower()
         password = get_random_string(16)
 
-        os.makedirs(folder_path, exist_ok=True)
+        os.makedirs(self.folder_path, exist_ok=True)
 
-        subprocess.run(["sudo", "useradd", "-m", "-d", folder_path, "-s", "/usr/sbin/nologin", username], check=True)
+        subprocess.run(["sudo", "useradd", "-m", "-d", self.folder_path, "-s", "/usr/sbin/nologin", username], check=True)
         subprocess.run(["sudo", "chpasswd"], input=f"{username}:{password}".encode(), check=True)
 
-        dropzone.folder_path = folder_path
         dropzone.sftp_user = username
         dropzone.save(update_fields=["folder_path", "sftp_user"])
 
@@ -394,7 +398,7 @@ class SFTPDropZoneAdmin(
             path(
                 "<int:object_id>/provision-sftp/",
                 self.admin_site.admin_view(self.provision_sftp_view),
-                name="yourapp_sftpdropzone_provision_sftp",
+                name="sftpdropzone_provision_sftp",
             ),
         ]
         return custom_urls + urls

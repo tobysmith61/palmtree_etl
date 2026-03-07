@@ -5,7 +5,7 @@
 
     {% if original and not original.sftp_user %}
         <li>
-            <a href="{% url 'admin:yourapp_sftpdropzone_provision_sftp' original.pk %}"
+            <a href="{% url 'admin:sftpdropzone_provision_sftp' original.pk %}"
                class="button"
                style="background:#417690;color:white;">
                 Provision SFTP
