@@ -352,26 +352,27 @@ def upload_to_sftp(file_obj, remote_path):
 @staff_member_required
 def dropzone_files_api(request, pk):
     dropzone = get_object_or_404(SFTPDropZone, pk=pk)
-    base_folder = dropzone.folder_path  # use folder_path directly
+    base_folder = os.path.dirname(dropzone.folder_path)
     files = []
 
     try:
-        # Only list files in this folder, not subfolders
-        for f in os.listdir(base_folder):
-            full_path = os.path.join(base_folder, f)
-            if os.path.isfile(full_path):
-                stat = os.stat(full_path)
-                files.append({
-                    "name": f,
-                    "path": f,  # relative to drop folder
-                    "size": stat.st_size,
-                    "modified": make_aware(datetime.fromtimestamp(stat.st_mtime))
-                                .strftime("%Y-%m-%d %H:%M:%S"),
-                })
+        for root, dirs, filenames in os.walk(base_folder):
+            for f in filenames:
+                full_path = os.path.join(root, f)
+                if os.path.isfile(full_path):
+                    stat = os.stat(full_path)
+                    relative_path = os.path.relpath(full_path, base_folder)
+                    files.append({
+                        "name": f,
+                        "path": relative_path,
+                        "size": stat.st_size,
+                        "modified": make_aware(datetime.fromtimestamp(stat.st_mtime))
+                                    .strftime("%Y-%m-%d %H:%M:%S"),
+                    })
     except FileNotFoundError:
         pass
 
-    # Sort by modification time, newest first
     files.sort(key=lambda x: x["modified"], reverse=True)
 
+    # return array directly
     return JsonResponse(files, safe=False)
