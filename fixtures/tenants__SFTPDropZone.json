@@ -21,11 +21,11 @@
             "created_at": "2026-03-02T08:47:13.712Z",
             "deleted": false,
             "desc": null,
-            "folder_path": "/srv/sftp_drops/stellant/dms002",
+            "folder_path": "/srv/sftp_drops/stellant/dms002/drop",
             "retention_period_days": 7,
             "scope": null,
             "sftp_user": "",
-            "updated_at": "2026-03-06T20:08:53.112Z",
+            "updated_at": "2026-03-08T22:08:15.437Z",
             "zone_folder": "dms002"
         },
         "model": "tenants.sftpdropzone",
