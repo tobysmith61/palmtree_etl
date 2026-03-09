@@ -3,7 +3,7 @@
 {% block object-tools %}
     {{ block.super }}
 
-    {% if original and not original.sftp_user %}
+    {% if original %}
         <li>
             <a href="{% url 'admin:sftpdropzone_provision_sftp' original.pk %}"
                class="button"

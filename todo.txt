@@ -4,14 +4,6 @@ soft delete sftp account
 hard delete sftp account with guardrails tbc
 close account at account holders request and delete all customer data
 
-
-stellant
-DMS001
-stellant_sftp_user_dev1
-lruDXY2z6Nnsrk2471UyIy8/wy83AqZU
-
-
-
 # Need to apply visibility of configured groups to Users who are tied to email domain.
 # Users need palmTree roles
 # Roles have privileges

@@ -361,12 +361,11 @@ class SFTPDropZoneAdmin(
     AccountScopedAdminMixin, 
     PalmTreeGenericAdminMixin, 
 ):
-    readonly_fields = ('sftp_user', 'folder_path')
+    readonly_fields = ('folder_path',)
     fields = (
         'account',
         'zone_folder',
         'desc',
-        'sftp_user',
         'folder_path',
         'retention_period_days',
         'deleted'
