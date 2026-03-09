@@ -3,7 +3,7 @@ import json
 from django.shortcuts import render, get_object_or_404
 from .widgets import ExcelWidget
 from .etl import etl_transform
-from datetime import date
+from datetime import date, datetime
 
 
 def schema_overview(request):
@@ -30,20 +30,22 @@ def schema_overview(request):
         "schema_list": schema_list
     })
 
-
 def serialize_tabledata_for_widget(tabledata_list):
     """
     Convert values to JSON-serializable, preview-friendly representations.
-    Dates are wrapped to show storage intent: date(YYYY-MM-DD)
+    Dates are wrapped to show storage intent: date(YYYY-MM-DD).
+    Nested objects/dicts are converted to JSON strings to avoid [object Object].
     """
     def serialize_value(v):
         if v is None:
             return " "
-
-        if isinstance(v, date):
+        if isinstance(v, (date, datetime)):
             return f"date({v.isoformat()})"
-
-        return v
+        if isinstance(v, (dict, list)):
+            # convert nested structures to compact JSON string
+            return json.dumps(v, ensure_ascii=False)
+        # fallback for other objects: convert to string
+        return str(v)
 
     return [
         [serialize_value(cell) for cell in row]
