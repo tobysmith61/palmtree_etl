@@ -231,11 +231,11 @@ def accountjob_transform(accountjob, untransformed_data):
         table_data=untransformed_data,
         tenant_mapping=tenant_mapping
     )
-    return canonical_rows, raw_json_rows, display_rows
+    return raw_json_rows, canonical_rows, display_rows
 
 def accountjob_preview(request, accountjob_pk):
     accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
-    canonical_rows, raw_json_rows, display_rows = accountjob_transform(accountjob, accountjob.account_table_data)
+    raw_json_rows, canonical_rows, display_rows = accountjob_transform(accountjob, accountjob.account_table_data)
 
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
     display_table_data = canonical_json_to_excel_style_table(display_rows)

@@ -12,7 +12,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "company",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:40:59.982Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 33
@@ -30,7 +30,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "dms_customer_id",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:40:59.995Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 34
@@ -48,7 +48,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "last_updated",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.005Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 35
@@ -66,7 +66,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "title",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.019Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 36
@@ -84,7 +84,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "first_name",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.032Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 37
@@ -102,7 +102,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "surname",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.134Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 38
@@ -120,7 +120,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "salutation",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.146Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 39
@@ -138,7 +138,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "addr1",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.158Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 40
@@ -156,7 +156,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "addr2",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.171Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 41
@@ -174,7 +174,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "addr3",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.185Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 42
@@ -192,7 +192,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "addr4",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.196Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 43
@@ -210,7 +210,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "addr5",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.206Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 44
@@ -228,7 +228,7 @@
             "pii_requires_fingerprint": true,
             "source_field_name": "postcode",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T21:39:54.501Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 45
@@ -240,13 +240,13 @@
             "deleted": false,
             "is_tenant_mapping_source": false,
             "is_volatile": false,
-            "normalisation": "[\"op\": \"remove_whitespace\"}]",
+            "normalisation": "[{\"op\": \"remove_whitespace\"}, {\"op\": \"lowercase\"}]",
             "order": 14,
             "pii_requires_encryption": true,
             "pii_requires_fingerprint": false,
             "source_field_name": "email",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T21:38:42.323Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 46
@@ -264,7 +264,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "email_opt_in",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.245Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 47
@@ -282,7 +282,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "email_opt_in_date",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.255Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 48
@@ -294,13 +294,13 @@
             "deleted": false,
             "is_tenant_mapping_source": false,
             "is_volatile": false,
-            "normalisation": "[\"op\": \"remove_whitespace\"}]",
+            "normalisation": "[{\"op\": \"trim\"}]",
             "order": 17,
             "pii_requires_encryption": true,
             "pii_requires_fingerprint": false,
             "source_field_name": "mobile",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T21:38:42.350Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 49
@@ -318,7 +318,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "mobile_opt_in",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.280Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 50
@@ -336,7 +336,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "home_phone",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.289Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 51
@@ -354,7 +354,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "home_phone_opt_in",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.300Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 52
@@ -372,7 +372,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "home_phone_opt_in_date",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.312Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 53
@@ -390,7 +390,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "dms_vehicle_id",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.320Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 54
@@ -408,7 +408,7 @@
             "pii_requires_fingerprint": true,
             "source_field_name": "vehicle_reg",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.337Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 55
@@ -426,7 +426,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "brand",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.348Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 56
@@ -444,7 +444,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "model",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.359Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 57
@@ -462,7 +462,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "first_reg",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.367Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 58
@@ -480,7 +480,7 @@
             "pii_requires_fingerprint": true,
             "source_field_name": "vin17",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.380Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 59
@@ -498,7 +498,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "fuel",
             "source_schema": 1,
-            "updated_at": "2026-03-02T08:47:13.449Z"
+            "updated_at": "2026-03-09T20:41:00.389Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 60
@@ -516,7 +516,7 @@
             "pii_requires_fingerprint": false,
             "source_field_name": "variant",
             "source_schema": 1,
-            "updated_at": "2026-03-02T13:16:18.034Z"
+            "updated_at": "2026-03-09T20:41:00.404Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 61

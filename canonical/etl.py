@@ -138,7 +138,7 @@ def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=No
                 canonical_row[field_name]=raw_json_dict_enc[field_name]
 
         canonical_rows.append(canonical_row)
-    
+
     ####################
     #prepare for display
     ####################
@@ -162,21 +162,25 @@ def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=No
                     k,
                     str(account.short),
                     dek,
+                    cf.format_type
                 )
                 
         display_rows.append(canonical_row_copy_for_display)
     
     return canonical_rows, [json.dumps(row) for row in raw_data_storage_rows], display_rows
 
-def decrypt(row, key, short, dek):
-    encrypted_value=row[key]
+def decrypt(row, key, short, dek, format_type):
+    if format_type != 'none':
+        encrypted_value=row[key][format_type]
+    else:
+        encrypted_value=row[key]
     return decrypt_value(encrypted_value, dek, short)
 
 def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
     all_kv_values = {}
     for sf in source_fields:
         field_name = sf.source_field_name
-        value = raw_row.get(field_name)
+        value = raw_row.get(field_name)            
         extended_kv_values = apply_normalisation(value, field_name, sf.normalisation)
         k, v = next(iter(extended_kv_values.items()))
         try:
@@ -287,14 +291,8 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
 
         for k, v in kv_value.items():
             if 'postcode' in cf.format_type:
-                print (290)
-                print (raw_json_row)
-                print (all_kv_values)
-                print (type(all_kv_values))
-                print (k)
-                print (v)
-                print (cf.format_type)
-                all_kv_values[k]=v[cf.format_type]
+#                all_kv_values[k]=v[cf.format_type]
+                all_kv_values[k]=v
             else:
                 all_kv_values[k]=v
     
@@ -335,18 +333,11 @@ def apply_normalisation(value, field_name, rules):
     if isinstance(rules, str):
         try:
             rules = json.loads(rules)
-
         except json.JSONDecodeError:
             rules = []    
 
         for step in rules or []:
-            
-            print (344)
-            print (rules)
-            print (step)
-
             op = step.get("op")
-
             if op == "trim":
                 value = value.strip()
 
