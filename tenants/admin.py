@@ -378,19 +378,6 @@ class SFTPDropZoneAdmin(
         obj.folder_path = f"{base_path}/{obj.account.short.lower()}/{obj.zone_folder}/drop"
         obj.save(update_fields=["folder_path"])
     
-    def provision_sftp(self, dropzone):        
-        username = f"{dropzone.account.short}_{dropzone.zone_folder}".lower()
-        password = get_random_string(16)
-
-        os.makedirs(self.folder_path, exist_ok=True)
-
-        subprocess.run(["sudo", "useradd", "-m", "-d", self.folder_path, "-s", "/usr/sbin/nologin", username], check=True)
-        subprocess.run(["sudo", "chpasswd"], input=f"{username}:{password}".encode(), check=True)
-
-        dropzone.sftp_user = username
-        dropzone.save(update_fields=["folder_path", "sftp_user"])
-
-        return username, password
 
     def get_urls(self):
         urls = super().get_urls()
@@ -416,19 +403,16 @@ class SFTPDropZoneAdmin(
             messages.error(request, "Object not found.")
             return redirect("..")
 
-        if obj.sftp_user:
-            messages.warning(request, "SFTP already provisioned.")
-            return redirect("..")
-
-        username, password = self.provision_sftp(obj)
-
         messages.success(
             request,
-            f"SFTP created — Username: {username} | Password: {password}"
+            mark_safe(
+                f"Run this on the remote server:<br>"
+                f"<code>./scripts/bash/create_sftp_user.sh {obj.account.short.lower()} {obj.zone_folder}</code>"
+            )
         )
 
         return redirect("..")
-
+    
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(
     AccountScopedAdminMixin, 
@@ -453,6 +437,7 @@ class AccountTableDataAdmin(
             'fields': ('name', 'table_data_copied_from', 'data'),
         }),
     )
+
 
     # ─────────────────────────────
     # Custom admin URL
