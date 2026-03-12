@@ -65,14 +65,9 @@ def hash_with_platform_secret(data: dict) -> str:
         hashlib.sha256
     ).hexdigest()
 
-def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=None):
-    if not table_data or not table_data.data:
-        return []
-
-    header, *rows = table_data.data
-
+def etl_transform(source_fields, canonical_fields, header, rows, tenant_mapping=None):
     account = resolve_account(tenant_mapping)
-    account_encryption = get_account_encryption(account)    
+    account_encryption = get_account_encryption(account)
     dek = decrypt_dek(account_encryption.encrypted_dek)
     
     #########################
@@ -82,45 +77,12 @@ def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=No
     for row in rows:
         raw_json_dict=dict(zip(header, row))
 
-        #remove field None: None if it exists
-        raw_json_dict.pop(None, None)
 
-        #keep true raw row, should we need it later
-        unaltered_raw_json_dict=raw_json_dict 
-
-        #keep non encrypted values for hashing later
-        raw_json_dict_not_encrypted=raw_json_dict
-
-        #skip blank row
-        if all(v in (None, "", []) for v in raw_json_dict.values()):
-            continue
-
-        #ignore (remove) volatile fields before hashing
-        for sf in source_fields:
-            if sf.is_volatile:
-                raw_json_dict.pop(sf.source_field_name, None)
-
-        #hash
-        hash = hash_with_platform_secret(raw_json_dict)
-
-        #build raw json with applied pii encryption
-        raw_json_dict_enc=encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
-
-        #prepend row with hash
-        raw_json_dict_enc = {'row_hash': hash, **raw_json_dict_enc}
-
-        #fingerprints as hmac
-        for sf in source_fields:
-            if sf.pii_requires_fingerprint:
-                orig_field_name = sf.source_field_name
-                value = raw_json_dict_not_encrypted.get(orig_field_name)
-                field_name = 'fingerprint_'+sf.source_field_name
-                print (field_name)
-                hmac_secret = os.getenv("HMAC_SECRET")
-                raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
+        raw_data_storage_row = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
 
         #finished processing raw row
-        raw_data_storage_rows.append(raw_json_dict_enc)
+        if raw_data_storage_row:
+            raw_data_storage_rows.append(raw_data_storage_row)
 
     ##################
     #prepare canonical
@@ -132,17 +94,16 @@ def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=No
         #finally add all fingerprinted values to canonical
         for sf in source_fields:
             if sf.pii_requires_fingerprint:
-                orig_field_name = sf.source_field_name
-                value = raw_json_dict_not_encrypted.get(orig_field_name)
+                #orig_field_name = sf.source_field_name
+                #value = raw_json_dict_not_encrypted.get(orig_field_name)
                 field_name = 'fingerprint_'+sf.source_field_name
-                canonical_row[field_name]=raw_json_dict_enc[field_name]
+                canonical_row[field_name]=raw_json_dict[field_name]
 
         canonical_rows.append(canonical_row)
 
     ####################
     #prepare for display
-    ####################
-    
+    ####################    
     display_rows=[]
     for canonical_row in canonical_rows:
         canonical_row_copy_for_display = canonical_row.copy()
@@ -167,7 +128,67 @@ def etl_transform(source_fields, canonical_fields, table_data, tenant_mapping=No
                 
         display_rows.append(canonical_row_copy_for_display)
     
-    return canonical_rows, [json.dumps(row) for row in raw_data_storage_rows], display_rows
+    return [json.dumps(row) for row in raw_data_storage_rows], canonical_rows, display_rows
+
+def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek):
+    #remove field None: None if it exists
+    raw_json_dict.pop(None, None)
+
+    #keep true raw row, should we need it later
+    unaltered_raw_json_dict=raw_json_dict
+
+    #keep non encrypted values for hashing later
+    raw_json_dict_not_encrypted=raw_json_dict
+
+    #skip blank row
+    if all(v in (None, "", []) for v in raw_json_dict.values()):
+        return
+
+    #ignore (remove) volatile fields before hashing
+    for sf in source_fields:
+        if sf.is_volatile:
+            raw_json_dict.pop(sf.source_field_name, None)
+
+    #row_hash
+    row_hash = hash_with_platform_secret(raw_json_dict)
+
+    #create a json struct for (composite) business key for hashing
+    tenant_code=''
+    business_key_values = {}
+    for sf in source_fields:
+        if sf.is_business_key:
+            orig_field_name = sf.source_field_name
+            value = raw_json_dict_not_encrypted.get(orig_field_name)
+            if tenant_mapping and sf.is_tenant_mapping_source:
+                value=tenant_mapping.resolve_tenant(value)
+                tenant_code=value
+            business_key_values[orig_field_name] = value
+    business_key_json = json.dumps(business_key_values, ensure_ascii=False)
+    
+    business_key_hash = hash_with_platform_secret(business_key_json)
+
+    #build raw json with applied pii encryption
+    raw_json_dict_enc=encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
+
+    #prepend row with business_key_hash
+    raw_json_dict_enc = {'business_key_hash': business_key_hash, **raw_json_dict_enc}
+
+    #prepend row with row_hash
+    raw_json_dict_enc = {'row_hash': row_hash, **raw_json_dict_enc}
+
+    #prepend row with tenant_code for tenant isolation
+    raw_json_dict_enc = {'tenant_code': tenant_code, **raw_json_dict_enc}
+
+    #fingerprints as hmac
+    for sf in source_fields:
+        if sf.pii_requires_fingerprint:
+            orig_field_name = sf.source_field_name
+            value = raw_json_dict_not_encrypted.get(orig_field_name)
+            field_name = 'fingerprint_'+sf.source_field_name
+            hmac_secret = os.getenv("HMAC_SECRET")
+            raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
+
+    return raw_json_dict_enc
 
 def decrypt(row, key, short, dek, format_type):
     if format_type != 'none':

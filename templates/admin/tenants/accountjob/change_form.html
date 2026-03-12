@@ -14,8 +14,24 @@
         <li>
             <a 
             class="button"
-            href="{% url 'tenants:simulate_sftp_drop_during_dev_only' original.pk %}">
-                Simulate sFTP drop (during dev only)
+            href="{% url 'tenants:simulate_sftp_remote_drop_during_dev_only' original.pk %}">
+                Simulate sFTP remote drop (during dev only)
+            </a>
+        </li>
+        <br/>
+        <li>
+            <a 
+            class="button"
+            href="{% url 'tenants:simulate_sftp_local_drop_during_dev_only' original.pk %}">
+                Simulate sFTP local drop (during dev only)
+            </a>
+        </li>
+        <br/>
+        <li>
+            <a 
+            class="button"
+            href="{% url 'tenants:run_account_job_from_django_admin' original.pk %}">
+                Run Account Job (during dev only)
             </a>
         </li>
     {% endif %}

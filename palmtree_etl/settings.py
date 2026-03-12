@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     #"sandbox",
     "vendor",
     "global_data",
+    "raw_data",
 ]
 
 MIDDLEWARE = [

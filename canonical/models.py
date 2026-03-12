@@ -26,6 +26,7 @@ class FieldMapping(CoreModel, FixtureControlledModel): # rename as it not longer
     order = models.PositiveIntegerField()
     active = models.BooleanField(default=True)
     is_tenant_mapping_source = models.BooleanField(default=False)
+    is_business_key = models.BooleanField(default=False)
 
     # 🔹 Generic, composable rules
     normalisation = models.JSONField(

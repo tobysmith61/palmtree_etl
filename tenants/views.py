@@ -33,6 +33,8 @@ import csv
 from io import StringIO
 from dotenv import load_dotenv
 import traceback
+import shutil
+from pathlib import Path
 
 
 def select_tenant(request):
@@ -215,7 +217,7 @@ def admin_account_switch(request):
 ###############################################################
 # reusable fn to run an ETL transformation from a given dataset
 ###############################################################
-def accountjob_transform(accountjob, untransformed_data):
+def accountjob_transform(accountjob, header, rows):
     job = Job.objects.select_related(
         "canonical_schema",
         "source_schema",
@@ -225,17 +227,20 @@ def accountjob_transform(accountjob, untransformed_data):
     tenant_mapping = accountjob.tenant_mapping
 
     canonical_fields = job.canonical_schema.fields.all()
-    canonical_rows, raw_json_rows, display_rows = etl_transform(
+    raw_json_rows, canonical_rows, display_rows = etl_transform(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
-        table_data=untransformed_data,
+        header=header,
+        rows=rows,
         tenant_mapping=tenant_mapping
     )
     return raw_json_rows, canonical_rows, display_rows
 
 def accountjob_preview(request, accountjob_pk):
     accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
-    raw_json_rows, canonical_rows, display_rows = accountjob_transform(accountjob, accountjob.account_table_data)
+    header, *rows = accountjob.account_table_data.data
+
+    raw_json_rows, canonical_rows, display_rows = accountjob_transform(accountjob, header, rows)
 
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
     display_table_data = canonical_json_to_excel_style_table(display_rows)
@@ -263,54 +268,100 @@ def tabledata_to_pipe_csv(json_array):
 
     return output.getvalue()
 
-def simulate_sftp_drop_during_dev_only(request, accountjob_pk):
-    accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
-    load_dotenv()
+def simulate_sftp_remote_drop_during_dev_only(request, accountjob_pk):
+    return simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, 'SFTP')
 
-    HOST = "52.56.242.200"
-    PORT = 22
-    USERNAME = os.getenv("SFTP_TEST_USERNAME")
-    PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
-    REMOTE_DIR = "drop"  # because user home is already the drop root
+def simulate_sftp_local_drop_during_dev_only(request, accountjob_pk):
+    return simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, 'LOCAL_COPY')
 
-    try:
-        # Create a local test file
-        filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        local_path = os.path.join("/tmp", filename)
+def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, method):
+    while True:
+        if not getattr(settings, "IS_STAGING_SERVER", False):
+            if method=="SFTP":
+                #can only do this from the dev machine (macbook)
+                messages.error(
+                    request,
+                    f"Can only send via sFTP from the dev machine"
+                )
+                break
+            if method=="LOCAL_COPY":
+                #can only do this from the dev machine (macbook)
+                messages.error(
+                    request,
+                    f"Can only make local copy from the dev machine"
+                )
+                break
 
-        psv = tabledata_to_pipe_csv(accountjob.job.test_table.data)
-        with open(local_path, "w") as f:
-            f.write(psv)
+        accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
+        load_dotenv()
 
-        print(f"Created local test file: {local_path}")
+        try:
+            # Create a local test file
+            filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            local_path = os.path.join("/tmp", filename)
 
-        transport = paramiko.Transport((HOST, PORT))
-        transport.connect(username=USERNAME, password=PASSWORD)
+            psv = tabledata_to_pipe_csv(accountjob.account_table_data.data)
+            with open(local_path, "w") as f:
+                f.write(psv)
 
-        sftp = paramiko.SFTPClient.from_transport(transport)
+            print(f"Created local test file: {local_path}")
 
-        remote_path = f"{REMOTE_DIR}/{filename}"
+            if method=='SFTP':
+                HOST = "52.56.242.200"
+                PORT = 22
+                USERNAME = os.getenv("SFTP_TEST_USERNAME")
+                PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
+                REMOTE_DIR = "drop"  # because user home is already the drop root
+                transport = paramiko.Transport((HOST, PORT))
+                transport.connect(username=USERNAME, password=PASSWORD)
+                sftp = paramiko.SFTPClient.from_transport(transport)
+                remote_path = f"{REMOTE_DIR}/{filename}"
+                print(f"Uploading to {remote_path} ...")
+                sftp.put(local_path, remote_path)
+                
+                sftp.close()
+                transport.close()
 
-        print(f"Uploading to {remote_path} ...")
-        sftp.put(local_path, remote_path)
+                messages.success(
+                    request,
+                    f"sFTP upload with user {USERNAME} successful ✅"
+                )
 
-        print("Upload successful ✅")
-        messages.success(
-            request,
-            "Upload successful ✅"
+            if method=='LOCAL_COPY':
+                local_copy_to_folder=ensure_local_simulated_sftp_drop_folder(settings.BASE_DIR, accountjob)
+                full_copy_to_path = str(Path(local_copy_to_folder) / filename)
+                shutil.copy(local_path, full_copy_to_path)
+
+                messages.success(
+                    request,
+                    f"Local copy to {full_copy_to_path} successful ✅"
+                )
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Upload failed: {e}"
             )
-        sftp.close()
-        transport.close()
-    except Exception as e:
-        messages.error(
-            request,
-            f"Upload failed: {e}"
-        )
+    
+        #remove the temp file
+        os.remove(local_path)
+        break  # end of the while True: loop
 
     return redirect(
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
 
+#needs renaming
+#needs to consider if staging or local mac and crerate start of path accordingly
+
+def ensure_local_simulated_sftp_drop_folder(base_dir, accountjob, filename=''):
+    p = (
+        f"{base_dir}/temp_files/sftp_drops/"
+        f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
+        f"/ready"
+    )
+    os.makedirs(p, exist_ok=True)
+    return p
 
 def sftp_drop_dashboard_view(request):
     if request.method == "POST":

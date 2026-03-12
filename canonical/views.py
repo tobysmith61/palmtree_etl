@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from .widgets import ExcelWidget
 from .etl import etl_transform
 from datetime import date, datetime
-
+from django.contrib import messages
 
 def schema_overview(request):
     """
@@ -98,35 +98,48 @@ def canonical_json_to_excel_style_table(canonical_rows):
 
 
 def job_preview(request, job_pk):
-    job = Job.objects.select_related(
-        "canonical_schema",
-        "source_schema",
-        "test_table"
-    ).get(pk=job_pk)
-    table_data = job.test_table
-    source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
-    source_fields = job.source_schema.field_mappings.all()
-    tenant_mapping = None
+    while True:
+        job = Job.objects.select_related(
+            "canonical_schema",
+            "source_schema",
+            "test_table"
+        ).get(pk=job_pk)
+        table_data = job.test_table
 
-    canonical_fields = job.canonical_schema.fields.all()
-    canonical_rows, raw_json_rows, display_rows = etl_transform(
-        source_fields=source_fields,
-        canonical_fields=canonical_fields,
-        table_data=table_data,
-        tenant_mapping=tenant_mapping
-    )
+        if table_data==None:
+            messages.error(
+                request,
+                f"No table data!"
+            )
+            break
+        
+        source_data = strip_empty_columns(strip_empty_rows(table_data.data or []))
+        source_fields = job.source_schema.field_mappings.all()
+        tenant_mapping = None
 
-    canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
-    display_table_data = canonical_json_to_excel_style_table(display_rows)
-    table_widget = ExcelWidget(readonly=True)
+        canonical_fields = job.canonical_schema.fields.all()
 
-    context = {
-        "table_data": canonical_table_data,
-        "table_source": table_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
-        "raw_json_rows": raw_json_rows,
-        "table_target": table_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
-        "table_display": table_widget.render("table_display", serialize_tabledata_for_widget(display_table_data)),
-    }
+        header, *rows = table_data.data
+        raw_json_rows, canonical_rows, display_rows = etl_transform(
+            source_fields=source_fields,
+            canonical_fields=canonical_fields,
+            header=header,
+            rows=rows,        
+            tenant_mapping=tenant_mapping
+        )
+
+        canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
+        display_table_data = canonical_json_to_excel_style_table(display_rows)
+        table_widget = ExcelWidget(readonly=True)
+
+        context = {
+            "table_data": canonical_table_data,
+            "table_source": table_widget.render("table_source", serialize_tabledata_for_widget(source_data)),
+            "raw_json_rows": raw_json_rows,
+            "table_target": table_widget.render("table_target", serialize_tabledata_for_widget(canonical_table_data)),
+            "table_display": table_widget.render("table_display", serialize_tabledata_for_widget(display_table_data)),
+        }
+        break
 
     return render(request, "canonical/table_preview.html", context)
 

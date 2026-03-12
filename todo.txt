@@ -87,3 +87,17 @@ document and review all AdminMixin's
 for simulated data from the DMS (CustomerVehicles) exclude dupe customers and vehicles until required
 consider using data8 for this task - although expensive
 
+
+
+
+persist data
+============
+fetch from /ready
+raw_json_rows, canonical_rows, display_rows = accountjob_transform(accountjob, accountjob.account_table_data)
+for each canonical_rows
+    write
+move file from ready to processed
+
+
+
+#(tenant, external_customer_id, vin) = stable key / business key / identity key
