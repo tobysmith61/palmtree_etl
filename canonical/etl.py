@@ -210,22 +210,22 @@ def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
                 # Nested JSON found
                 for nested_k, nested_v in parsed.items():
                     #encrypt
-                    encrypted_value = encrypt(nested_v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
+                    encrypted_value = encrypt_value(nested_v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
                     parsed[nested_k] = encrypted_value
                 extended_kv_values[k] = parsed
             else:
                 #encrypt
-                encrypted_value = encrypt(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
+                encrypted_value = encrypt_value(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
                 extended_kv_values[k] = encrypted_value
         except:
             #encrypt
-            encrypted_value = encrypt(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
+            encrypted_value = encrypt_value(v, dek, str(account.short)) if sf.pii_requires_encryption and value not in (None, "") else v
             extended_kv_values[k] = encrypted_value
         for k, v in extended_kv_values.items():
             all_kv_values[k]=v
     return all_kv_values
 
-def encrypt(v, dek, short):
+def encrypt_value(v, dek, short):
     if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
         return f'ENCR({v})'
     else:
