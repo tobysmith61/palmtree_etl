@@ -9,6 +9,9 @@ from canonical.etl import etl_transform
 from tenants.models import Tenant, TenantMappingCode
 import json
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 def run_account_job_from_django_admin(request, accountjob_pk):
     run_account_job(accountjob_pk)
@@ -100,23 +103,31 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
         raise
 
 def run_account_job(accountjob_pk):
+    logger.info(f"Starting run_account_job for pk={accountjob_pk}")
+
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
 
-    ready_folder_path = Path(ensure_local_simulated_sftp_drop_folder(settings.BASE_DIR, accountjob))
+    ready_folder_path = Path(
+        ensure_local_simulated_sftp_drop_folder(settings.BASE_DIR, accountjob)
+    )
+
+    logger.info(f"Ready folder: {ready_folder_path}")
 
     for path_and_filename in sorted(ready_folder_path.iterdir()):
-        
-        print (81)
-        print (f'Processing {path_and_filename}')
 
-        last_seen_run_id=timezone.now().strftime("%Y-%m-%d_%H-%M-%S")
+        logger.info(f"Processing file: {path_and_filename}")
+
+        last_seen_run_id = timezone.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         with open(path_and_filename, "r") as f:
             contents = f.read()
 
         header, rows = csv_to_header_and_rows(contents, '|')
-        source_fields = accountjob.job.source_schema.field_mappings.all()
 
+        logger.debug(f"Header: {header}")
+        logger.debug(f"Row count: {len(rows)}")
+
+        source_fields = accountjob.job.source_schema.field_mappings.all()
         tenant_mapping = accountjob.tenant_mapping
         canonical_fields = accountjob.job.canonical_schema.fields.all()
 
@@ -124,41 +135,31 @@ def run_account_job(accountjob_pk):
             source_fields=source_fields,
             canonical_fields=canonical_fields,
             header=header,
-            rows=rows,        
+            rows=rows,
             tenant_mapping=tenant_mapping
         )
 
-        #store raw data
-        row_number=0
+        logger.info(f"Transformed rows: {len(raw_json_rows)}")
+
+        row_number = 0
         for raw_json_row in raw_json_rows:
-            row_number+=1
-            if store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename, last_seen_run_id) in ["INSERTED", "UPDATED"]:
-                #store canonical
+            row_number += 1
+
+            result = store_raw_row(
+                raw_json_row,
+                row_number,
+                ready_folder_path,
+                path_and_filename,
+                last_seen_run_id
+            )
+
+            logger.debug(f"Row {row_number} store result: {result}")
+
+            if result in ["INSERTED", "UPDATED"]:
                 pass
 
-        #soft delete items which have been omitted
+        logger.info("Finished file processing")
 
-        # Get all tenants for this job
-        mapping = accountjob.tenant_mapping
-        mapping_codes = TenantMappingCode.objects.filter(
-            tenant_mapping=mapping
-        )
-        tenant_pks = list(
-            mapping_codes.values_list("mapped_tenant_id", flat=True).distinct()
-        )
-
-        # Retire rows that were NOT seen in this run
-        RawCustomerVehicleData.objects.filter(
-            tenant_id__in=tenant_pks,
-            is_current=True,
-        ).exclude(
-            last_seen_run_id=last_seen_run_id
-        ).update(
-            is_current=False
-        )
-
-        #remember to move to processed
-    
-
+    logger.info("Job complete")
 
     return
