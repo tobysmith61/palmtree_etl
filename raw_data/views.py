@@ -156,13 +156,9 @@ def run_account_job(accountjob_pk):
         ).update(
             is_current=False
         )
-        
-
-
-
 
         #remember to move to processed
-
+    
 
 
     return
