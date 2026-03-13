@@ -1,0 +1,67 @@
+[
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.806Z",
+            "deleted": false,
+            "effective_from_date": "2026-02-07",
+            "mapped_tenant": "8d73616a-b8cc-4da0-a25d-c8351a1b2a31",
+            "source_system_field_value": "01",
+            "tenant_mapping": 1,
+            "updated_at": "2026-03-13T20:38:31.661Z"
+        },
+        "model": "tenants.tenantmappingcode",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.806Z",
+            "deleted": false,
+            "effective_from_date": "2026-02-07",
+            "mapped_tenant": "ad074339-87d8-4e62-ae98-a09aae58264a",
+            "source_system_field_value": "02",
+            "tenant_mapping": 1,
+            "updated_at": "2026-03-02T08:47:13.887Z"
+        },
+        "model": "tenants.tenantmappingcode",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.806Z",
+            "deleted": false,
+            "effective_from_date": "2026-02-07",
+            "mapped_tenant": "ff47c083-2997-443a-9350-07f417ba80c1",
+            "source_system_field_value": "01",
+            "tenant_mapping": 2,
+            "updated_at": "2026-03-02T08:47:13.887Z"
+        },
+        "model": "tenants.tenantmappingcode",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.806Z",
+            "deleted": false,
+            "effective_from_date": "2026-02-07",
+            "mapped_tenant": "b89eb0fc-e3c5-4ddf-9f1f-3b02436ebf6d",
+            "source_system_field_value": "02",
+            "tenant_mapping": 2,
+            "updated_at": "2026-03-02T08:47:13.887Z"
+        },
+        "model": "tenants.tenantmappingcode",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-02T08:47:13.806Z",
+            "deleted": false,
+            "effective_from_date": "2026-02-07",
+            "mapped_tenant": "2c3566f5-a662-4409-b689-7cf5329e43b1",
+            "source_system_field_value": "03",
+            "tenant_mapping": 1,
+            "updated_at": "2026-03-02T08:47:13.887Z"
+        },
+        "model": "tenants.tenantmappingcode",
+        "pk": 5
+    }
+]
