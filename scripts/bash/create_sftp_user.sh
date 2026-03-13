@@ -1,104 +1,156 @@
 #!/bin/bash
-# Usage: sudo ./create_sftp_user.sh <username> <PALMTREEACCOUNT> <SOURCESYSTEMLABEL>
-# Example: sudo ./create_sftp_user.sh stellant_sftp_user_dev STELLANT DMS001
 
-set -e
+# Usage: ./create_dropzone.sh <account_name> <system_name>
 
-# -----------------------------
-# 0️⃣ ROOT CHECK
-# -----------------------------
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
-fi
+ACCOUNT="$1"
+SYSTEM="$2"
+SFTP_USER="${ACCOUNT}_${SYSTEM}"
+SFTP_GROUP="${SFTP_USER}"
+BASE_PATH="/srv/sftp_drops"
+ACCOUNT_PATH="$BASE_PATH/$ACCOUNT"
+SYSTEM_PATH="$ACCOUNT_PATH/$SYSTEM"
+DROP_PATH="$SYSTEM_PATH/drop"
+READY_PATH="$SYSTEM_PATH/ready"
 
-# -----------------------------
-# 1️⃣ INPUTS
-# -----------------------------
-PALMTREEACCOUNT="$1"
-SOURCESYSTEMLABEL="$2"
-USERNAME="$3"
-ETL_USER="ubuntu"                 # ETL user owning processing/quarantine/archive folders
-PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)  # Random ~32 char password
+# Color output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
 
-if [[ -z "$USERNAME" || -z "$PALMTREEACCOUNT" || -z "$SOURCESYSTEMLABEL" ]]; then
-    echo "Usage: $0 <username> <PALMTREEACCOUNT> <SOURCESYSTEMLABEL>"
+# Function to pause
+pause() {
+    read -p "Press ENTER to continue or CTRL+C to cancel"
+}
+
+# 1. Check parameters
+if [ -z "$ACCOUNT" ] || [ -z "$SYSTEM" ]; then
+    echo -e "${RED}Usage: $0 <account_name> <system_name>${NC}"
     exit 1
 fi
 
-# -----------------------------
-# 2️⃣ PRE-FLIGHT CHECKS
-# -----------------------------
-BASE_SITE_DIR="/sftp/$PALMTREEACCOUNT/$SOURCESYSTEMLABEL"
-BASE_DIR="$BASE_SITE_DIR/$USERNAME"
-
-# Check if site folder exists
-if [[ -d "$BASE_SITE_DIR" ]]; then
-    echo "ERROR: Base site directory $BASE_SITE_DIR already exists. Choose a different SOURCESYSTEMLABEL."
-    exit 1
+# 2. Warn if not root
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${YELLOW}Warning: You are not root. The script will use sudo for privileged commands.${NC}"
 fi
 
-# Check if full user folder exists
-if [[ -d "$BASE_DIR" ]]; then
-    echo "ERROR: Base directory $BASE_DIR already exists. Pick a different username."
-    exit 1
+# 3. Show summary
+echo -e "${GREEN}Creating SFTP dropzone for account: $ACCOUNT, system: $SYSTEM${NC}"
+echo "Base path: $BASE_PATH"
+echo "SFTP user/group: $SFTP_USER"
+pause
+
+# 4. Ensure account directory exists
+if [ ! -d "$ACCOUNT_PATH" ]; then
+    echo -e "${YELLOW}Account directory does not exist. Creating: $ACCOUNT_PATH${NC}"
+    pause
+    sudo mkdir -p "$ACCOUNT_PATH"
+    sudo chown root:root "$ACCOUNT_PATH"
+    sudo chmod 755 "$ACCOUNT_PATH"
+else
+    echo -e "${GREEN}Account directory exists: $ACCOUNT_PATH${NC}"
 fi
 
-# Check if SFTP username exists
-if id "$USERNAME" &>/dev/null; then
-    echo "ERROR: User $USERNAME already exists. Pick a unique SFTP username."
-    exit 1
+# 5. Create group
+if ! getent group "$SFTP_GROUP" > /dev/null; then
+    echo -e "${YELLOW}Creating group: $SFTP_GROUP${NC}"
+    pause
+    sudo groupadd "$SFTP_GROUP"
+else
+    echo -e "${GREEN}Group already exists: $SFTP_GROUP${NC}"
 fi
 
-echo "✅ All pre-checks passed. Proceeding..."
+# 6. Create user
+if ! id "$SFTP_USER" > /dev/null 2>&1; then
+    echo -e "${YELLOW}Creating SFTP user: $SFTP_USER${NC}"
+    pause
+    sudo useradd -g "$SFTP_GROUP" -s /usr/sbin/nologin "$SFTP_USER"
 
-# -----------------------------
-# 3️⃣ CREATE USER
-# -----------------------------
-useradd -m -d "$BASE_DIR" -s /usr/sbin/nologin "$USERNAME"
-echo "$USERNAME:$PASSWORD" | chpasswd
-echo "SFTP user $USERNAME created with password: $PASSWORD"
+    # 6a. Generate random 16-character password
+    SFTP_PWD=$(openssl rand -base64 12 | tr -dc 'A-Za-z0-9' | head -c16)
+    echo -e "${YELLOW}Setting random password for $SFTP_USER${NC}"
+    pause
+    echo "$SFTP_USER:$SFTP_PWD" | sudo chpasswd
+    echo -e "${GREEN}SFTP user password generated:${NC} $SFTP_PWD"
+else
+    echo -e "${GREEN}User already exists: $SFTP_USER${NC}"
+fi
 
-# -----------------------------
-# 4️⃣ CREATE FOLDER STRUCTURE
-# -----------------------------
-for folder in drop processing quarantine archive; do
-    mkdir -p "$BASE_DIR/$folder"
-done
+# 7. Create system folder
+if [ ! -d "$SYSTEM_PATH" ]; then
+    echo -e "${YELLOW}Creating system folder: $SYSTEM_PATH${NC}"
+    pause
+    sudo mkdir -p "$SYSTEM_PATH"
+    sudo chown root:root "$SYSTEM_PATH"
+    sudo chmod 755 "$SYSTEM_PATH"
+else
+    echo -e "${GREEN}System folder exists: $SYSTEM_PATH${NC}"
+fi
 
-# -----------------------------
-# 5️⃣ SET PERMISSIONS
-# -----------------------------
-# Base site directory owned by ETL user
-mkdir -p "$BASE_SITE_DIR"  # just in case
-chown "$ETL_USER":"$ETL_USER" "$BASE_SITE_DIR"
-chmod 700 "$BASE_SITE_DIR"
+# 8. Create drop folder
+if [ ! -d "$DROP_PATH" ]; then
+    echo -e "${YELLOW}Creating drop folder: $DROP_PATH${NC}"
+    pause
+    sudo mkdir -p "$DROP_PATH"
+else
+    echo -e "${GREEN}Drop folder exists: $DROP_PATH${NC}"
+fi
 
-# Customer can write to drop
-chown "$USERNAME":"$USERNAME" "$BASE_DIR/drop"
-chmod 700 "$BASE_DIR/drop"
+# 9. Create ready folder
+if [ ! -d "$READY_PATH" ]; then
+    echo -e "${YELLOW}Creating ready folder: $READY_PATH${NC}"
+    pause
+    sudo mkdir -p "$READY_PATH"
+else
+    echo -e "${GREEN}Ready folder exists: $READY_PATH${NC}"
+fi
 
-# ETL owns processing, quarantine, archive
-for folder in processing quarantine archive; do
-    chown "$ETL_USER":"$ETL_USER" "$BASE_DIR/$folder"
-    chmod 700 "$BASE_DIR/$folder"
-done
+# 10. Set ownership
+echo -e "${YELLOW}Setting ownership...${NC}"
+pause
+sudo chown $SFTP_USER:$SFTP_GROUP "$DROP_PATH"
+sudo chown ubuntu:www-data "$READY_PATH"
+sudo chown root:root "$SYSTEM_PATH"
 
-# Lock down base user directory itself
-chown "$ETL_USER":"$ETL_USER" "$BASE_DIR"
-chmod 700 "$BASE_DIR"
+# 11. Set permissions
+echo -e "${YELLOW}Setting permissions...${NC}"
+pause
+sudo chmod 2775 "$DROP_PATH"
+sudo chmod 775 "$READY_PATH"
+sudo chmod 755 "$SYSTEM_PATH"
 
-# -----------------------------
-# 6️⃣ OUTPUT
-# -----------------------------
-echo "=============================="
-echo "SFTP user setup complete!"
-echo "Username: $USERNAME"
-echo "Password: $PASSWORD"
-echo "Base directory: $BASE_DIR"
-echo "Folders:"
-echo "  drop          (customer upload)"
-echo "  processing    (ETL in progress)"
-echo "  quarantine    (ETL admin only)"
-echo "  archive       (ETL admin only)"
-echo "=============================="
+# 12. Add ubuntu to SFTP group if not already
+if id -nG ubuntu | grep -qw "$SFTP_GROUP"; then
+    echo -e "${GREEN}User ubuntu already in group $SFTP_GROUP${NC}"
+else
+    echo -e "${YELLOW}Adding ubuntu to group $SFTP_GROUP${NC}"
+    pause
+    sudo usermod -aG "$SFTP_GROUP" ubuntu
+fi
+
+# 13. Configure SSH for chrooted SFTP
+SFTP_SSH_CONFIG="\nMatch User $SFTP_USER\n    ChrootDirectory $SYSTEM_PATH\n    ForceCommand internal-sftp\n    PasswordAuthentication yes\n    AllowTcpForwar
+ding no\n    X11Forwarding no"
+
+if ! grep -q "Match User $SFTP_USER" /etc/ssh/sshd_config; then
+    echo -e "${YELLOW}Adding SSH config for $SFTP_USER to /etc/ssh/sshd_config${NC}"
+    pause
+    echo -e "$SFTP_SSH_CONFIG" | sudo tee -a /etc/ssh/sshd_config > /dev/null
+else
+    echo -e "${GREEN}SSH config for $SFTP_USER already exists${NC}"
+fi
+
+# 14. Restart SSH service
+echo -e "${YELLOW}Restarting SSH service to apply changes...${NC}"
+pause
+sudo systemctl restart ssh
+
+# 15. Final verification
+echo -e "${GREEN}Final folder listing:${NC}"
+ls -l "$SYSTEM_PATH"
+
+echo -e "${GREEN}Group membership of $SFTP_GROUP:${NC}"
+getent group "$SFTP_GROUP"
+
+echo -e "${GREEN}SFTP user password:${NC} $SFTP_PWD"
+echo -e "${GREEN}Script completed.${NC}"
