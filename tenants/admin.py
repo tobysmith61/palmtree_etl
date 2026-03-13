@@ -351,6 +351,24 @@ class TenantMappingAdmin(AccountScopedAdminMixin,
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
+@admin.register(TenantMappingCode)
+class TenantMappingCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        "tenant_mapping",
+        "source_system_field_value",
+        "mapped_tenant",
+        "effective_from_date",
+    )
+
+    list_filter = ("tenant_mapping", "mapped_tenant")
+    search_fields = ("source_system_field_value",)
+
+    autocomplete_fields = ("tenant_mapping", "mapped_tenant")
+
+    ordering = ("tenant_mapping", "source_system_field_value", "-effective_from_date")
+
+
 class SFTPDropZoneScopedTenantInline(admin.TabularInline):
     model = SFTPDropZoneScopedTenant
     extra = 1  # number of empty forms to show
