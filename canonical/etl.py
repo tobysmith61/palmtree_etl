@@ -11,6 +11,7 @@ from tenants.local_kms import generate_encrypted_dek, decrypt_dek
 
 from . import etl_postcode
 from dotenv import load_dotenv
+from django.conf import settings
 
 load_dotenv()
 
@@ -40,10 +41,9 @@ def get_account_encryption(account):
     )
     return account_encryption
 
-DISABLED_ENCR_AND_HMAC=False
 
 def hmac_value(value: str, secret: str) -> str:
-    if DISABLED_ENCR_AND_HMAC:
+    if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
         return f'HMAC({value})'
     else:
         return hmac.new(
@@ -151,7 +151,7 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
 
     #row_hash
     row_hash = hash_with_platform_secret(raw_json_dict)
-
+    
     #create a json struct for (composite) business key for hashing
     tenant_code=''
     business_key_values = {}
@@ -160,7 +160,7 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
             orig_field_name = sf.source_field_name
             value = raw_json_dict_not_encrypted.get(orig_field_name)
             if tenant_mapping and sf.is_tenant_mapping_source:
-                value=tenant_mapping.resolve_tenant(value)
+                value=tenant_mapping.resolve_tenant_as_internal_tenant_code(value)
                 tenant_code=value
             business_key_values[orig_field_name] = value
     business_key_json = json.dumps(business_key_values, ensure_ascii=False)
@@ -226,7 +226,7 @@ def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
     return all_kv_values
 
 def encrypt(v, dek, short):
-    if DISABLED_ENCR_AND_HMAC:
+    if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
         return f'ENCR({v})'
     else:
         # ensure bytes
@@ -242,7 +242,7 @@ def encrypt(v, dek, short):
 
 
 def decrypt_value(encrypted_value, dek, short):
-    if DISABLED_ENCR_AND_HMAC:
+    if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
         # reverse your test wrapper
         if encrypted_value.startswith("ENCR(") and encrypted_value.endswith(")"):
             return encrypted_value[5:-1]
@@ -299,7 +299,7 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
         value = raw_json_row.get(sf.source_field_name)
         # Tenant mapping first (raw → semantic)
         if tenant_mapping and sf.is_tenant_mapping_source:
-            kv_value = {cf.name: tenant_mapping.resolve_tenant(value)}
+            kv_value = {cf.name: tenant_mapping.resolve_tenant_as_internal_tenant_code(value)}
         else:
             # Apply normalisation
             kv_value = apply_normalisation(value, cf.name, cf.normalisation)

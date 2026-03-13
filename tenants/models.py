@@ -125,7 +125,7 @@ class TenantMapping(CoreModel, FixtureControlledModel):
     def __str__(self):
         return self.desc
 
-    def resolve_tenant(self, source_value, as_of_date=None):
+    def resolve_tenant_as_internal_tenant_code(self, source_value, as_of_date=None):
         as_of_date = as_of_date or now().date()
 
         mapping = (
@@ -136,11 +136,25 @@ class TenantMapping(CoreModel, FixtureControlledModel):
             )
             .order_by("-effective_from_date")
             .first()
-#            .mapped_tenant
-#            .internal_tenant_code
         )
 
         return mapping.mapped_tenant.internal_tenant_code if mapping else None
+    
+
+    def resolve_tenant_as_pk(self, source_value, as_of_date=None):
+        as_of_date = as_of_date or now().date()
+
+        mapping = (
+            self.mapping_codes
+            .filter(
+                source_system_field_value=source_value,
+                effective_from_date__lte=as_of_date,
+            )
+            .order_by("-effective_from_date")
+            .first()
+        )
+
+        return mapping.mapped_tenant.pk if mapping else None
     
 class TenantMappingCode(CoreModel, FixtureControlledModel):
     tenant_mapping = models.ForeignKey(
@@ -219,7 +233,7 @@ class AccountJob(CoreModel, FixtureControlledModel):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
     tenant_mapping = models.ForeignKey(TenantMapping, on_delete=models.PROTECT, null=True, blank=True)
     account_table_data = models.ForeignKey(AccountTableData, on_delete=models.PROTECT, null=True, blank=True)
-    
+
     def __str__(self):
         return f"{self.job}"
 
