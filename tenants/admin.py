@@ -18,6 +18,7 @@ from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
 from core.admin_mixins import PalmTreeGenericAdminMixin
+from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin
 
 from django.urls import path
 from django.shortcuts import redirect
@@ -500,7 +501,10 @@ class AccountTableDataAdmin(
 @admin.register(AccountEncryption)
 class AccountEncryptionAdmin(
     AccountScopedAdminMixin, 
-    PalmTreeGenericAdminMixin,
+    SoftDeleteAdminMixin,
+    SoftDeletedFKAdminMixin,
+    TimeStampedAdminMixin,
+    admin.ModelAdmin,
 ): 
     fieldsets = (
         (None, {
