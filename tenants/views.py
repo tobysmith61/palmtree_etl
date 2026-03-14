@@ -328,7 +328,7 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
                 )
 
             if method=='LOCAL_COPY':
-                local_copy_to_folder=ensure_local_simulated_sftp_drop_folder(settings.BASE_DIR, accountjob)
+                local_copy_to_folder=ensure_local_sftp_drop_folder(accountjob)
                 full_copy_to_path = str(Path(local_copy_to_folder) / filename)
                 shutil.copy(local_path, full_copy_to_path)
 
@@ -351,12 +351,14 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
 
-#needs renaming
-#needs to consider if staging or local mac and crerate start of path accordingly
-
-def ensure_local_simulated_sftp_drop_folder(base_dir, accountjob, filename=''):
+def ensure_local_sftp_drop_folder(accountjob):
+    if getattr(settings, "IS_STAGING_SERVER", False):
+        base_dir = f"{settings.BASE_DIR}/temp_files"
+    else:
+        base_dir = "/srv"
+    
     p = (
-        f"{base_dir}/temp_files/sftp_drops/"
+        f"{base_dir}/sftp_drops/"
         f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
         f"/ready"
     )

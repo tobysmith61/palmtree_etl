@@ -2,7 +2,7 @@ from .models import RawCustomerVehicleData
 from django.shortcuts import redirect
 from django.urls import reverse
 from tenants.models import AccountJob
-from tenants.views import ensure_local_simulated_sftp_drop_folder
+from tenants.views import ensure_local_sftp_drop_folder
 from django.conf import settings
 from pathlib import Path
 from canonical.etl import etl_transform
@@ -108,7 +108,7 @@ def run_account_job(accountjob_pk):
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
 
     ready_folder_path = Path(
-        ensure_local_simulated_sftp_drop_folder(settings.BASE_DIR, accountjob)
+        ensure_local_sftp_drop_folder(accountjob)
     )
 
     logger.info(f"Ready folder: {ready_folder_path}")
