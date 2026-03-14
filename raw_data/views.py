@@ -158,6 +158,9 @@ def run_account_job(accountjob_pk):
             if result in ["INSERTED", "UPDATED"]:
                 pass
 
+        #move the file from ready to /processed
+        #path_and_filename
+
         logger.info("Finished file processing")
 
     logger.info("Job complete")

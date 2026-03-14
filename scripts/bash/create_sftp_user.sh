@@ -11,6 +11,8 @@ ACCOUNT_PATH="$BASE_PATH/$ACCOUNT"
 SYSTEM_PATH="$ACCOUNT_PATH/$SYSTEM"
 DROP_PATH="$SYSTEM_PATH/drop"
 READY_PATH="$SYSTEM_PATH/ready"
+PROCESSED_PATH="$SYSTEM_PATH/processed"
+FAILED_PATH="$SYSTEM_PATH/failed"
 
 # Color output
 GREEN='\033[0;32m'
@@ -105,11 +107,31 @@ else
     echo -e "${GREEN}Ready folder exists: $READY_PATH${NC}"
 fi
 
+# Create processed folder
+if [ ! -d "$PROCESSED_PATH" ]; then
+    echo -e "${YELLOW}Creating processed folder: $PROCESSED_PATH${NC}"
+    pause
+    sudo mkdir -p "$PROCESSED_PATH"
+else
+    echo -e "${GREEN}Processed folder exists: $PROCESSED_PATH${NC}"
+fi
+
+# Create processed folder
+if [ ! -d "$PROCESSED_PATH" ]; then
+    echo -e "${YELLOW}Creating processed folder: $PROCESSED_PATH${NC}"
+    pause
+    sudo mkdir -p "$PROCESSED_PATH"
+else
+    echo -e "${GREEN}Processed folder exists: $PROCESSED_PATH${NC}"
+fi
+
 # 10. Set ownership
 echo -e "${YELLOW}Setting ownership...${NC}"
 pause
 sudo chown $SFTP_USER:$SFTP_GROUP "$DROP_PATH"
 sudo chown ubuntu:www-data "$READY_PATH"
+sudo chown ubuntu:www-data "$PROCESSED_PATH"
+sudo chown ubuntu:www-data "$FAILED_PATH"
 sudo chown root:root "$SYSTEM_PATH"
 
 # 11. Set permissions
@@ -117,6 +139,8 @@ echo -e "${YELLOW}Setting permissions...${NC}"
 pause
 sudo chmod 2775 "$DROP_PATH"
 sudo chmod 775 "$READY_PATH"
+sudo chmod 775 "$PROCESSED_PATH"
+sudo chmod 775 "$FAILED_PATH"
 sudo chmod 755 "$SYSTEM_PATH"
 
 # 12. Add ubuntu to SFTP group if not already
