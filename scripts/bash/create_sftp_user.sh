@@ -116,13 +116,13 @@ else
     echo -e "${GREEN}Processed folder exists: $PROCESSED_PATH${NC}"
 fi
 
-# Create processed folder
-if [ ! -d "$PROCESSED_PATH" ]; then
-    echo -e "${YELLOW}Creating processed folder: $PROCESSED_PATH${NC}"
+# Create failed folder
+if [ ! -d "$FAILED_PATH" ]; then
+    echo -e "${YELLOW}Creating failed folder: $FAILED_PATH${NC}"
     pause
-    sudo mkdir -p "$PROCESSED_PATH"
+    sudo mkdir -p "$FAILED_PATH"
 else
-    echo -e "${GREEN}Processed folder exists: $PROCESSED_PATH${NC}"
+    echo -e "${GREEN}Failed folder exists: $FAILED_PATH${NC}"
 fi
 
 # 10. Set ownership
