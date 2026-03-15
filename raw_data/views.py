@@ -162,6 +162,10 @@ def run_account_job(accountjob_pk):
 
         #move the file from ready to /processed        
         processed_path = path_and_filename.parent.parent / "processed" / path_and_filename.name
+        logger.debug("165")
+        logger.debug(f"path_and_filename: {path_and_filename}")
+        logger.debug(f"processed_path: {processed_path}")
+
         shutil.move(path_and_filename, processed_path)
 
         logger.info("Finished file processing")
