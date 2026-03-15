@@ -224,3 +224,26 @@ TIME_FORMAT = 'H:i'
 IS_STAGING_SERVER = env.bool("IS_STAGING_SERVER", default=False)
 DISABLED_ENCR_AND_HMAC = env.bool("DISABLED_ENCR_AND_HMAC", default=False)
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name}: {message}",
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
