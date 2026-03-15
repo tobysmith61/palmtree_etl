@@ -268,7 +268,8 @@ def tabledata_to_pipe_csv(json_array):
         row_number+=1
         if True:
             if row_number==2:
-                for i in range(1_000_000):
+                a_million=1_000_000
+                for i in range(a_million):
                     writer.writerow(row)
         writer.writerow(row)
 
