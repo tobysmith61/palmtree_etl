@@ -89,9 +89,9 @@
     
                     function cellContent(fileArray, index, color) {
                         if (fileArray[index]) {
-                            return `<td style="color: ${color} !important;">${fileArray[index].path}</td>`;
+                            return `<td style="color:${color}; word-break:break-all;">${fileArray[index].path}</td>`;
                         }
-                        return "<td></td>"; // empty cell if no file
+                        return "<td></td>";
                     }
     
                     row.innerHTML = `
