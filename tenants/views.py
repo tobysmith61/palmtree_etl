@@ -271,6 +271,8 @@ def tabledata_to_pipe_csv(json_array):
                 a_million=1_000_000
                 for i in range(a_million):
                     writer.writerow(row)
+                    if i/100000 == int(i/100000):
+                        print (f'{i} written')
         writer.writerow(row)
 
     return output.getvalue()

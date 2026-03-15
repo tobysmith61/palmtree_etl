@@ -8,18 +8,25 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
+# === CONFIG ===
 BASE_FOLDER = Path("/srv/sftp_drops")
 READY_FOLDER_NAME = "ready"
 
 STABLE_SECONDS = 60
 CHECK_INTERVAL = 5
+# ==============
 
 processing_files = set()
 processing_lock = Lock()
 
 
 class DropzoneHandler(FileSystemEventHandler):
+    """
+    Watches for completed uploads in any 'drop' folder.
+    Moves files to corresponding 'ready' folder once stable.
+    """
 
     def on_created(self, event):
         if not event.is_directory:
@@ -29,9 +36,16 @@ class DropzoneHandler(FileSystemEventHandler):
         if not event.is_directory:
             self._handle(Path(event.src_path))
 
-    def _handle(self, file_path: Path):
+    def on_moved(self, event):
+        if not event.is_directory:
+            self._handle(Path(event.dest_path))
 
-        # Only process files inside a drop folder
+    def _handle(self, file_path: Path):
+        """
+        Start tracking a file if it's inside a 'drop' folder.
+        """
+
+        # Ensure it's inside a drop directory
         if file_path.parent.name != "drop":
             return
 
@@ -40,7 +54,7 @@ class DropzoneHandler(FileSystemEventHandler):
                 return
             processing_files.add(file_path)
 
-        logger.info(f"Tracking upload: {file_path}")
+        logger.info(f"Tracking file: {file_path}")
 
         Thread(
             target=self._wait_and_promote,
@@ -49,6 +63,10 @@ class DropzoneHandler(FileSystemEventHandler):
         ).start()
 
     def _wait_and_promote(self, file_path: Path):
+        """
+        Wait until file size is stable for STABLE_SECONDS,
+        then move it to the ready folder.
+        """
 
         try:
             last_size = -1
@@ -60,19 +78,17 @@ class DropzoneHandler(FileSystemEventHandler):
                     logger.info(f"File disappeared: {file_path}")
                     return
 
-                size = file_path.stat().st_size
+                current_size = file_path.stat().st_size
 
-                if size == last_size:
+                if current_size == last_size:
                     if stable_start is None:
                         stable_start = time.time()
-
                     elif time.time() - stable_start >= STABLE_SECONDS:
                         self._promote(file_path)
                         return
-
                 else:
                     stable_start = None
-                    last_size = size
+                    last_size = current_size
 
                 time.sleep(CHECK_INTERVAL)
 
@@ -81,32 +97,42 @@ class DropzoneHandler(FileSystemEventHandler):
                 processing_files.discard(file_path)
 
     def _promote(self, file_path: Path):
+        """
+        Copy file to ready folder and delete original.
+        """
 
         ready_folder = file_path.parent.parent / READY_FOLDER_NAME
         ready_folder.mkdir(exist_ok=True)
 
-        dst = ready_folder / file_path.name
+        destination = ready_folder / file_path.name
 
         try:
-            shutil.copy2(file_path, dst)
-            logger.info(f"Copied {file_path} → {dst}")
+            shutil.copy2(file_path, destination)
+            logger.info(f"Copied: {file_path} → {destination}")
 
             file_path.unlink()
-            logger.info(f"Deleted original {file_path}")
+            logger.info(f"Deleted original: {file_path}")
 
         except Exception:
-            logger.exception(f"Failed to promote {file_path}")
+            logger.exception(f"Failed to promote file: {file_path}")
 
 
 def start_dropzone_watcher():
+    """
+    Starts the filesystem observer.
+    """
 
-    handler = DropzoneHandler()
+    if not BASE_FOLDER.exists():
+        logger.error(f"Base folder does not exist: {BASE_FOLDER}")
+        return
+
+    event_handler = DropzoneHandler()
     observer = Observer()
 
-    observer.schedule(handler, str(BASE_FOLDER), recursive=True)
+    observer.schedule(event_handler, str(BASE_FOLDER), recursive=True)
     observer.start()
 
-    logger.info(f"Watching dropzones under {BASE_FOLDER}")
+    logger.info(f"Watching: {BASE_FOLDER}")
 
     try:
         while True:
@@ -115,4 +141,7 @@ def start_dropzone_watcher():
         observer.stop()
 
     observer.join()
-    
+
+
+if __name__ == "__main__":
+    start_dropzone_watcher()
