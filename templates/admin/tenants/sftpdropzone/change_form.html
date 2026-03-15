@@ -21,7 +21,14 @@
 <div class="module aligned">
     <h2>Drop Zone Files</h2>
 
-    <table style="width:100%; border-collapse: collapse;">
+    <table style="width:100%; border-collapse: collapse; table-layout: fixed;">
+        <colgroup>
+            <col style="width:25%;">
+            <col style="width:25%;">
+            <col style="width:25%;">
+            <col style="width:25%;">
+        </colgroup>
+    
         <thead>
             <tr>
                 <th style="text-align:left;">Drop</th>
@@ -30,8 +37,9 @@
                 <th style="text-align:left;">Failed</th>
             </tr>
         </thead>
+    
         <tbody id="dropzone-file-list">
-            <tr><td colspan="3">Loading...</td></tr>
+            <tr><td colspan="4">Loading...</td></tr>
         </tbody>
     </table>
 </div>
