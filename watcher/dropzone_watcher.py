@@ -7,16 +7,20 @@ from threading import Thread, Lock
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+# =========================
+# Configuration
+# =========================
 
-# === CONFIG ===
 BASE_FOLDER = Path("/srv/sftp_drops")
 READY_FOLDER_NAME = "ready"
 
 STABLE_SECONDS = 60
 CHECK_INTERVAL = 5
-# ==============
+
+# =========================
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 processing_files = set()
 processing_lock = Lock()
@@ -24,8 +28,8 @@ processing_lock = Lock()
 
 class DropzoneHandler(FileSystemEventHandler):
     """
-    Watches for completed uploads in any 'drop' folder.
-    Moves files to corresponding 'ready' folder once stable.
+    Watches drop folders and promotes files
+    once they are stable for STABLE_SECONDS.
     """
 
     def on_created(self, event):
@@ -42,10 +46,9 @@ class DropzoneHandler(FileSystemEventHandler):
 
     def _handle(self, file_path: Path):
         """
-        Start tracking a file if it's inside a 'drop' folder.
+        Start monitoring a file if inside a 'drop' folder.
         """
 
-        # Ensure it's inside a drop directory
         if file_path.parent.name != "drop":
             return
 
@@ -64,8 +67,8 @@ class DropzoneHandler(FileSystemEventHandler):
 
     def _wait_and_promote(self, file_path: Path):
         """
-        Wait until file size is stable for STABLE_SECONDS,
-        then move it to the ready folder.
+        Wait until file size is stable,
+        then move to ready folder.
         """
 
         try:
@@ -75,7 +78,7 @@ class DropzoneHandler(FileSystemEventHandler):
             while True:
 
                 if not file_path.exists():
-                    logger.info(f"File disappeared: {file_path}")
+                    logger.info(f"File no longer exists: {file_path}")
                     return
 
                 current_size = file_path.stat().st_size
@@ -114,24 +117,50 @@ class DropzoneHandler(FileSystemEventHandler):
             logger.info(f"Deleted original: {file_path}")
 
         except Exception:
-            logger.exception(f"Failed to promote file: {file_path}")
+            logger.exception(f"Failed to promote: {file_path}")
 
+
+# =========================
+# Startup Scan
+# =========================
+
+def scan_existing_files():
+    """
+    Scan all existing files inside drop folders
+    when the watcher starts.
+    """
+
+    logger.info("Scanning for existing files...")
+
+    for drop_folder in BASE_FOLDER.rglob("drop"):
+        if not drop_folder.is_dir():
+            continue
+
+        for file_path in drop_folder.iterdir():
+            if file_path.is_file():
+                logger.info(f"Found existing file: {file_path}")
+                DropzoneHandler()._handle(file_path)
+
+
+# =========================
+# Main Entry
+# =========================
 
 def start_dropzone_watcher():
-    """
-    Starts the filesystem observer.
-    """
 
     if not BASE_FOLDER.exists():
         logger.error(f"Base folder does not exist: {BASE_FOLDER}")
         return
 
+    # First: process files already on disk
+    scan_existing_files()
+
+    # Then start live watching
     event_handler = DropzoneHandler()
     observer = Observer()
-
     observer.schedule(event_handler, str(BASE_FOLDER), recursive=True)
-    observer.start()
 
+    observer.start()
     logger.info(f"Watching: {BASE_FOLDER}")
 
     try:
@@ -145,3 +174,4 @@ def start_dropzone_watcher():
 
 if __name__ == "__main__":
     start_dropzone_watcher()
+    
