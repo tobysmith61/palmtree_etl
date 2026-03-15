@@ -65,3 +65,9 @@ drwxr-xr-x root root
 drwxr-xr-x root root
 drwxr-xr-x root root
 drwxr-xr-x stellant_dms002 stellant_dms002
+
+#####################
+start watcher service
+#####################
+resides in
+/etc/systemd/system/dropzone-watcher.service

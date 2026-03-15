@@ -183,6 +183,10 @@ class SFTPDropZone(CoreModel, FixtureControlledModel):
     desc = models.CharField(max_length=200, blank=True, null=True)
     scope = models.TextField(max_length=1000, blank=True, null=True)
     folder_path = models.CharField(max_length=200, blank=True, null=True)
+    wait_time_before_ready_to_move = models.PositiveIntegerField(
+        default=60,
+        help_text="Number of seconds to wait before moving files from /drop to /ready"
+    )
     retention_period_days = models.PositiveIntegerField(
         default=7,
         help_text="Number of days to keep files before automatic cleanup"

@@ -10,6 +10,8 @@ from tenants.models import Tenant, TenantMappingCode
 import json
 from django.utils import timezone
 import logging
+from pathlib import Path
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -158,8 +160,9 @@ def run_account_job(accountjob_pk):
             if result in ["INSERTED", "UPDATED"]:
                 pass
 
-        #move the file from ready to /processed
-        #path_and_filename
+        #move the file from ready to /processed        
+        processed_path = path_and_filename.parent.parent / "processed" / path_and_filename.name
+        shutil.move(path_and_filename, processed_path)
 
         logger.info("Finished file processing")
 
