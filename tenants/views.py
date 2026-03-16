@@ -23,7 +23,7 @@ from canonical.widgets import ExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import etl_transform
 from canonical.models import Job
-from tenants.utils import ensure_local_drop_folder
+from tenants.utils import ensure_local_ready_folder
 
 import paramiko
 import os
@@ -338,7 +338,7 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
                 )
 
             if method=='LOCAL_COPY':
-                local_copy_to_folder=ensure_local_drop_folder(accountjob)
+                local_copy_to_folder=ensure_local_ready_folder(accountjob)
                 full_copy_to_path = str(Path(local_copy_to_folder) / filename)
                 shutil.copy(local_path, full_copy_to_path)
 

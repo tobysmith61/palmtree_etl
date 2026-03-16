@@ -48,19 +48,22 @@ def get_current_tenant(request):
     return None
 
 
-def ensure_local_drop_folder(accountjob):
+def ensure_local_ready_folder(accountjob):
     if getattr(settings, "IS_STAGING_SERVER", False):
         base_dir = f"{settings.BASE_DIR}/temp_files"
-
-    # shouldn't need to do this for the remote server which receives actual sftp dropped files
-    # as folders are set up by create_sftp account script, so this is commented out
-    # # else: 
-    #     base_dir = "/srv"
+    else: 
+        base_dir = "/srv"
     
-        p = (
-            f"{base_dir}/sftp_drops/"
-            f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
-            f"/ready"
-        )
+    p = (
+        f"{base_dir}/sftp_drops/"
+        f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
+        f"/ready"
+    )
+    
+    if getattr(settings, "IS_STAGING_SERVER", False):
         os.makedirs(p, exist_ok=True)
-        return p
+    else:
+        # shouldn't need to do this for the remote server which receives actual sftp dropped files
+        # as folders are set up by create_sftp account script, so this is commented out
+        pass
+    return p

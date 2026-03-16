@@ -5,13 +5,12 @@ from celery import shared_task
 from django.db import transaction
 
 from tenants.models import AccountJob
-from tenants.utils import ensure_local_drop_folder
+from tenants.utils import ensure_local_ready_folder
 from raw_data.views import run_account_job
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task
 def run_account_job_task(accountjob_id):
     run_account_job(accountjob_id)
     
@@ -23,7 +22,7 @@ def scan_for_ready_files():
 
     for job in jobs:
         try:
-            ready_folder = Path(ensure_local_drop_folder(job))
+            ready_folder = Path(ensure_local_ready_folder(job))
 
             if not ready_folder.exists():
                 continue
