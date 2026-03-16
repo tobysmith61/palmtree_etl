@@ -11,6 +11,7 @@ from raw_data.views import run_account_job
 logger = logging.getLogger(__name__)
 
 
+@shared_task
 def run_account_job_task(accountjob_id):
     run_account_job(accountjob_id)
     
