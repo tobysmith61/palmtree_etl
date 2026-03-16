@@ -1,7 +1,7 @@
 from celery import shared_task
 from tenants.models import AccountJob
 from raw_data.views import run_account_job
-from tenants.views import ensure_local_sftp_drop_folder
+from tenants.utils import ensure_local_sftp_drop_folder
 from pathlib import Path
 import logging
 
