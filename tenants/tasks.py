@@ -6,16 +6,20 @@ from django.db import transaction
 
 from tenants.models import AccountJob
 from tenants.utils import ensure_local_drop_folder
-from .tasks import run_account_job_task  # or wherever this lives
+from raw_data.views import run_account_job
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task
+def run_account_job_task(accountjob_id):
+    run_account_job(accountjob_id)
+    
+@shared_task
 def scan_for_ready_files():
     logger.info("Starting scan_for_ready_files task")
 
-    jobs = AccountJob.objects.select_related("tenant").all()
+    jobs = AccountJob.objects.all()
 
     for job in jobs:
         try:
