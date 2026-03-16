@@ -22,9 +22,9 @@
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
-            "sftp_drop_zone": null,
+            "sftp_drop_zone": 35,
             "tenant_mapping": 2,
-            "updated_at": "2026-03-04T22:48:07.626Z"
+            "updated_at": "2026-03-16T22:07:32.520Z"
         },
         "model": "tenants.accountjob",
         "pk": 2
@@ -37,9 +37,9 @@
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 2,
-            "sftp_drop_zone": null,
+            "sftp_drop_zone": 35,
             "tenant_mapping": 2,
-            "updated_at": "2026-03-05T13:38:19.151Z"
+            "updated_at": "2026-03-16T22:07:27.411Z"
         },
         "model": "tenants.accountjob",
         "pk": 3

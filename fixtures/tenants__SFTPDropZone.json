@@ -9,6 +9,7 @@
             "retention_period_days": 7,
             "scope": "",
             "updated_at": "2026-03-06T20:09:09.284Z",
+            "wait_time_before_ready_to_move": 60,
             "zone_folder": "dms001"
         },
         "model": "tenants.sftpdropzone",
@@ -24,6 +25,7 @@
             "retention_period_days": 7,
             "scope": null,
             "updated_at": "2026-03-08T22:08:15.437Z",
+            "wait_time_before_ready_to_move": 60,
             "zone_folder": "dms002"
         },
         "model": "tenants.sftpdropzone",
@@ -39,9 +41,26 @@
             "retention_period_days": 7,
             "scope": null,
             "updated_at": "2026-03-08T21:39:24.285Z",
+            "wait_time_before_ready_to_move": 60,
             "zone_folder": "dms005"
         },
         "model": "tenants.sftpdropzone",
         "pk": 34
+    },
+    {
+        "fields": {
+            "account": 2,
+            "created_at": "2026-03-16T22:07:18.050Z",
+            "deleted": false,
+            "desc": "dms001",
+            "folder_path": "/srv/sftp_drops/group1/dms001/drop",
+            "retention_period_days": 7,
+            "scope": null,
+            "updated_at": "2026-03-16T22:07:18.050Z",
+            "wait_time_before_ready_to_move": 60,
+            "zone_folder": "dms001"
+        },
+        "model": "tenants.sftpdropzone",
+        "pk": 35
     }
 ]

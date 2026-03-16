@@ -115,9 +115,13 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
 
 def run_account_job(accountjob_pk):
     logger.info(f"Starting run_account_job for pk={accountjob_pk}")
-
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
 
+    if not accountjob.job:
+        logger.info(f"Improperly configured account_job {accountjob}: No Job provided")
+    if not accountjob.sftp_drop_zone:
+        logger.info(f"Improperly configured account_job {accountjob}: No sFTP Drop Zone")
+    
     ready_folder_path = Path(
         ensure_local_ready_folder(accountjob)
     )
