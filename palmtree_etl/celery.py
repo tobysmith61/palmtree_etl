@@ -11,10 +11,8 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-    # no longer used as we have switched to watcher/dropzone_watcher.py process
-    
-    # "promote_dropzone_files_every_minute": {
-    #     "task": "tenants.tasks.promote_dropzone_files",
-    #     "schedule": 60.0,  # run every minute
-    # },
+    "scan_account_jobs_for_ready_files": {
+        "task": "tenants.tasks.scan_for_ready_files",
+        "schedule": 10.0, #run every 10 seconds
+    },
 }

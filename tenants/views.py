@@ -337,7 +337,7 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
                 )
 
             if method=='LOCAL_COPY':
-                local_copy_to_folder=ensure_local_sftp_drop_folder(accountjob)
+                local_copy_to_folder=ensure_local_drop_folder(accountjob)
                 full_copy_to_path = str(Path(local_copy_to_folder) / filename)
                 shutil.copy(local_path, full_copy_to_path)
 
@@ -360,19 +360,22 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
 
-def ensure_local_sftp_drop_folder(accountjob):
+def ensure_local_drop_folder(accountjob):
     if getattr(settings, "IS_STAGING_SERVER", False):
         base_dir = f"{settings.BASE_DIR}/temp_files"
-    else:
-        base_dir = "/srv"
+
+    # shouldn't need to do this for the remote server which receives actual sftp dropped files
+    # as folders are set up by create_sftp account script, so this is commented out
+    # # else: 
+    #     base_dir = "/srv"
     
-    p = (
-        f"{base_dir}/sftp_drops/"
-        f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
-        f"/ready"
-    )
-    os.makedirs(p, exist_ok=True)
-    return p
+        p = (
+            f"{base_dir}/sftp_drops/"
+            f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
+            f"/ready"
+        )
+        os.makedirs(p, exist_ok=True)
+        return p
 
 def sftp_drop_dashboard_view(request):
     if request.method == "POST":

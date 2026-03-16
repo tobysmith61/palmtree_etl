@@ -3,12 +3,13 @@
         "fields": {
             "account": 1,
             "account_table_data": 2,
+            "auto_or_manual": "manual",
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-04T22:48:24.002Z"
+            "updated_at": "2026-03-16T08:41:24.635Z"
         },
         "model": "tenants.accountjob",
         "pk": 1
@@ -17,6 +18,7 @@
         "fields": {
             "account": 2,
             "account_table_data": 1,
+            "auto_or_manual": "auto",
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
@@ -31,6 +33,7 @@
         "fields": {
             "account": 2,
             "account_table_data": 1,
+            "auto_or_manual": "auto",
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 2,

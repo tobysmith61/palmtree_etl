@@ -2,7 +2,7 @@ from .models import RawCustomerVehicleData
 from django.shortcuts import redirect
 from django.urls import reverse
 from tenants.models import AccountJob
-from tenants.views import ensure_local_sftp_drop_folder
+from tenants.views import ensure_local_drop_folder
 from django.conf import settings
 from pathlib import Path
 from canonical.etl import etl_transform
@@ -12,11 +12,20 @@ from django.utils import timezone
 import logging
 from pathlib import Path
 import shutil
+from django.contrib import messages
 
 logger = logging.getLogger(__name__)
 
 def run_account_job_from_django_admin(request, accountjob_pk):
+    accountjob = AccountJob.objects.get(pk=accountjob_pk)
+    if accountjob.auto_or_manual=='auto':
+        messages.error(request, "Auto or Manual run option needs to be set to Manual")
+        return redirect(
+            reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
+        )
+    
     run_account_job(accountjob_pk)
+
     return redirect(
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
@@ -110,7 +119,7 @@ def run_account_job(accountjob_pk):
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
 
     ready_folder_path = Path(
-        ensure_local_sftp_drop_folder(accountjob)
+        ensure_local_drop_folder(accountjob)
     )
 
     logger.info(f"Ready folder: {ready_folder_path}")

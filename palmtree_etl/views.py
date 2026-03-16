@@ -6,7 +6,8 @@ from celery import Celery
 from django.db import connections
 from django.db.utils import OperationalError
 import subprocess
-
+import redis
+from django.conf import settings
 
 app = Celery("palmtree_etl")
 app.config_from_object("django.conf:settings", namespace="CELERY")
@@ -39,6 +40,15 @@ def get_db_status():
     except OperationalError:
         return "down"
 
+def get_redis_status():
+    try:
+        r = redis.from_url(settings.CELERY_BROKER_URL, socket_connect_timeout=1)
+        r.ping()
+        return "running"
+    except Exception:
+        return "down"
+    
+
 def healthcheck_page(request):
     status = {}
 
@@ -46,11 +56,13 @@ def healthcheck_page(request):
     status["celery_worker"] = "running" if is_process_running("celery") else "stopped"
     status["celery_beat"] = "running" if is_celery_beat_running() else "stopped"
     status["database"] = get_db_status()
+    status["redis"] = get_redis_status()
 
     # Map CSS classes for template
     status["celery_worker_class"] = "ok" if status["celery_worker"]=="running" else "down"
     status["celery_beat_class"] = "ok" if status["celery_beat"]=="running" else "down"
     status["database_class"] = "ok" if status["database"]=="ok" else "down"
+    status["redis_class"] = "ok" if status["redis"] == "running" else "down"
 
     # System resources
     total, used, free = shutil.disk_usage("/")

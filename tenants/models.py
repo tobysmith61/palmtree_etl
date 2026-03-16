@@ -237,7 +237,15 @@ class AccountJob(CoreModel, FixtureControlledModel):
     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.PROTECT, null=True, blank=True, verbose_name="sFTP drop zone")
     tenant_mapping = models.ForeignKey(TenantMapping, on_delete=models.PROTECT, null=True, blank=True)
     account_table_data = models.ForeignKey(AccountTableData, on_delete=models.PROTECT, null=True, blank=True)
-
+    auto_or_manual = models.CharField(
+        max_length=6,
+        choices=[
+            ('auto', 'Automated (started by background task runner)'),
+            ('manual', 'Manual (start via this admin page)'),
+        ],
+        default='auto'
+    )
+        
     def __str__(self):
         return f"{self.job}"
 
