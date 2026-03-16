@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'value_mappings',
     'file_ingestion',
     'django_celery_results',
+    'django_celery_beat',
 
     "mptt",
     #"sandbox",

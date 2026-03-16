@@ -1,25 +1,41 @@
-from celery import shared_task
-from tenants.models import AccountJob
-from raw_data.views import run_account_job
-from tenants.utils import ensure_local_drop_folder
-from pathlib import Path
 import logging
+from pathlib import Path
+
+from celery import shared_task
+from django.db import transaction
+
+from tenants.models import AccountJob
+from tenants.utils import ensure_local_drop_folder
+from .tasks import run_account_job_task  # or wherever this lives
 
 logger = logging.getLogger(__name__)
-
-@shared_task
-def run_account_job_task(accountjob_pk):
-    logger.info(f"Running AccountJob {accountjob_pk}")
-    run_account_job(accountjob_pk)
 
 
 @shared_task
 def scan_for_ready_files():
-    for job in AccountJob.objects.select_related("tenant"):
-        ready_folder = Path(ensure_local_drop_folder(job))
-        if not ready_folder.exists():
-            continue
-        files = list(ready_folder.iterdir())
-        if not files:
-            continue
-        run_account_job_task.delay(job.pk)
+    logger.info("Starting scan_for_ready_files task")
+
+    jobs = AccountJob.objects.select_related("tenant").all()
+
+    for job in jobs:
+        try:
+            ready_folder = Path(ensure_local_drop_folder(job))
+
+            if not ready_folder.exists():
+                continue
+
+            files = list(ready_folder.iterdir())
+            if not files:
+                continue
+
+            logger.info(
+                f"Found {len(files)} file(s) for AccountJob {job.pk}. Triggering processing."
+            )
+
+            # Trigger async processing
+            run_account_job_task.delay(job.pk)
+
+        except Exception as e:
+            logger.exception(f"Error scanning AccountJob {job.pk}: {e}")
+
+    logger.info("Completed scan_for_ready_files task")
