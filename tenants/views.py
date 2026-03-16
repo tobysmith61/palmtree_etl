@@ -23,6 +23,7 @@ from canonical.widgets import ExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import etl_transform
 from canonical.models import Job
+from tenants.utils import ensure_local_drop_folder
 
 import paramiko
 import os
@@ -359,23 +360,6 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
     return redirect(
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
-
-def ensure_local_drop_folder(accountjob):
-    if getattr(settings, "IS_STAGING_SERVER", False):
-        base_dir = f"{settings.BASE_DIR}/temp_files"
-
-    # shouldn't need to do this for the remote server which receives actual sftp dropped files
-    # as folders are set up by create_sftp account script, so this is commented out
-    # # else: 
-    #     base_dir = "/srv"
-    
-        p = (
-            f"{base_dir}/sftp_drops/"
-            f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
-            f"/ready"
-        )
-        os.makedirs(p, exist_ok=True)
-        return p
 
 def sftp_drop_dashboard_view(request):
     if request.method == "POST":

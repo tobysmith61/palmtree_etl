@@ -2,7 +2,7 @@ from .models import RawCustomerVehicleData
 from django.shortcuts import redirect
 from django.urls import reverse
 from tenants.models import AccountJob
-from tenants.views import ensure_local_drop_folder
+from tenants.utils import ensure_local_drop_folder
 from django.conf import settings
 from pathlib import Path
 from canonical.etl import etl_transform
