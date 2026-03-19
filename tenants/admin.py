@@ -287,7 +287,7 @@ class AccountJobAdmin(
     fieldsets = (
         (None, {
             'fields':
-                ('account', 'job', 'sftp_drop_zone', 'tenant_mapping', 'account_table_data', 'auto_or_manual'),
+                ('account', 'job', 'sftp_drop_zone', 'tenant_mapping', 'account_table_data', 'auto_or_manual', 'move_source_file_on_completion'),
         }),
     )
 
