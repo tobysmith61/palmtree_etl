@@ -106,14 +106,13 @@ class TimeStampedAdminMixin:
 
     updated_at_display.short_description = "Updated at"
 
-class StagingReadOnlyAdminMixin:
+class ReadOnlyAdminMixin:
     """
     Makes admin read-only when IS_STAGING_SERVER = True.
     """
-
     def is_readonly_environment(self):
-        return not getattr(settings, "IS_STAGING_SERVER", False)
-
+        return True
+    
     def has_add_permission(self, request):
         if self.is_readonly_environment():
             return False
@@ -147,6 +146,10 @@ class StagingReadOnlyAdminMixin:
                 "show_delete": False,
             })
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+class StagingReadOnlyAdminMixin(ReadOnlyAdminMixin):
+    def is_readonly_environment(self):
+        return not getattr(settings, "IS_STAGING_SERVER", False)
 
 class PalmTreeGenericAdminMixin(
     SoftDeleteAdminMixin,
