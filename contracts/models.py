@@ -1,6 +1,7 @@
 from django.db import models
 from tenants.models import Tenant
 from core.models import CoreModel
+from core.models import SHORT_LEN, encr_b64_size
 
 OPT_IN_TRI_STATE_CHOICES = [
     ('true', 'True'),
@@ -27,73 +28,88 @@ class Customer(CoreModel):
     )
 
     title = models.CharField(
-        max_length=20,
+        max_length=encr_b64_size(20),
         blank=True,
         help_text="e.g. Mr, Mrs, Ms, Dr"
     )
 
     first_name = models.CharField(
-        max_length=100,
+        max_length=encr_b64_size(100),
         blank=True
     )
 
     last_name = models.CharField(
-        max_length=100,
+        max_length=encr_b64_size(100),
         blank=True
     )
 
     salutation = models.CharField(
-        max_length=150,
+        max_length=encr_b64_size(150),
         blank=True,
         help_text="e.g. 'Dear John', 'Dear Mr Smith'"
     )
 
     email = models.EmailField(
+        max_length=encr_b64_size(254),
         blank=True,
         null=True
     )
 
     mobile_phone = models.CharField(
-        max_length=30,
+        max_length=encr_b64_size(30),
         blank=True,
         help_text="Mobile phone number"
     )
 
     home_phone = models.CharField(
-        max_length=30,
+        max_length=encr_b64_size(30),
         blank=True,
         help_text="Home phone number"
     )
 
     address_line_1 = models.CharField(
-        max_length=255,
+        max_length=encr_b64_size(255),
         blank=True
     )
 
     address_line_2 = models.CharField(
-        max_length=255,
+        max_length=encr_b64_size(255),
         blank=True
     )
 
     address_line_3 = models.CharField(
-        max_length=255,
+        max_length=encr_b64_size(255),
         blank=True
     )
 
     address_line_4 = models.CharField(
-        max_length=255,
+        max_length=encr_b64_size(255),
         blank=True
     )
 
     address_line_5 = models.CharField(
-        max_length=255,
+        max_length=encr_b64_size(255),
         blank=True
     )
 
-    postcode = models.CharField(
-        max_length=20,
-        blank=True,
-        help_text="Postcode"
+    postcode_full = models.CharField(
+        max_length=encr_b64_size(8), 
+        blank=True
+    )
+
+    postcode_area = models.CharField(
+        max_length=encr_b64_size(2), 
+        blank=True
+    )
+
+    postcode_district = models.CharField(
+        max_length=encr_b64_size(4), 
+        blank=True
+    )
+
+    postcode_sector = models.CharField(
+        max_length=encr_b64_size(6), 
+        blank=True
     )
 
     email_opt_in_value = models.CharField(
@@ -153,7 +169,6 @@ class Customer(CoreModel):
             )
         ]
 
-
     def __str__(self):
         return f"{self.external_customer_id} ({self.tenant})"
 
@@ -176,7 +191,7 @@ class Vehicle(CoreModel):
     )
 
     registration_number = models.CharField(
-        max_length=20,
+        max_length=encr_b64_size(20),
         help_text="Vehicle number from source system"
     )
 
@@ -188,7 +203,7 @@ class Vehicle(CoreModel):
     )
 
     vin = models.CharField(
-        max_length=17,
+        max_length=encr_b64_size(17),
         help_text="VIN from source system"
     )
 

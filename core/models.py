@@ -1,5 +1,25 @@
 from django.db import models
 
+import math
+
+NONCE_LEN = 12
+SHORT_LEN = 8
+
+def encr_b64_size(plaintext_len, nonce_len=NONCE_LEN, tag_len=SHORT_LEN):
+    """
+    Estimate the number of characters needed to store an AES-GCM encrypted value
+    in Base64.
+    
+    :param plaintext_len: length of the plaintext in bytes
+    :param nonce_len: length of AES-GCM nonce in bytes (default 12)
+    :param tag_len: length of AES-GCM authentication tag in bytes (default 16)
+    :return: approximate number of Base64 characters
+    """
+    total_bytes = plaintext_len + nonce_len + tag_len
+    # Base64 increases size by 4/3, round up to nearest whole character
+    num_base64_chars = math.ceil(total_bytes * 4 / 3)
+    return num_base64_chars
+
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
