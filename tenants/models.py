@@ -6,10 +6,11 @@ from canonical.models import Job, TableData
 from django.utils.timezone import now
 from global_data.models import Brand
 from core.models import CoreModel, FixtureControlledModel
+from core.models import SHORT_LEN
 
 class Account(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=255)
-    short = models.CharField(max_length=8, blank=True) #remove blank=True, 
+    short = models.CharField(max_length=SHORT_LEN, blank=True) #remove blank=True, 
     
     def save(self, *args, **kwargs):
         if self.short:
@@ -62,7 +63,7 @@ class TenantGroupType(models.TextChoices):
 class Location(CoreModel, Address, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     short = models.CharField(
-        max_length=8,
+        max_length=SHORT_LEN,
         blank=True,
         null=True
     )
@@ -244,6 +245,10 @@ class AccountJob(CoreModel, FixtureControlledModel):
             ('manual', 'Manual (start via this admin page)'),
         ],
         default='auto'
+    )
+    move_source_file_on_completion = models.BooleanField(
+        default=True,
+        help_text="Move the source file from /ready to /processed folder? (If it required by another job then leave unticked)"
     )
         
     def __str__(self):
