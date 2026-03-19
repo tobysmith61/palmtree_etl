@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'canonical',
     'contracts',
     'value_mappings',
-    'file_ingestion',
     'django_celery_results',
     'django_celery_beat',
 
