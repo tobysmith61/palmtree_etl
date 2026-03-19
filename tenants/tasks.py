@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def run_account_job_task(accountjob_id):
+def run_account_job_celery_task(accountjob_id):
     run_account_job(accountjob_id)
     
 @shared_task
@@ -23,6 +23,9 @@ def scan_for_ready_files():
 
     for job in jobs:
         try:
+            if job.auto_or_manual=='manual':
+                continue
+            
             ready_folder = Path(ensure_local_ready_folder(job))
 
             if not ready_folder.exists():
@@ -37,7 +40,7 @@ def scan_for_ready_files():
             )
 
             # Trigger async processing
-            run_account_job_task.delay(job.pk)
+            run_account_job_celery_task.delay(job.pk)
 
         except Exception as e:
             logger.exception(f"Error scanning AccountJob {job.pk}: {e}")
