@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
-from .models import Customer
+from .models import Customer, Vehicle
 
 class DataContractAdminMixin:
     """
@@ -50,3 +50,28 @@ class DataContractAdminMixin:
         )
 
         return render(request, "admin/data_contract.html", context)
+
+from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
+
+
+@admin.register(Customer)
+class CustomerAdmin(
+    TimeStampedAdminMixin, 
+    ReadOnlyAdminMixin,
+    admin.ModelAdmin
+):
+    list_display = (
+        'tenant',
+        'external_retailer_id',
+        'external_customer_id',
+        'last_name',
+    )
+    search_fields = (
+        'tenant',
+        'external_retailer_id',
+        'external_customer_id',
+    )
+    ordering = (
+        'id',
+    )
+
