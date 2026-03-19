@@ -7,9 +7,10 @@
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
+            "move_source_file_on_completion": true,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-16T08:41:24.635Z"
+            "updated_at": "2026-03-19T22:11:20.336Z"
         },
         "model": "tenants.accountjob",
         "pk": 1
@@ -22,6 +23,7 @@
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
+            "move_source_file_on_completion": true,
             "sftp_drop_zone": 35,
             "tenant_mapping": 2,
             "updated_at": "2026-03-16T22:07:32.520Z"
@@ -37,6 +39,7 @@
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 2,
+            "move_source_file_on_completion": true,
             "sftp_drop_zone": 35,
             "tenant_mapping": 2,
             "updated_at": "2026-03-16T22:07:27.411Z"
