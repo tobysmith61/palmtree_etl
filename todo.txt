@@ -67,7 +67,6 @@ review these models for natural keys rather than id based FKs
 ./sandbox/models.py:7:class TenantGroupType(models.TextChoices):
 ./sandbox/models.py:38:class TenantGroup(MPTTModel):
 ./sandbox/models.py:95:    class MPTTMeta:
-./file_ingestion/models.py:4:class IngestedFile(models.Model):
 
 implement loaddata and savedata for std data
 
