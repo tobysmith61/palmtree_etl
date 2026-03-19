@@ -13,6 +13,8 @@ import logging
 from pathlib import Path
 import shutil
 from django.contrib import messages
+from canonical.utils import build_canonical_row
+from contracts.models import Customer
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +52,9 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
             print("WARNING: tenant_code missing, skipping row")
             return
 
-        # cache tenants to avoid repeated DB lookups
+        # cache tenant to avoid repeated DB lookups
         if tenant_code not in tenant_cache:
             tenant_cache[tenant_code] = Tenant.objects.get(internal_tenant_code=tenant_code)
-
         tenant = tenant_cache[tenant_code]
 
         business_key_hash = raw_json_row.get('business_key_hash')
@@ -128,6 +129,9 @@ def run_account_job(accountjob_pk):
 
     logger.info(f"Ready folder: {ready_folder_path}")
 
+    #################################################################
+    # for each file currently in the ready folder awaiting processing
+    #################################################################
     for path_and_filename in sorted(ready_folder_path.iterdir()):
 
         logger.info(f"Processing file: {path_and_filename}")
@@ -146,6 +150,9 @@ def run_account_job(accountjob_pk):
         tenant_mapping = accountjob.tenant_mapping
         canonical_fields = accountjob.job.canonical_schema.fields.all()
 
+        ############
+        # do the etl
+        ############
         raw_json_rows, canonical_rows, display_rows = etl_transform(
             source_fields=source_fields,
             canonical_fields=canonical_fields,
@@ -153,9 +160,11 @@ def run_account_job(accountjob_pk):
             rows=rows,
             tenant_mapping=tenant_mapping
         )
-
         logger.info(f"Transformed rows: {len(raw_json_rows)}")
 
+        ################
+        # store raw rows
+        ################
         row_number = 0
         for raw_json_row in raw_json_rows:
             row_number += 1
@@ -172,6 +181,25 @@ def run_account_job(accountjob_pk):
 
             if result in ["INSERTED", "UPDATED"]:
                 pass
+
+
+        ######################
+        # store canonical rows
+        ######################
+        for canonical_row in canonical_rows:
+            tenant_map = {t.internal_tenant_code: t for t in Tenant.objects.all()}
+            tenant_obj = tenant_map[canonical_row["tenant"]]
+            accountjob.job.canonical_schema.contract
+            c=Customer(
+                **build_canonical_row(
+                    canonical_row,
+                    Customer,
+                    fk_map={"tenant": tenant_obj},
+                )
+            )
+            print (c.postcode_area)
+            c.save()
+        1/0
 
         #move the file from ready to /processed        
         processed_path = path_and_filename.parent.parent / "processed" / path_and_filename.name
