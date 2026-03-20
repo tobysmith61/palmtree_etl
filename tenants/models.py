@@ -250,7 +250,11 @@ class AccountJob(CoreModel, FixtureControlledModel):
         default=True,
         help_text="Move the source file from /ready to /processed folder? (If it required by another job then leave unticked)"
     )
-        
+    order = models.PositiveIntegerField(default=0, db_index=True)
+
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return f"{self.job}"
 

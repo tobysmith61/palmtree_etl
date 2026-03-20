@@ -1,10 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.utils.html import format_html
 from django.templatetags.static import static
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
-from django.contrib import admin, messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import path
 
@@ -20,14 +19,9 @@ from canonical.models import TableData
 from core.admin_mixins import PalmTreeGenericAdminMixin
 from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin
 
-from django.urls import path
-from django.shortcuts import redirect
-from django.contrib import messages
-
-import os
-import subprocess
 from django.conf import settings
-from django.utils.crypto import get_random_string
+
+from adminsortable2.admin import SortableAdminMixin
 
 
 
@@ -279,10 +273,11 @@ def build_account_tree(account,  group_type):
 
 @admin.register(AccountJob)
 class AccountJobAdmin(
-    AccountScopedAdminMixin, 
-    PalmTreeGenericAdminMixin, 
+    SortableAdminMixin,
+    AccountScopedAdminMixin,
+    PalmTreeGenericAdminMixin,
 ):
-    list_display = ('account', 'job', 'sftp_drop_zone', 'tenant_mapping')
+    list_display = ('account', 'order', 'job', 'sftp_drop_zone', 'tenant_mapping',)
     list_display_links = ("job",)
     fieldsets = (
         (None, {

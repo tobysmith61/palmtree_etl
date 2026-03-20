@@ -11,6 +11,7 @@ click-repl==0.3.0
 cron-descriptor==1.4.5
 cryptography==46.0.4
 Django==4.2.27
+django-admin-sortable2==2.3.1
 django-celery-beat==2.9.0
 django-environ==0.13.0
 django-extensions==4.1

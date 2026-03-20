@@ -8,9 +8,10 @@
             "deleted": false,
             "job": 1,
             "move_source_file_on_completion": true,
+            "order": 0,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-19T22:11:20.336Z"
+            "updated_at": "2026-03-20T08:51:17.997Z"
         },
         "model": "tenants.accountjob",
         "pk": 1
@@ -24,9 +25,10 @@
             "deleted": false,
             "job": 1,
             "move_source_file_on_completion": true,
+            "order": 2,
             "sftp_drop_zone": 35,
             "tenant_mapping": 2,
-            "updated_at": "2026-03-16T22:07:32.520Z"
+            "updated_at": "2026-03-20T08:51:18.288Z"
         },
         "model": "tenants.accountjob",
         "pk": 2
@@ -40,9 +42,10 @@
             "deleted": false,
             "job": 2,
             "move_source_file_on_completion": true,
+            "order": 1,
             "sftp_drop_zone": 35,
             "tenant_mapping": 2,
-            "updated_at": "2026-03-16T22:07:27.411Z"
+            "updated_at": "2026-03-20T08:51:18.274Z"
         },
         "model": "tenants.accountjob",
         "pk": 3
