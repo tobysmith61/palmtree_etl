@@ -3,7 +3,28 @@ from django.urls import path
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from .models import Customer, Vehicle
+from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
+from tenants.models import Tenant
 
+class TenantByAccountFilter(admin.SimpleListFilter):
+    title = "tenant"
+    parameter_name = "tenant"
+
+    def lookups(self, request, model_admin):
+        account_id = request.session.get("account_id")
+
+        if not account_id:
+            return []
+
+        tenants = Tenant.objects.filter(account_id=account_id)
+
+        return [(t.pk, str(t)) for t in tenants]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(tenant_id=self.value())
+        return queryset
+    
 class DataContractAdminMixin:
     """
     Adds a 'View Data Contract' button to any ModelAdmin
@@ -51,8 +72,6 @@ class DataContractAdminMixin:
 
         return render(request, "admin/data_contract.html", context)
 
-from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
-
 
 @admin.register(Customer)
 class CustomerAdmin(
@@ -74,4 +93,16 @@ class CustomerAdmin(
     ordering = (
         'id',
     )
+    list_filter = (
+        TenantByAccountFilter,
+    )
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        account_id = request.session.get("account_id")
+
+        if account_id:
+            return qs.filter(tenant__account_id=account_id)
+
+        return qs.none()

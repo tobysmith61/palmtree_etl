@@ -65,7 +65,7 @@ def hash_with_platform_secret(data: dict) -> str:
         hashlib.sha256
     ).hexdigest()
 
-def etl_transform(source_fields, canonical_fields, header, rows, tenant_mapping=None):
+def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenant_mapping=None):
     account = resolve_account(tenant_mapping)
     account_encryption = get_account_encryption(account)
     dek = decrypt_dek(account_encryption.encrypted_dek)
@@ -73,31 +73,30 @@ def etl_transform(source_fields, canonical_fields, header, rows, tenant_mapping=
     #########################
     #prepare raw data storage
     #########################
-    raw_data_storage_rows = []
-    for row in rows:
-        raw_json_dict=dict(zip(header, row))
+    raw_data_storage_encr_row_dicts = []
+    for orig_row in orig_rows:
+        raw_json_dict=dict(zip(orig_header, orig_row))
 
-
-        raw_data_storage_row = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
+        raw_data_storage_encr_row_dict = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
 
         #finished processing raw row
-        if raw_data_storage_row:
-            raw_data_storage_rows.append(raw_data_storage_row)
+        if raw_data_storage_encr_row_dict:
+            raw_data_storage_encr_row_dicts.append(raw_data_storage_encr_row_dict)
 
     ##################
     #prepare canonical
     ##################
     canonical_rows = []
-    for raw_json_dict in raw_data_storage_rows:
+    for index, raw_data_storage_encr_row_dict in enumerate(raw_data_storage_encr_row_dicts):
         #build canonical list of values for table
-        canonical_row = build_canonical_row(raw_json_dict, canonical_fields, tenant_mapping)
+        orig_row=orig_rows[index]
+        raw_json_dict=dict(zip(orig_header, orig_row))
+        canonical_row = build_canonical_row(raw_data_storage_encr_row_dict, canonical_fields, raw_json_dict, tenant_mapping)
         #finally add all fingerprinted values to canonical
         for sf in source_fields:
             if sf.pii_requires_fingerprint:
-                #orig_field_name = sf.source_field_name
-                #value = raw_json_dict_not_encrypted.get(orig_field_name)
                 field_name = 'fingerprint_'+sf.source_field_name
-                canonical_row[field_name]=raw_json_dict[field_name]
+                canonical_row[field_name]=raw_data_storage_encr_row_dict[field_name]
 
         canonical_rows.append(canonical_row)
 
@@ -128,7 +127,7 @@ def etl_transform(source_fields, canonical_fields, header, rows, tenant_mapping=
                 
         display_rows.append(canonical_row_copy_for_display)
     
-    return [json.dumps(row) for row in raw_data_storage_rows], canonical_rows, display_rows
+    return [json.dumps(row) for row in raw_data_storage_encr_row_dicts], canonical_rows, display_rows
 
 def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek):
     #remove field None: None if it exists
@@ -292,11 +291,16 @@ def apply_value_mapping(value, mapping_group):
     except ObjectDoesNotExist:
         return value  # fallback to original
     
-def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
-    all_kv_values = {}
+def build_canonical_row(raw_data_storage_encr_row_dict, canonical_fields, raw_json_dict, tenant_mapping=None):
+    #use raw_json_dict to create hmac'd row_hash of non encrypted data and prepend to kv's
+    raw_json_dict.pop(None, None)
+
+    row_hash = hash_with_platform_secret(raw_json_dict)
+    all_kv_values = { 'row_hash': row_hash }
+
     for cf in canonical_fields:
         sf = cf.source_field
-        value = raw_json_row.get(sf.source_field_name)
+        value = raw_data_storage_encr_row_dict.get(sf.source_field_name)
         # Tenant mapping first (raw → semantic)
         if tenant_mapping and sf.is_tenant_mapping_source:
             kv_value = {cf.name: tenant_mapping.resolve_tenant_as_internal_tenant_code(value)}
@@ -312,7 +316,17 @@ def build_canonical_row(raw_json_row, canonical_fields, tenant_mapping=None):
 
         for k, v in kv_value.items():
             if 'postcode' in cf.format_type:
+
+
+
+                
 #                all_kv_values[k]=v[cf.format_type]
+
+
+
+
+
+
                 all_kv_values[k]=v
             else:
                 all_kv_values[k]=v

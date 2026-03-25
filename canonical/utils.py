@@ -15,9 +15,10 @@ def build_canonical_row(json_row, model_class, fk_map=None):
 
     # Get all concrete model fields
     model_fields = {f.name: f for f in model_class._meta.get_fields()
-                    if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)}
+        if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)}
 
     for k, v in json_row.items():
+        
         # Handle foreign keys
         if k in fk_map:
             canonical_row[k] = fk_map[k]
@@ -36,7 +37,7 @@ def build_canonical_row(json_row, model_class, fk_map=None):
             continue
 
         field = model_fields[k]
-
+        
         # Auto-parse dates
         if isinstance(field, (models.DateField, models.DateTimeField)) and isinstance(v, str):
             try:

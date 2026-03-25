@@ -231,8 +231,8 @@ def accountjob_transform(accountjob, header, rows):
     raw_json_rows, canonical_rows, display_rows = etl_transform(
         source_fields=source_fields,
         canonical_fields=canonical_fields,
-        header=header,
-        rows=rows,
+        orig_header=header,
+        orig_rows=rows,
         tenant_mapping=tenant_mapping
     )
     return raw_json_rows, canonical_rows, display_rows
@@ -267,13 +267,6 @@ def tabledata_to_pipe_csv(json_array):
     row_number=0
     for row in rows:
         row_number+=1
-        if True:
-            if row_number==2:
-                a_million=1#_000_000
-                for i in range(a_million):
-                    writer.writerow(row)
-                    if i/100000 == int(i/100000):
-                        print (f'{i} written')
         writer.writerow(row)
 
     return output.getvalue()

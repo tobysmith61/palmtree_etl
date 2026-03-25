@@ -123,8 +123,8 @@ def job_preview(request, job_pk):
         raw_json_rows, canonical_rows, display_rows = etl_transform(
             source_fields=source_fields,
             canonical_fields=canonical_fields,
-            header=header,
-            rows=rows,        
+            orig_header=header,
+            orig_rows=rows,        
             tenant_mapping=tenant_mapping
         )
 

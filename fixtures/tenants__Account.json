@@ -3,9 +3,9 @@
         "fields": {
             "created_at": "2026-03-02T08:47:13.552Z",
             "deleted": false,
-            "name": "Stellantis UK (Account)",
+            "name": "Stellantis &You",
             "short": "STELLANT",
-            "updated_at": "2026-03-02T08:47:13.575Z"
+            "updated_at": "2026-03-25T08:44:26.430Z"
         },
         "model": "tenants.account",
         "pk": 1
@@ -14,9 +14,9 @@
         "fields": {
             "created_at": "2026-03-02T08:47:13.552Z",
             "deleted": false,
-            "name": "Group1 (Account)",
+            "name": "Group1 Automotive UK Ltd",
             "short": "GROUP1",
-            "updated_at": "2026-03-02T14:48:20.945Z"
+            "updated_at": "2026-03-25T08:43:37.760Z"
         },
         "model": "tenants.account",
         "pk": 2

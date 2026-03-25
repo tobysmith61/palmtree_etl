@@ -92,3 +92,10 @@ class Address(models.Model):
                 ],
             )
         )
+    
+
+class CoreContractModel(TimeStampedModel, models.Model):
+    row_hash = models.CharField(max_length=64)
+
+    class Meta:
+        abstract = True

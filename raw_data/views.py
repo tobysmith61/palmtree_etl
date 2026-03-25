@@ -14,7 +14,9 @@ from pathlib import Path
 import shutil
 from django.contrib import messages
 from canonical.utils import build_canonical_row
-from contracts.models import Customer
+from contracts.models import Customer, Vehicle
+from django.db import models, transaction
+import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +28,8 @@ def run_account_job_from_django_admin(request, accountjob_pk):
             reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
         )
     
-    run_account_job(accountjob_pk)
-
+    run_account_job(accountjob_pk, request)
+    
     return redirect(
         reverse("admin:tenants_accountjob_change", args=[accountjob_pk])
     )
@@ -114,7 +116,166 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
         # Optionally: raise e to stop processing, or just log and continue
         raise
 
-def run_account_job(accountjob_pk):
+
+
+
+
+
+def get_unique_fields(model):
+    """
+    Extract the first UniqueConstraint fields from the model.
+
+    Assumes:
+    - You have at least one UniqueConstraint defined
+    - That constraint defines how we identify "same row"
+    """
+    for constraint in model._meta.constraints:
+        if isinstance(constraint, models.UniqueConstraint):
+            return constraint.fields
+
+    raise ValueError(f"No UniqueConstraint found on {model.__name__}")
+
+def map_string_model_to_django_model(string_model):
+    if string_model=='contracts.Customer':
+        return Customer
+    if string_model=='contracts.Vehicle':
+        return Vehicle
+    1/0
+
+@transaction.atomic
+def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
+    """
+    Perform a FULL SYNC between canonical data and a Django model.
+
+    This will:
+    - CREATE new rows
+    - UPDATE existing rows
+    - DELETE rows not present in canonical_rows
+
+    Parameters:
+    ----------
+    accountjob : AccountJob instance
+        Contains account, job, and tenant mapping info.
+
+    canonical_rows : iterable of dicts
+        Raw input data from source system.
+
+    build_row_fn : function
+        Function that converts canonical_row → model-ready dict.
+
+    Returns:
+    -------
+    dict with counts of created/updated/deleted
+    """
+
+    # Map contract string → Django model class
+    model = map_string_model_to_django_model(accountjob.job.canonical_schema.contract)
+
+    # 🔑 Determine fields that uniquely identify a row (for update/delete)
+    unique_fields = get_unique_fields(model)
+
+    # -----------------------------------
+    # 1️⃣ Load scoped tenants for this job
+    # -----------------------------------
+    # Get Tenant instances from the tenant mapping
+    tenant_map = {
+        t.mapped_tenant.internal_tenant_code: t.mapped_tenant
+        for t in accountjob.tenant_mapping.mapping_codes.all()
+    }
+
+    # Extract primary keys of tenants (your Tenant PK is internal_tenant_code)
+    scoped_tenant_pks = list(tenant_map.keys())
+
+    # -----------------------------------
+    # 2️⃣ Load existing rows in DB
+    # -----------------------------------
+    # Filter by tenants included in this job
+    existing_qs = model.objects.filter(tenant__internal_tenant_code__in=scoped_tenant_pks)
+
+    # Map existing rows by their unique key for quick lookup
+    existing_map = {}
+    for obj in existing_qs:
+        key = tuple(
+            getattr(obj, f) if not f.endswith("tenant") else getattr(obj, f).internal_tenant_code
+            for f in unique_fields
+        )
+        existing_map[key] = obj
+
+    # Track which keys are seen in canonical_rows
+    seen_keys = set()
+
+    # Prepare lists for bulk operations
+    to_create = []
+    to_update = []
+
+    # -----------------------------------
+    # 3️⃣ Process canonical rows
+    # -----------------------------------
+    unchanged_count=0
+    for row in canonical_rows:
+        
+        fk_map = {}
+        if "tenant" in row:
+            tenant_code = row["tenant"]
+            fk_map["tenant"] = tenant_map[tenant_code]
+
+        data = build_row_fn(row, model, fk_map=fk_map)
+        
+        key = tuple(
+            data[f].internal_tenant_code if isinstance(data[f], Tenant) else data[f]
+            for f in unique_fields
+        )
+
+        seen_keys.add(key)
+        if key in existing_map:
+            obj = existing_map[key]
+
+            has_changed = False
+            if obj.row_hash != data['row_hash']:
+                has_changed = True
+
+            if has_changed:
+                for field, value in data.items():
+                    setattr(obj, field, value)
+                to_update.append(obj)
+            else:
+                unchanged_count += 1
+        else:
+            to_create.append(model(**data))
+
+    # -----------------------------------
+    # 4️⃣ Delete rows not present in canonical_rows
+    # -----------------------------------
+    to_delete = [
+        obj for key, obj in existing_map.items()
+        if key not in seen_keys
+    ]
+
+    # -----------------------------------
+    # 5️⃣ Bulk database operations
+    # -----------------------------------
+    if to_create:
+        model.objects.bulk_create(to_create, batch_size=1000)
+
+    if to_update:
+        update_fields = list(data.keys())
+        
+        
+        model.objects.bulk_update(to_update, update_fields, batch_size=1000)
+
+    if to_delete:
+        model.objects.filter(
+            **{"pk__in": [obj.pk for obj in to_delete]}
+        ).delete()
+
+    return {
+        "created": len(to_create),
+        "updated": len(to_update),
+        "deleted": len(to_delete),
+        "unchanged": unchanged_count,
+    }
+
+def run_account_job(accountjob_pk, request=None):
     logger.info(f"Starting run_account_job for pk={accountjob_pk}")
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
 
@@ -153,11 +314,11 @@ def run_account_job(accountjob_pk):
         ############
         # do the etl
         ############
-        raw_json_rows, canonical_rows, display_rows = etl_transform(
+        raw_json_rows, canonical_rows, _ = etl_transform(
             source_fields=source_fields,
             canonical_fields=canonical_fields,
-            header=header,
-            rows=rows,
+            orig_header=header,
+            orig_rows=rows,
             tenant_mapping=tenant_mapping
         )
         logger.info(f"Transformed rows: {len(raw_json_rows)}")
@@ -186,20 +347,7 @@ def run_account_job(accountjob_pk):
         ######################
         # store canonical rows
         ######################
-        for canonical_row in canonical_rows:
-            tenant_map = {t.internal_tenant_code: t for t in Tenant.objects.all()}
-            tenant_obj = tenant_map[canonical_row["tenant"]]
-            accountjob.job.canonical_schema.contract
-            c=Customer(
-                **build_canonical_row(
-                    canonical_row,
-                    Customer,
-                    fk_map={"tenant": tenant_obj},
-                )
-            )
-            print (c.postcode_area)
-            c.save()
-        1/0
+        result = sync_model_from_canonical(accountjob, canonical_rows, build_canonical_row)
 
         if accountjob.move_source_file_on_completion:
             #move the file from /ready to /processed        
@@ -207,6 +355,12 @@ def run_account_job(accountjob_pk):
             shutil.move(path_and_filename, processed_path)
 
         logger.info("Finished file processing")
+
+        if request:
+            messages.info(
+                request,
+                f"Job complete: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
+            )
 
     logger.info("Job complete")
 

@@ -1,6 +1,6 @@
 from django.db import models
 from tenants.models import Tenant
-from core.models import CoreModel
+from core.models import CoreContractModel
 from core.models import SHORT_LEN, encr_b64_size
 
 OPT_IN_TRI_STATE_CHOICES = [
@@ -10,7 +10,7 @@ OPT_IN_TRI_STATE_CHOICES = [
     ('missing', 'Missing'),          # source data didn’t provide it
 ]
 
-class Customer(CoreModel):
+class Customer(CoreContractModel):
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,
@@ -173,7 +173,7 @@ class Customer(CoreModel):
         return f"{self.external_customer_id} ({self.tenant})"
 
 
-class Vehicle(CoreModel):
+class Vehicle(CoreContractModel):
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,

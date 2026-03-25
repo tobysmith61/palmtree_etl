@@ -99,7 +99,7 @@ class Tenant(CoreModel, FixtureControlledModel):
     brand = models.ForeignKey(Brand, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return self.desc
+        return self.desc + f' ({self.account})'
 
     def save(self, *args, **kwargs):
         if not self.internal_tenant_code:  # only set if not already provided
