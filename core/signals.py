@@ -7,6 +7,7 @@ import json
 
 from django.apps import apps
 from core.models import FixtureControlledModel
+import os
 
 
 def dump_fixture(model, output_dir="fixtures"):
@@ -41,6 +42,8 @@ def dump_fixture(model, output_dir="fixtures"):
 
 # Connect to all FixtureControlledModel subclasses in all apps
 for model in apps.get_models():
-    if issubclass(model, FixtureControlledModel) and not model._meta.abstract:
-        post_save.connect(lambda sender, **kwargs: dump_fixture(sender), sender=model)
-        post_delete.connect(lambda sender, **kwargs: dump_fixture(sender), sender=model)
+    if os.environ.get("IS_STAGING_SERVER") == "True":
+        if issubclass(model, FixtureControlledModel) and not model._meta.abstract:
+            post_save.connect(lambda sender, **kwargs: dump_fixture(sender), sender=model)
+            post_delete.connect(lambda sender, **kwargs: dump_fixture(sender), sender=model)
+            
