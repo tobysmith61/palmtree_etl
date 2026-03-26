@@ -290,7 +290,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-03-25T08:56:27.127Z"
+            "updated_at": "2026-03-26T08:45:04.064Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
