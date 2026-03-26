@@ -36,7 +36,7 @@ class PalmtreeExcelWidget(forms.Widget):
 
         html = f'''
         <div>
-            <button type="button" id="toggle_{name}" style="margin-bottom:10px;">Switch to JSON</button>
+            <button type="button" id="toggle_{name}" style="margin-bottom:10px;">JSON</button>
         </div>
 
         <div id="hot_container_{name}" style="width: 100%; height: 300px; margin-bottom: 10px;"></div>
@@ -128,7 +128,7 @@ class PalmtreeExcelWidget(forms.Widget):
 
                     container.style.display = "block";
                     jsonContainer.style.display = "none";
-                    this.textContent = "Switch to JSON";
+                    this.textContent = "JSON";
                     isJsonView = false;
 
                 }} else {{
@@ -139,7 +139,7 @@ class PalmtreeExcelWidget(forms.Widget):
 
                     container.style.display = "none";
                     jsonContainer.style.display = "block";
-                    this.textContent = "Switch to Table";
+                    this.textContent = "Table";
                     isJsonView = true;
                 }}
             }});

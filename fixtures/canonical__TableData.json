@@ -90,7 +90,7 @@
                     "01483 222339",
                     "N",
                     "1/12/2010",
-                    "333691",
+                    "333692",
                     "FE20LPP",
                     "Peugeot",
                     "707",
@@ -135,7 +135,7 @@
             "deleted": false,
             "name": "Customer Vehicle test data",
             "source_schema": 1,
-            "updated_at": "2026-03-26T20:40:09.041Z"
+            "updated_at": "2026-03-26T20:43:28.443Z"
         },
         "model": "canonical.tabledata",
         "pk": 2
