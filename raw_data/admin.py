@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 import json
 from .models import RawCustomerVehicleData
+from core.filters import TenantByAccountFilter
 
 
 @admin.register(RawCustomerVehicleData)
@@ -31,7 +32,7 @@ class RawCustomerVehicleDataAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        "tenant",
+        TenantByAccountFilter,
         "is_current",
         "processed",
         "ingested_at",
