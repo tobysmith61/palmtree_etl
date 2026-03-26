@@ -19,7 +19,7 @@ from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone
 from .forms import TenantForm, SFTPUploadForm
 from .utils import get_current_tenant
 
-from canonical.widgets import ExcelWidget
+from canonical.widgets import PalmtreeExcelWidget
 from canonical.views import strip_empty_columns, strip_empty_rows, serialize_tabledata_for_widget, canonical_json_to_excel_style_table
 from canonical.etl import etl_transform
 from canonical.models import Job
@@ -246,7 +246,7 @@ def accountjob_preview(request, accountjob_pk):
     canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
     display_table_data = canonical_json_to_excel_style_table(display_rows)
     source_data = strip_empty_columns(strip_empty_rows(accountjob.account_table_data.data or []))
-    table_widget = ExcelWidget(readonly=True)
+    table_widget = PalmtreeExcelWidget(readonly=True)
 
     context = {
         "table_data": canonical_table_data,

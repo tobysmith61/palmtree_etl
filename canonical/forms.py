@@ -1,6 +1,6 @@
 from django import forms
 from .models import TableData, CanonicalField, FieldMapping
-from .widgets import ExcelWidget
+from .widgets import PalmtreeExcelWidget
 from django.core.exceptions import ValidationError
 import json
 import re
@@ -12,7 +12,7 @@ class TableDataForm(forms.ModelForm):
         model = TableData
         fields = ['name', 'source_schema', 'data']
         widgets = {
-            'data': ExcelWidget(readonly=True),
+            'data': PalmtreeExcelWidget(readonly=True),
         }
 
     def to_snake_case(self, value):

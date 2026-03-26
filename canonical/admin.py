@@ -398,11 +398,11 @@ class TableDataAdmin(
         }),
     )
     
-    #local version of this function allows ExcelWidget to render (table)
+    #local version of this function allows PalmtreeExcelWidget to render (table)
     def get_readonly_fields(self, request, obj=None):
         readonly = super().get_readonly_fields(request, obj)
         if "data" in readonly:
-            readonly.remove("data")  # allow ExcelWidget to render
+            readonly.remove("data")  # allow PalmtreeExcelWidget to render
         return readonly
     
 

@@ -1,7 +1,7 @@
 # tenants/forms.py
 from django import forms
 from .models import Tenant, AccountTableData
-from canonical.widgets import ExcelWidget #move to central
+from canonical.widgets import PalmtreeExcelWidget #move to central
 
 class TenantForm(forms.ModelForm):
     class Meta:
@@ -17,7 +17,7 @@ class AccountTableDataForm(forms.ModelForm):
         model = AccountTableData
         fields = ['name', 'data']  # only model fields
         widgets = {
-            'data': ExcelWidget(),  # editable
+            'data': PalmtreeExcelWidget(),  # editable
         }
 
 class SFTPUploadForm(forms.Form):

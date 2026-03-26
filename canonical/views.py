@@ -1,7 +1,7 @@
 from canonical.models import CanonicalSchema, TableData, Job, FieldMapping, CanonicalField
 import json
 from django.shortcuts import render, get_object_or_404
-from .widgets import ExcelWidget
+from .widgets import PalmtreeExcelWidget
 from .etl import etl_transform
 from datetime import date, datetime
 from django.contrib import messages
@@ -130,7 +130,7 @@ def job_preview(request, job_pk):
 
         canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
         display_table_data = canonical_json_to_excel_style_table(display_rows)
-        table_widget = ExcelWidget(readonly=True)
+        table_widget = PalmtreeExcelWidget(readonly=True)
 
         context = {
             "table_data": canonical_table_data,
