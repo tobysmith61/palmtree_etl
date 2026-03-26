@@ -4,12 +4,12 @@
             "canonical_schema": 1,
             "created_at": "2026-03-02T08:47:13.457Z",
             "deleted": false,
-            "desc": "Import raw DMS Customer Vehicle data to Canonical Customer",
+            "desc": "DMS Customer Vehicle data > Canonical Customer",
             "one_or_many_source_files": false,
             "source_filename_pattern": "DMS_CustomerVehicle_YYYYMMDD_HHMMSS.csv",
             "source_schema": 1,
             "test_table": 2,
-            "updated_at": "2026-03-02T08:47:13.476Z"
+            "updated_at": "2026-03-26T07:58:53.769Z"
         },
         "model": "canonical.job",
         "pk": 1
@@ -19,12 +19,12 @@
             "canonical_schema": 2,
             "created_at": "2026-03-02T08:47:13.457Z",
             "deleted": false,
-            "desc": "Import raw DMS Customer Vehicle data to Canonical Vehicle",
+            "desc": "DMS Customer Vehicle data > Canonical Vehicle",
             "one_or_many_source_files": false,
             "source_filename_pattern": "",
             "source_schema": 1,
             "test_table": 2,
-            "updated_at": "2026-03-02T14:26:36.492Z"
+            "updated_at": "2026-03-26T07:59:07.090Z"
         },
         "model": "canonical.job",
         "pk": 2
