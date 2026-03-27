@@ -12,6 +12,7 @@ from tenants.local_kms import generate_encrypted_dek, decrypt_dek
 from . import etl_postcode
 from dotenv import load_dotenv
 from django.conf import settings
+import time
 
 load_dotenv()
 
@@ -65,11 +66,12 @@ def hash_with_platform_secret(data: dict) -> str:
         hashlib.sha256
     ).hexdigest()
 
-def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenant_mapping=None):
+def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenant_mapping=None, prepare_for_display=False):
     account = resolve_account(tenant_mapping)
     account_encryption = get_account_encryption(account)
     dek = decrypt_dek(account_encryption.encrypted_dek)
     
+
     #########################
     #prepare raw data storage
     #########################
@@ -82,6 +84,8 @@ def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenan
         #finished processing raw row
         if raw_data_storage_encr_row_dict:
             raw_data_storage_encr_row_dicts.append(raw_data_storage_encr_row_dict)
+
+
 
     ##################
     #prepare canonical
@@ -100,33 +104,39 @@ def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenan
 
         canonical_rows.append(canonical_row)
 
+    start = time.perf_counter()
+
     ####################
     #prepare for display
-    ####################    
+    ####################  
     display_rows=[]
-    for canonical_row in canonical_rows:
-        canonical_row_copy_for_display = canonical_row.copy()
-        for k in list(canonical_row_copy_for_display.keys()):
-            v = canonical_row_copy_for_display[k]
-            try:
-                cf = canonical_fields.get(name=k)
-            except:
-                # safely remove keys while iterating
-                canonical_row_copy_for_display.pop(k)
-                continue
+    if prepare_for_display:
+        for canonical_row in canonical_rows:
+            canonical_row_copy_for_display = canonical_row.copy()
+            for k in list(canonical_row_copy_for_display.keys()):
+                v = canonical_row_copy_for_display[k]
+                try:
+                    cf = canonical_fields.get(name=k)
+                except:
+                    # safely remove keys while iterating
+                    canonical_row_copy_for_display.pop(k)
+                    continue
 
-            field_mapping = cf.source_field
-            if field_mapping and field_mapping.pii_requires_encryption and v:
-                canonical_row_copy_for_display[k] = decrypt(
-                    canonical_row_copy_for_display,
-                    k,
-                    str(account.short),
-                    dek,
-                    cf.format_type
-                )
-                
-        display_rows.append(canonical_row_copy_for_display)
+                field_mapping = cf.source_field
+                if field_mapping and field_mapping.pii_requires_encryption and v:
+                    canonical_row_copy_for_display[k] = decrypt(
+                        canonical_row_copy_for_display,
+                        k,
+                        str(account.short),
+                        dek,
+                        cf.format_type
+                    )
+                    
+            display_rows.append(canonical_row_copy_for_display)
     
+    end = time.perf_counter()
+    print(f"prepare for display took {end - start:.6f}s")
+
     return [json.dumps(row) for row in raw_data_storage_encr_row_dicts], canonical_rows, display_rows
 
 def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek):
