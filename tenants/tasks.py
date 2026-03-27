@@ -19,7 +19,7 @@ def run_account_job_celery_task(accountjob_id):
 def scan_for_ready_files():
     logger.info("Starting scan_for_ready_files task")
 
-    jobs = AccountJob.objects.all()
+    jobs = AccountJob.objects.all().order_by('account', 'order')
 
     for job in jobs:
         try:
