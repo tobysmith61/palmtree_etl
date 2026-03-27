@@ -49,6 +49,32 @@ def get_redis_status():
         return "down"
     
 
+
+def get_active_tasks():
+    try:
+        i = app.control.inspect()
+        active = i.active() or {}
+
+        tasks = []
+
+        for worker, worker_tasks in active.items():
+            for task in worker_tasks:
+                # Optional: filter only AccountJob tasks
+                if "account" in task.get("name", "").lower():
+                    tasks.append({
+                        "id": task.get("id"),
+                        "name": task.get("name"),
+                        "args": task.get("args"),
+                        "kwargs": task.get("kwargs"),
+                        "worker": worker,
+                    })
+
+        return tasks
+    except Exception:
+        return []
+
+
+
 def healthcheck_page(request):
     status = {}
 
@@ -58,7 +84,7 @@ def healthcheck_page(request):
     status["database"] = get_db_status()
     status["redis"] = get_redis_status()
 
-    # Map CSS classes for template
+    # CSS classes
     status["celery_worker_class"] = "ok" if status["celery_worker"]=="running" else "down"
     status["celery_beat_class"] = "ok" if status["celery_beat"]=="running" else "down"
     status["database_class"] = "ok" if status["database"]=="ok" else "down"
@@ -74,5 +100,8 @@ def healthcheck_page(request):
         "used_mb": mem.used//1024//1024,
         "free_mb": mem.available//1024//1024
     }
+
+    # 🔥 Add this
+    status["active_tasks"] = get_active_tasks()
 
     return render(request, "healthcheck.html", {"status": status})
