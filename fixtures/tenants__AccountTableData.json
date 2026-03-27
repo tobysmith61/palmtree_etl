@@ -3467,7 +3467,7 @@
                     null,
                     "London",
                     "Surrey",
-                    "GU100AA",
+                    "GU10AA",
                     "user100@example.com",
                     "Y",
                     "100/01/2020",
@@ -3478,7 +3478,7 @@
                     "Y",
                     "100/01/2020",
                     "200100",
-                    "AA100ABC",
+                    "AA10ABC",
                     "Ford",
                     "Fiesta",
                     "01/05/2020",
@@ -3557,7 +3557,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-03-27T15:28:32.872Z"
+            "updated_at": "2026-03-27T23:02:50.864Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
