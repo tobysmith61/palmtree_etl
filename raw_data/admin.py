@@ -18,6 +18,7 @@ class RawCustomerVehicleDataAdmin(admin.ModelAdmin):
         "pretty_payload",
         "source_file",
         "source_row_number",
+        "is_deleted_at_source",
     )
 
     # Make everything read-only
@@ -29,6 +30,7 @@ class RawCustomerVehicleDataAdmin(admin.ModelAdmin):
         "is_current",
         "processed",
         "ingested_at",
+        "is_deleted_at_source",
     )
 
     list_filter = (
@@ -36,6 +38,7 @@ class RawCustomerVehicleDataAdmin(admin.ModelAdmin):
         "is_current",
         "processed",
         "ingested_at",
+        "is_deleted_at_source",
     )
 
     search_fields = (

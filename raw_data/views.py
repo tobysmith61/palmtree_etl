@@ -20,6 +20,9 @@ import pprint
 
 logger = logging.getLogger(__name__)
 
+tenant_cache = {}
+
+
 def run_account_job_from_django_admin(request, accountjob_pk):
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
     if accountjob.auto_or_manual=='auto':
@@ -41,15 +44,9 @@ def csv_to_header_and_rows(contents, separator=','):
     rows = [row.split(separator) for row in rows]
     return header, rows        
 
-tenant_cache = {}
-
-def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename, run_id):
+def store_raw_row(raw_json_row_dict, row_number, ready_folder_path, path_and_filename, run_id):
     try:
-        # Convert string to dict
-        if isinstance(raw_json_row, str):
-            raw_json_row = json.loads(raw_json_row)
-
-        tenant_code = raw_json_row.get('tenant_code')
+        tenant_code = raw_json_row_dict.get('tenant_code')
         if not tenant_code:
             print("WARNING: tenant_code missing, skipping row")
             return
@@ -59,16 +56,16 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
             tenant_cache[tenant_code] = Tenant.objects.get(internal_tenant_code=tenant_code)
         tenant = tenant_cache[tenant_code]
 
-        business_key_hash = raw_json_row.get('business_key_hash')
-        row_hash = raw_json_row.get('row_hash')
+        business_key_hash = raw_json_row_dict.get('business_key_hash')
+        row_hash = raw_json_row_dict.get('row_hash')
 
         if not business_key_hash or not row_hash:
             return
 
         # remove these keys from payload
-        raw_json_row.pop('tenant_code', None)
-        raw_json_row.pop('business_key_hash', None)
-        raw_json_row.pop('row_hash', None)
+        raw_json_row_dict.pop('tenant_code', None)
+        raw_json_row_dict.pop('business_key_hash', None)
+        raw_json_row_dict.pop('row_hash', None)
 
         source_name = "/".join(str(ready_folder_path).strip("/").split("/")[-3:-1])
 
@@ -100,7 +97,7 @@ def store_raw_row(raw_json_row, row_number, ready_folder_path, path_and_filename
             source_name=source_name,
             business_key_hash=business_key_hash,
             row_hash=row_hash,
-            payload=raw_json_row,
+            payload=raw_json_row_dict,
             processed=False,
             is_current=True,
             source_file=str(path_and_filename),
@@ -326,12 +323,31 @@ def run_account_job(accountjob_pk, request=None):
         ################
         # store raw rows
         ################
+
+        # get current
+        tenants = accountjob.tenant_mapping.mapping_codes.all() # the 'expected' scope of the tenants
+        existing_keys = set(
+            RawCustomerVehicleData.objects.filter(
+                tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
+                is_current=True
+            ).values_list('business_key_hash', flat=True)
+        )
+
+        # insert new versions
+        seen_keys = set()
         row_number = 0
         for raw_json_row in raw_json_rows:
             row_number += 1
 
+            # Convert string to dict
+            if isinstance(raw_json_row, str):
+                raw_json_row_dict = json.loads(raw_json_row)
+
+            key = raw_json_row_dict.get('business_key_hash')
+            seen_keys.add(key)
+
             result = store_raw_row(
-                raw_json_row,
+                raw_json_row_dict,
                 row_number,
                 ready_folder_path,
                 path_and_filename,
@@ -342,6 +358,16 @@ def run_account_job(accountjob_pk, request=None):
 
             if result in ["INSERTED", "UPDATED"]:
                 pass
+
+        # flag omitted items as deleted_at_source
+        missing_keys = existing_keys - seen_keys
+        RawCustomerVehicleData.objects.filter(
+            tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
+            is_current=True,
+            business_key_hash__in=missing_keys
+        ).update(
+            is_deleted_at_source=True,
+        )
 
 
         ######################
@@ -359,7 +385,7 @@ def run_account_job(accountjob_pk, request=None):
         if request:
             messages.info(
                 request,
-                f"Job complete: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
+                f"Job complete, Canonical results: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
             )
 
     logger.info("Job complete")

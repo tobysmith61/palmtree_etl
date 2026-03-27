@@ -178,6 +178,10 @@ class TenantMappingCode(CoreModel, FixtureControlledModel):
         verbose_name = "Tenant mapping code"
         verbose_name_plural = "Tenant mapping codes"
 
+    def __str__(self):
+        return f"{self.source_system_field_value} → {self.mapped_tenant}"
+
+
 class SFTPDropZone(CoreModel, FixtureControlledModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     zone_folder = models.CharField(max_length=50)  # e.g. DMS001

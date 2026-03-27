@@ -12,9 +12,10 @@ class BaseRawData(models.Model):
     processed = models.BooleanField(default=False)
     is_current = models.BooleanField(default=False)
     last_seen_run_id = models.CharField(max_length=19, db_index=True)
-
+    is_deleted_at_source = models.BooleanField(default=False)
+    
     class Meta:
-            abstract = True
+        abstract = True
 
 class RawCustomerVehicleData(BaseRawData):
     tenant = models.ForeignKey(

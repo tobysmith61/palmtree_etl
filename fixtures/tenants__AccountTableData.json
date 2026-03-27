@@ -193,7 +193,7 @@
                     "2025-11-14T13:45:00+01:00",
                     "Miss",
                     "Sally",
-                    "Cinnamon;",
+                    "Cinnamon",
                     "Miss Cinnamon",
                     "Nutleigh",
                     "Catteshall Lane",
@@ -226,7 +226,7 @@
                     "2025-11-14T13:45:00+01:00",
                     "Mr",
                     "Ferghal",
-                    "OReilly;",
+                    "OReilly",
                     "Mr OReilly",
                     "Flat 1a",
                     "High Street",
@@ -290,7 +290,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-03-26T08:45:04.064Z"
+            "updated_at": "2026-03-26T20:53:36.838Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
