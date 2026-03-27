@@ -2,7 +2,7 @@
 
 {% block object-tools %}
     {{ block.super }}
-    {% if original and show_backfill_canonical_fields_from_canonical_contract_button %}
+    {% if original and show_backfill_canonical_fields_from_canonical_contract_button and original.contract %}
         {% with model_name=original.contract|cut:"contracts." %}
         <a class="button" href="{% url 'contracts:view' model_name %}">
             View Contract

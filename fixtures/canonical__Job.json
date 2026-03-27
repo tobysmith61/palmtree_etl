@@ -28,5 +28,20 @@
         },
         "model": "canonical.job",
         "pk": 2
+    },
+    {
+        "fields": {
+            "canonical_schema": 3,
+            "created_at": "2026-03-27T19:53:47.818Z",
+            "deleted": false,
+            "desc": "DMS Customer Vehicle data > Customer Vehicle links",
+            "one_or_many_source_files": false,
+            "source_filename_pattern": "",
+            "source_schema": 1,
+            "test_table": 2,
+            "updated_at": "2026-03-27T19:54:53.574Z"
+        },
+        "model": "canonical.job",
+        "pk": 3
     }
 ]

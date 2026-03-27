@@ -5,186 +5,6 @@
             "data_type": "tenant_mapping",
             "deleted": false,
             "format_type": "none",
-            "name": "TENANT",
-            "normalisation": [],
-            "order": 1,
-            "required": true,
-            "schema": 2,
-            "source_field": 33,
-            "updated_at": "2026-03-02T14:26:29.538Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 40
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "EXTERNAL_RETAILER_ID",
-            "normalisation": [],
-            "order": 2,
-            "required": true,
-            "schema": 2,
-            "source_field": 33,
-            "updated_at": "2026-03-02T14:26:29.554Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 41
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "EXTERNAL_VEHICLE_ID",
-            "normalisation": [],
-            "order": 3,
-            "required": true,
-            "schema": 2,
-            "source_field": 54,
-            "updated_at": "2026-03-02T14:26:29.563Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 42
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "REGISTRATION_NUMBER",
-            "normalisation": [],
-            "order": 4,
-            "required": true,
-            "schema": 2,
-            "source_field": 55,
-            "updated_at": "2026-03-02T14:26:29.576Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 43
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "date",
-            "deleted": false,
-            "format_type": "none",
-            "name": "REGISTRATION_DATE",
-            "normalisation": [],
-            "order": 5,
-            "required": true,
-            "schema": 2,
-            "source_field": 58,
-            "updated_at": "2026-03-02T14:26:29.587Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 44
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "VIN",
-            "normalisation": [],
-            "order": 6,
-            "required": true,
-            "schema": 2,
-            "source_field": 59,
-            "updated_at": "2026-03-02T14:26:29.600Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 45
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "BRAND",
-            "normalisation": [],
-            "order": 7,
-            "required": true,
-            "schema": 2,
-            "source_field": 56,
-            "updated_at": "2026-03-02T14:26:29.683Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 46
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "MODEL",
-            "normalisation": [],
-            "order": 8,
-            "required": true,
-            "schema": 2,
-            "source_field": 57,
-            "updated_at": "2026-03-02T14:26:29.700Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 47
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "VARIANT",
-            "normalisation": [],
-            "order": 9,
-            "required": true,
-            "schema": 2,
-            "source_field": 61,
-            "updated_at": "2026-03-02T14:26:29.712Z",
-            "value_mapping_group": null
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 48
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "mapped_string",
-            "deleted": false,
-            "format_type": "none",
-            "name": "FUEL_TYPE",
-            "normalisation": [],
-            "order": 10,
-            "required": true,
-            "schema": 2,
-            "source_field": 60,
-            "updated_at": "2026-03-02T14:26:29.724Z",
-            "value_mapping_group": 1
-        },
-        "model": "canonical.canonicalfield",
-        "pk": 49
-    },
-    {
-        "fields": {
-            "created_at": "2026-03-02T08:47:13.358Z",
-            "data_type": "tenant_mapping",
-            "deleted": false,
-            "format_type": "none",
             "name": "tenant",
             "normalisation": [],
             "order": 1,
@@ -592,5 +412,239 @@
         },
         "model": "canonical.canonicalfield",
         "pk": 119
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:19.604Z",
+            "data_type": "tenant_mapping",
+            "deleted": false,
+            "format_type": "none",
+            "name": "tenant",
+            "normalisation": [],
+            "order": 1,
+            "required": true,
+            "schema": 2,
+            "source_field": 33,
+            "updated_at": "2026-03-27T17:13:50.869Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 120
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.405Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_retailer_id",
+            "normalisation": [],
+            "order": 2,
+            "required": false,
+            "schema": 2,
+            "source_field": 33,
+            "updated_at": "2026-03-27T17:13:50.886Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 121
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.422Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_vehicle_id",
+            "normalisation": [],
+            "order": 3,
+            "required": false,
+            "schema": 2,
+            "source_field": 54,
+            "updated_at": "2026-03-27T17:13:50.901Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 122
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.436Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "registration_number",
+            "normalisation": [],
+            "order": 4,
+            "required": false,
+            "schema": 2,
+            "source_field": 55,
+            "updated_at": "2026-03-27T17:13:50.919Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 123
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.452Z",
+            "data_type": "date",
+            "deleted": false,
+            "format_type": "none",
+            "name": "registration_date",
+            "normalisation": [],
+            "order": 5,
+            "required": false,
+            "schema": 2,
+            "source_field": 58,
+            "updated_at": "2026-03-27T17:13:50.937Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 124
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.472Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "vin",
+            "normalisation": [],
+            "order": 6,
+            "required": false,
+            "schema": 2,
+            "source_field": 59,
+            "updated_at": "2026-03-27T17:13:50.953Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 125
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.499Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "brand",
+            "normalisation": [],
+            "order": 7,
+            "required": false,
+            "schema": 2,
+            "source_field": 56,
+            "updated_at": "2026-03-27T17:13:50.970Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 126
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.515Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "model",
+            "normalisation": [],
+            "order": 8,
+            "required": false,
+            "schema": 2,
+            "source_field": 57,
+            "updated_at": "2026-03-27T17:13:50.987Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 127
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.532Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "variant",
+            "normalisation": [],
+            "order": 9,
+            "required": false,
+            "schema": 2,
+            "source_field": 61,
+            "updated_at": "2026-03-27T17:13:51.000Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 128
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T17:04:20.549Z",
+            "data_type": "mapped_string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "fuel_type",
+            "normalisation": [],
+            "order": 10,
+            "required": false,
+            "schema": 2,
+            "source_field": 60,
+            "updated_at": "2026-03-27T17:13:51.019Z",
+            "value_mapping_group": 1
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 129
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T19:53:40.662Z",
+            "data_type": "tenant_mapping",
+            "deleted": false,
+            "format_type": "none",
+            "name": "tenant",
+            "normalisation": {},
+            "order": 1,
+            "required": false,
+            "schema": 3,
+            "source_field": 33,
+            "updated_at": "2026-03-27T20:41:05.496Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 130
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T20:39:45.136Z",
+            "data_type": "integer",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_customer_id",
+            "normalisation": [],
+            "order": 2,
+            "required": false,
+            "schema": 3,
+            "source_field": 34,
+            "updated_at": "2026-03-27T20:41:05.513Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 134
+    },
+    {
+        "fields": {
+            "created_at": "2026-03-27T20:39:45.151Z",
+            "data_type": "integer",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_vehicle_id",
+            "normalisation": [],
+            "order": 3,
+            "required": false,
+            "schema": 3,
+            "source_field": 54,
+            "updated_at": "2026-03-27T20:41:05.534Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 135
     }
 ]

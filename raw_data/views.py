@@ -14,9 +14,8 @@ from pathlib import Path
 import shutil
 from django.contrib import messages
 from canonical.utils import build_canonical_row
-from contracts.models import Customer, Vehicle
+from contracts.models import Customer, Vehicle, CustomerVehicleLink
 from django.db import models, transaction
-import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +136,8 @@ def map_string_model_to_django_model(string_model):
         return Customer
     if string_model=='contracts.Vehicle':
         return Vehicle
+    if string_model=='contracts.CustomerVehicleLink':
+        return CustomerVehicleLink
     1/0
 
 @transaction.atomic
@@ -316,7 +317,8 @@ def run_account_job(accountjob_pk, request=None):
             canonical_fields=canonical_fields,
             orig_header=header,
             orig_rows=rows,
-            tenant_mapping=tenant_mapping
+            tenant_mapping=tenant_mapping,
+            prepare_for_display=False,
         )
         logger.info(f"Transformed rows: {len(raw_json_rows)}")
 
@@ -354,7 +356,7 @@ def run_account_job(accountjob_pk, request=None):
                 last_seen_run_id
             )
 
-            logger.debug(f"Row {row_number} store result: {result}")
+            #logger.debug(f"Row {row_number} store result: {result}")
 
             if result in ["INSERTED", "UPDATED"]:
                 pass
@@ -391,3 +393,7 @@ def run_account_job(accountjob_pk, request=None):
     logger.info("Job complete")
 
     return
+
+
+
+#next: test deletion followed by re-insertion, need to know and understand behaviour currently, scenarios and requirements

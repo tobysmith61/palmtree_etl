@@ -18,12 +18,12 @@ class Customer(CoreContractModel):
     )
 
     external_retailer_id = models.CharField(
-        max_length=100,
+        max_length=50,
         help_text="Retailer identifier from source system"
     )
 
     external_customer_id = models.CharField(
-        max_length=100,
+        max_length=10,
         help_text="Customer identifier from source system"
     )
 
@@ -181,12 +181,12 @@ class Vehicle(CoreContractModel):
     )
 
     external_retailer_id = models.CharField(
-        max_length=20,
+        max_length=50,
         help_text="Retailer identifier from source system"
     )
 
     external_vehicle_id = models.CharField(
-        max_length=20,
+        max_length=10,
         help_text="Vehicle unique identifier (number) from source system"
     )
 
@@ -246,3 +246,38 @@ class Vehicle(CoreContractModel):
     def __str__(self):
         return f"{self.external_retailer_id} / {self.external_vehicle_id} / {self.registration_number} / {self.vin}"
 
+
+
+class CustomerVehicleLink(CoreContractModel):
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="customer_vehicle_link"
+    )
+
+    external_customer_id = models.CharField(
+        max_length=50,
+        help_text="Customer unique identifier (number) from source system"
+    )
+
+    external_vehicle_id = models.CharField(
+        max_length=10,
+        help_text="Vehicle unique identifier (number) from source system"
+    )
+
+
+    class Meta:
+        db_table = "contract_customer_vehicle_link"
+        indexes = [
+            models.Index(fields=["tenant", "external_customer_id"]),
+            models.Index(fields=["tenant", "external_vehicle_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "external_customer_id", "external_vehicle_id"],
+                name="uniq_customer_vehicle_per_tenant"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.tenant} / {self.external_customer_id} / {self.external_vehicle_id}"

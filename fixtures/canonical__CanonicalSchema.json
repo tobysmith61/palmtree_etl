@@ -20,9 +20,22 @@
             "description": "",
             "name": "Canonical DMS Vehicle",
             "requires_tenant_mapping": true,
-            "updated_at": "2026-03-02T14:26:29.502Z"
+            "updated_at": "2026-03-27T17:13:50.863Z"
         },
         "model": "canonical.canonicalschema",
         "pk": 2
+    },
+    {
+        "fields": {
+            "contract": "contracts.CustomerVehicleLink",
+            "created_at": "2026-03-27T19:53:40.287Z",
+            "deleted": false,
+            "description": "",
+            "name": "Customers Vehicle links",
+            "requires_tenant_mapping": true,
+            "updated_at": "2026-03-27T20:41:05.491Z"
+        },
+        "model": "canonical.canonicalschema",
+        "pk": 3
     }
 ]

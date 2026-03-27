@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
-from .models import Customer, Vehicle
+from .models import Customer, Vehicle, CustomerVehicleLink
 from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
 from tenants.models import Tenant
 from core.filters import TenantByAccountFilter
@@ -81,10 +81,71 @@ class CustomerAdmin(
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-
         account_id = request.session.get("account_id")
-
         if account_id:
             return qs.filter(tenant__account_id=account_id)
 
+        return qs.none()
+
+
+@admin.register(Vehicle)
+class VehicleAdmin(
+    TimeStampedAdminMixin, 
+    ReadOnlyAdminMixin,
+    admin.ModelAdmin
+):
+    list_display = (
+        'tenant',
+        'registration_number',
+        'vin',
+        'brand',
+        'model',
+    )
+    search_fields = (
+        'tenant',
+        'brand',
+    )
+    ordering = (
+        'id',
+    )
+    list_filter = (
+        TenantByAccountFilter,
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            return qs.filter(tenant__account_id=account_id)
+        return qs.none()
+
+
+@admin.register(CustomerVehicleLink)
+class CustomerVehicleLinkAdmin(
+    TimeStampedAdminMixin, 
+    ReadOnlyAdminMixin,
+    admin.ModelAdmin
+):
+    list_display = (
+        'tenant',
+        'external_customer_id',
+        'external_vehicle_id',
+    )
+    search_fields = (
+        'tenant',
+    )
+    ordering = (
+        'tenant',
+        'external_customer_id',
+        'external_vehicle_id',
+    )
+    list_filter = (
+        TenantByAccountFilter,
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            return qs.filter(tenant__account_id=account_id)
         return qs.none()
