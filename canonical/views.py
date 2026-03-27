@@ -125,7 +125,8 @@ def job_preview(request, job_pk):
             canonical_fields=canonical_fields,
             orig_header=header,
             orig_rows=rows,        
-            tenant_mapping=tenant_mapping
+            tenant_mapping=tenant_mapping,
+            prepare_for_display=True,
         )
 
         canonical_table_data = canonical_json_to_excel_style_table(canonical_rows)
