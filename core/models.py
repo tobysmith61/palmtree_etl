@@ -18,7 +18,7 @@ def encr_b64_size(plaintext_len, nonce_len=NONCE_LEN, tag_len=SHORT_LEN):
     total_bytes = plaintext_len + nonce_len + tag_len
     # Base64 increases size by 4/3, round up to nearest whole character
     num_base64_chars = math.ceil(total_bytes * 4 / 3)
-    return num_base64_chars
+    return num_base64_chars + 4
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
