@@ -3,7 +3,7 @@
         "fields": {
             "account": 1,
             "account_table_data": 2,
-            "auto_or_manual": "manual",
+            "auto_or_manual": "auto",
             "created_at": "2026-03-02T08:47:13.612Z",
             "deleted": false,
             "job": 1,
@@ -11,7 +11,7 @@
             "order": 0,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-27T22:47:46.923Z"
+            "updated_at": "2026-03-31T22:43:36.610Z"
         },
         "model": "tenants.accountjob",
         "pk": 1
@@ -54,7 +54,7 @@
         "fields": {
             "account": 1,
             "account_table_data": 2,
-            "auto_or_manual": "manual",
+            "auto_or_manual": "auto",
             "created_at": "2026-03-27T16:10:33.674Z",
             "deleted": false,
             "job": 2,
@@ -62,7 +62,7 @@
             "order": 1,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-27T22:47:52.999Z"
+            "updated_at": "2026-03-31T22:43:42.083Z"
         },
         "model": "tenants.accountjob",
         "pk": 4
@@ -71,7 +71,7 @@
         "fields": {
             "account": 1,
             "account_table_data": 2,
-            "auto_or_manual": "manual",
+            "auto_or_manual": "auto",
             "created_at": "2026-03-27T19:54:04.039Z",
             "deleted": false,
             "job": 3,
@@ -79,7 +79,7 @@
             "order": 3,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-03-27T22:47:57.455Z"
+            "updated_at": "2026-03-31T22:43:46.932Z"
         },
         "model": "tenants.accountjob",
         "pk": 5
