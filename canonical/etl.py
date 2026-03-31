@@ -326,20 +326,15 @@ def build_canonical_row(raw_data_storage_encr_row_dict, canonical_fields, raw_js
 
         for k, v in kv_value.items():
             if 'postcode' in cf.format_type:
+                all_kv_values[k] = v
 
-
-
-                
-#                all_kv_values[k]=v[cf.format_type]
-
-
-
-
-
-
-                all_kv_values[k]=v
+                if k == "postcode_area" and v is not None:
+                    print(
+                        f"[DEBUG] postcode_area value='{v}' "
+                        f"len={len(v)}"
+                    )
             else:
-                all_kv_values[k]=v
+                all_kv_values[k] = v
     
     return all_kv_values
     
