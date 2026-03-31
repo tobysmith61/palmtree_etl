@@ -14,9 +14,6 @@ from dotenv import load_dotenv
 from django.conf import settings
 import time
 
-import logging
-logger = logging.getLogger(__name__)
-
 load_dotenv()
 
 def get_or_create_default_account():
@@ -329,14 +326,10 @@ def build_canonical_row(raw_data_storage_encr_row_dict, canonical_fields, raw_js
 
         for k, v in kv_value.items():
             if 'postcode' in cf.format_type:
-                all_kv_values[k] = v
-
-                if k == "postcode_area" and v is not None:
-                    logger.debug(
-                        f"postcode_area len={len(v)} value='{v}'"
-                    )
+#                all_kv_values[k]=v[cf.format_type]
+                all_kv_values[k]=v
             else:
-                all_kv_values[k] = v
+                all_kv_values[k]=v
     
     return all_kv_values
     

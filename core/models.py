@@ -4,21 +4,12 @@ import math
 
 NONCE_LEN = 12
 SHORT_LEN = 8
+EXTRA_OVERHEAD = 12  # empirical buffer for safe storage
 
-def encr_b64_size(plaintext_len, nonce_len=NONCE_LEN, tag_len=SHORT_LEN):
-    """
-    Estimate the number of characters needed to store an AES-GCM encrypted value
-    in Base64.
-    
-    :param plaintext_len: length of the plaintext in bytes
-    :param nonce_len: length of AES-GCM nonce in bytes (default 12)
-    :param tag_len: length of AES-GCM authentication tag in bytes (default 16)
-    :return: approximate number of Base64 characters
-    """
-    total_bytes = plaintext_len + nonce_len + tag_len
-    # Base64 increases size by 4/3, round up to nearest whole character
-    num_base64_chars = math.ceil(total_bytes * 4 / 3)
-    return num_base64_chars + 4
+def encr_b64_size(plaintext_len):
+    total_bytes = plaintext_len + NONCE_LEN + SHORT_LEN + EXTRA_OVERHEAD
+    b64len = 4 * math.ceil(total_bytes / 3)
+    return b64len
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

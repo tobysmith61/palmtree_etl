@@ -1,7 +1,7 @@
 from django.db import models
 from tenants.models import Tenant
 from core.models import CoreContractModel
-from core.models import SHORT_LEN, encr_b64_size
+from core.models import encr_b64_size
 
 OPT_IN_TRI_STATE_CHOICES = [
     ('true', 'True'),
