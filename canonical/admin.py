@@ -260,6 +260,25 @@ class FieldMappingInline(admin.TabularInline):
 
         return InjectSourceSchemaFormSet
 
+
+class SourceSchemaAdminForm(forms.ModelForm):
+    class Meta:
+        model = SourceSchema
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        models = apps.get_app_config("raw_data").get_models()
+
+        choices = [("", "---------")] + [
+            (m.__name__, m.__name__)
+            for m in models
+            if not m._meta.abstract
+        ]
+
+        self.fields["raw_data_storage_model"].widget = forms.Select(choices=choices)
+        
 @admin.register(SourceSchema)
 class SourceSchemaAdmin(
     SoftDeleteAdminMixin, 
@@ -268,7 +287,8 @@ class SourceSchemaAdmin(
     admin.ModelAdmin
 ):
     inlines = [FieldMappingInline]
-
+    form = SourceSchemaAdminForm
+    
     def get_urls(self): #redundant fn
         urls = super().get_urls()
         custom_urls = [

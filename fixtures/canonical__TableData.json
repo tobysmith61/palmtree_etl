@@ -31,7 +31,7 @@
                     "brand",
                     "model",
                     "first_reg",
-                    "vin17",
+                    "vin",
                     "fuel",
                     "variant"
                 ],
@@ -139,5 +139,28 @@
         },
         "model": "canonical.tabledata",
         "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-02T21:33:52.027Z",
+            "data": [
+                [
+                    "vin",
+                    "code",
+                    "desc"
+                ],
+                [
+                    "JH4KA8260MC012346",
+                    "WA555927-2026-03-01",
+                    "Battery connector wiring JB303xpR 01-03-2022 to 01-03-2024"
+                ]
+            ],
+            "deleted": false,
+            "name": "Recall test file",
+            "source_schema": 2,
+            "updated_at": "2026-04-02T21:48:45.517Z"
+        },
+        "model": "canonical.tabledata",
+        "pk": 3
     }
 ]

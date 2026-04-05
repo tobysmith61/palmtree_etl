@@ -32,3 +32,13 @@ class RawCustomerVehicleData(BaseRawData):
     def __str__(self):
         return f"{self.tenant} - source row {self.source_row_number}"
     
+
+class RawRecallData(BaseRawData):
+    class Meta:
+        indexes = [
+            models.Index(fields=["business_key_hash", "is_current"]),
+        ]
+
+    def __str__(self):
+        return f"Source row {self.source_row_number}"
+    

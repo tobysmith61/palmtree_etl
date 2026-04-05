@@ -569,7 +569,7 @@
             "required": false,
             "schema": 2,
             "source_field": 61,
-            "updated_at": "2026-03-27T17:13:51.000Z",
+            "updated_at": "2026-03-27T17:13:51Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -646,5 +646,59 @@
         },
         "model": "canonical.canonicalfield",
         "pk": 135
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-02T21:33:11.998Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "vin",
+            "normalisation": [],
+            "order": 1,
+            "required": false,
+            "schema": 4,
+            "source_field": 63,
+            "updated_at": "2026-04-04T21:25:17.170Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 136
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-02T22:33:50.246Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "code",
+            "normalisation": [],
+            "order": 2,
+            "required": false,
+            "schema": 4,
+            "source_field": 64,
+            "updated_at": "2026-04-04T21:25:17.181Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 137
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-02T22:33:50.258Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "desc",
+            "normalisation": [],
+            "order": 3,
+            "required": false,
+            "schema": 4,
+            "source_field": 65,
+            "updated_at": "2026-04-04T21:25:17.190Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 138
     }
 ]

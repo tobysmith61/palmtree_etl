@@ -505,7 +505,7 @@
             "order": 27,
             "pii_requires_encryption": true,
             "pii_requires_fingerprint": true,
-            "source_field_name": "vin17",
+            "source_field_name": "vin",
             "source_schema": 1,
             "updated_at": "2026-03-10T18:09:49.930Z"
         },
@@ -549,5 +549,62 @@
         },
         "model": "canonical.fieldmapping",
         "pk": 61
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-02T21:29:55.088Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "[]",
+            "order": 1,
+            "pii_requires_encryption": true,
+            "pii_requires_fingerprint": true,
+            "source_field_name": "vin",
+            "source_schema": 2,
+            "updated_at": "2026-04-02T22:22:23.471Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 63
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-02T21:29:55.109Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "[]",
+            "order": 2,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "code",
+            "source_schema": 2,
+            "updated_at": "2026-04-02T22:22:23.481Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 64
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-02T22:22:23.492Z",
+            "deleted": false,
+            "is_business_key": false,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "[]",
+            "order": 3,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "desc",
+            "source_schema": 2,
+            "updated_at": "2026-04-02T22:22:23.492Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 65
     }
 ]

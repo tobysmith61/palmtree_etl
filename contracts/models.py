@@ -1,7 +1,7 @@
 from django.db import models
 from tenants.models import Tenant
 from core.models import CoreContractModel
-from core.models import encr_b64_size
+from core.models import encr_b64_size, HMAC_B64_SIZE
 
 OPT_IN_TRI_STATE_CHOICES = [
     ('true', 'True'),
@@ -157,6 +157,30 @@ class Customer(CoreContractModel):
         help_text="The date the customer last opted in or out of receiving marketing via their mobile phone number"
     )
 
+    fingerprint_postcode_full = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+
+    fingerprint_postcode_area = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+
+    fingerprint_postcode_district = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+
+    fingerprint_postcode_sector = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+
     class Meta:
         db_table = "contract_customer"
         indexes = [
@@ -231,6 +255,18 @@ class Vehicle(CoreContractModel):
         help_text="e.g. DIESEL"
     )
 
+    fingerprint_vehicle_reg = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+    
+    fingerprint_vin = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+    
     class Meta:
         db_table = "contract_vehicle"
         indexes = [
@@ -244,7 +280,7 @@ class Vehicle(CoreContractModel):
         ]
 
     def __str__(self):
-        return f"{self.external_retailer_id} / {self.external_vehicle_id} / {self.registration_number} / {self.vin}"
+        return f"{self.external_retailer_id} / {self.external_vehicle_id} / {self.brand} / {self.model} / {self.variant}"
 
 
 
@@ -281,3 +317,42 @@ class CustomerVehicleLink(CoreContractModel):
 
     def __str__(self):
         return f"{self.tenant} / {self.external_customer_id} / {self.external_vehicle_id}"
+
+
+class Recall(CoreContractModel):
+    vin = models.CharField(
+        max_length=encr_b64_size(17),
+        help_text="VIN from source system"
+    )
+
+    code = models.CharField(
+        max_length=255,
+        help_text="Recall code"
+    )
+
+    desc = models.CharField(
+        max_length=255,
+        help_text="Description"
+    )
+
+    fingerprint_vin = models.CharField(
+        max_length=HMAC_B64_SIZE,
+        blank=True,
+        help_text="Used in upstream data joins"
+    )
+
+    class Meta:
+        db_table = "contract_recall"
+        indexes = [
+            models.Index(fields=["vin", "code"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["fingerprint_vin", "code"],
+                name="uniq_vin_code"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.code} / {self.desc}"
+

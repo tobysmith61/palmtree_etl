@@ -327,5 +327,37 @@
         },
         "model": "tenants.accounttabledata",
         "pk": 2
+    },
+    {
+        "fields": {
+            "account": 1,
+            "created_at": "2026-04-02T21:50:00.064Z",
+            "data": [
+                [
+                    "vin",
+                    "code",
+                    "desc",
+                    null
+                ],
+                [
+                    "JH4KA8260MC012346",
+                    "WA555927-2026-03-01",
+                    "Battery connector wiring JB303xpR 01-03-2022 to 01-03-2024",
+                    null
+                ],
+                [
+                    null,
+                    null,
+                    null,
+                    null
+                ]
+            ],
+            "deleted": false,
+            "name": "Stellantis UK Ltd - Recalls - Peugeot",
+            "table_data_copied_from": 3,
+            "updated_at": "2026-04-04T20:59:05.722Z"
+        },
+        "model": "tenants.accounttabledata",
+        "pk": 3
     }
 ]

@@ -306,6 +306,9 @@ class AccountJobAdmin(
             qs = kwargs.get("queryset") or db_field.remote_field.model.objects.all()
             kwargs["queryset"] = qs.filter(account_id=account_id) if account_id else qs.none()
 
+        if db_field.name == "tenant_mapping":
+            kwargs["empty_label"] = "Not a tenant-specific feed"
+            
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
 class TenantMappingCodeInline(admin.TabularInline):

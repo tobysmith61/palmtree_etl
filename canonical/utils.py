@@ -17,6 +17,9 @@ def build_canonical_row(json_row, model_class, fk_map=None):
     model_fields = {f.name: f for f in model_class._meta.get_fields()
         if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)}
 
+    print (20)
+    print (json_row)
+
     for k, v in json_row.items():
         
         # Handle foreign keys

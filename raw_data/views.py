@@ -1,4 +1,3 @@
-from .models import RawCustomerVehicleData
 from django.shortcuts import redirect
 from django.urls import reverse
 from tenants.models import AccountJob
@@ -12,10 +11,14 @@ from django.utils import timezone
 import logging
 from pathlib import Path
 import shutil
+import os
 from django.contrib import messages
 from canonical.utils import build_canonical_row
-from contracts.models import Customer, Vehicle, CustomerVehicleLink
 from django.db import models, transaction
+
+from .models import RawCustomerVehicleData, RawRecallData
+from contracts.models import Customer, Vehicle, CustomerVehicleLink, Recall
+
 
 logger = logging.getLogger(__name__)
 
@@ -134,11 +137,20 @@ def get_unique_fields(model):
 def map_string_model_to_django_model(string_model):
     if string_model=='contracts.Customer':
         return Customer
-    if string_model=='contracts.Vehicle':
+    elif string_model=='contracts.Vehicle':
         return Vehicle
-    if string_model=='contracts.CustomerVehicleLink':
+    elif string_model=='contracts.CustomerVehicleLink':
         return CustomerVehicleLink
-    1/0
+    elif string_model=='contracts.Recall':
+        return Recall
+
+    elif string_model=='RawCustomerVehicleData':
+        return RawCustomerVehicleData
+    elif string_model=='RawRecallData':
+        return RawRecallData
+
+    else:
+        return None
 
 @transaction.atomic
 def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
@@ -171,24 +183,28 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
 
     # 🔑 Determine fields that uniquely identify a row (for update/delete)
     unique_fields = get_unique_fields(model)
+    print (189)
+    print (unique_fields)
+    if accountjob.tenant_mapping!=None:
+        # -----------------------------------
+        # 1️⃣ Load scoped tenants for this job
+        # -----------------------------------
+        # Get Tenant instances from the tenant mapping
+        tenant_map = {
+            t.mapped_tenant.internal_tenant_code: t.mapped_tenant
+            for t in accountjob.tenant_mapping.mapping_codes.all()
+        }
 
-    # -----------------------------------
-    # 1️⃣ Load scoped tenants for this job
-    # -----------------------------------
-    # Get Tenant instances from the tenant mapping
-    tenant_map = {
-        t.mapped_tenant.internal_tenant_code: t.mapped_tenant
-        for t in accountjob.tenant_mapping.mapping_codes.all()
-    }
+        # Extract primary keys of tenants (your Tenant PK is internal_tenant_code)
+        scoped_tenant_pks = list(tenant_map.keys())
 
-    # Extract primary keys of tenants (your Tenant PK is internal_tenant_code)
-    scoped_tenant_pks = list(tenant_map.keys())
-
-    # -----------------------------------
-    # 2️⃣ Load existing rows in DB
-    # -----------------------------------
-    # Filter by tenants included in this job
-    existing_qs = model.objects.filter(tenant__internal_tenant_code__in=scoped_tenant_pks)
+        # -----------------------------------
+        # 2️⃣ Load existing rows in DB
+        # -----------------------------------
+        # Filter by tenants included in this job
+        existing_qs = model.objects.filter(tenant__internal_tenant_code__in=scoped_tenant_pks)
+    else:
+        existing_qs = model.objects.all()
 
     # Map existing rows by their unique key for quick lookup
     existing_map = {}
@@ -218,7 +234,14 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
             fk_map["tenant"] = tenant_map[tenant_code]
 
         data = build_row_fn(row, model, fk_map=fk_map)
-        
+
+        print (236)        
+        for f in unique_fields:
+            print (f)
+        print (data)
+
+
+
         key = tuple(
             data[f].internal_tenant_code if isinstance(data[f], Tenant) else data[f]
             for f in unique_fields
@@ -240,6 +263,12 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
                 unchanged_count += 1
         else:
             to_create.append(model(**data))
+
+
+            # print (247)
+            # print (model(**data))
+            # 1/0 # recalls test???????? checkout VIN! fingerprint?
+
 
     # -----------------------------------
     # 4️⃣ Delete rows not present in canonical_rows
@@ -326,15 +355,32 @@ def run_account_job(accountjob_pk, request=None):
         # store raw rows
         ################
 
+        # get model
+        
+        rawdatamodel = map_string_model_to_django_model(accountjob.job.source_schema.raw_data_storage_model)
+        print (343)
+        print (accountjob.job)
+        print (accountjob.job.source_schema)
+        print (accountjob.job.source_schema.raw_data_storage_model)
+        print (rawdatamodel)
+        #1/0
+        
+        
         # get current
-        tenants = accountjob.tenant_mapping.mapping_codes.all() # the 'expected' scope of the tenants
-        existing_keys = set(
-            RawCustomerVehicleData.objects.filter(
-                tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
-                is_current=True
-            ).values_list('business_key_hash', flat=True)
-        )
-
+        if accountjob.tenant_mapping!=None:
+            tenants = accountjob.tenant_mapping.mapping_codes.all() # the 'expected' scope of the tenants
+            existing_keys = set(
+                rawdatamodel.objects.filter(
+                    tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
+                    is_current=True
+                ).values_list('business_key_hash', flat=True)
+            )
+        else:
+            existing_keys = set(
+                rawdatamodel.objects.filter(
+                    is_current=True
+                ).values_list('business_key_hash', flat=True)
+            )
         # insert new versions
         seen_keys = set()
         row_number = 0
@@ -363,14 +409,22 @@ def run_account_job(accountjob_pk, request=None):
 
         # flag omitted items as deleted_at_source
         missing_keys = existing_keys - seen_keys
-        RawCustomerVehicleData.objects.filter(
-            tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
-            is_current=True,
-            business_key_hash__in=missing_keys
-        ).update(
-            is_deleted_at_source=True,
-        )
-
+        
+        if accountjob.tenant_mapping!=None:
+            rawdatamodel.objects.filter(
+                tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
+                is_current=True,
+                business_key_hash__in=missing_keys
+            ).update(
+                is_deleted_at_source=True,
+            )
+        else:
+            rawdatamodel.objects.filter(
+                is_current=True,
+                business_key_hash__in=missing_keys
+            ).update(
+                is_deleted_at_source=True,
+            )
 
         ######################
         # store canonical rows
@@ -380,6 +434,9 @@ def run_account_job(accountjob_pk, request=None):
         if accountjob.move_source_file_on_completion:
             #move the file from /ready to /processed        
             processed_path = path_and_filename.parent.parent / "processed" / path_and_filename.name
+            if os.environ.get("IS_STAGING_SERVER") == "True":
+                os.makedirs(processed_path, exist_ok=True)
+
             shutil.move(path_and_filename, processed_path)
 
         logger.info("Finished file processing")

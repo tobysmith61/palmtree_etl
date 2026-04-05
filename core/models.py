@@ -6,6 +6,8 @@ NONCE_LEN = 12
 SHORT_LEN = 8
 EXTRA_OVERHEAD = 12  # empirical buffer for safe storage
 
+HMAC_B64_SIZE = 64
+
 def encr_b64_size(plaintext_len):
     total_bytes = plaintext_len + NONCE_LEN + SHORT_LEN + EXTRA_OVERHEAD
     b64len = 4 * math.ceil(total_bytes / 3)

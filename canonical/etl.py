@@ -77,14 +77,16 @@ def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenan
     #########################
     raw_data_storage_encr_row_dicts = []
     for orig_row in orig_rows:
-        raw_json_dict=dict(zip(orig_header, orig_row))
+        if all(x == '' for x in orig_row):
+            # blank row
+            continue
 
-        raw_data_storage_encr_row_dict = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
+        raw_json_dict=dict(zip(orig_header, orig_row))
+        raw_data_storage_unencr_row_dict, raw_data_storage_encr_row_dict = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
 
         #finished processing raw row
         if raw_data_storage_encr_row_dict:
             raw_data_storage_encr_row_dicts.append(raw_data_storage_encr_row_dict)
-
 
 
     ##################
@@ -96,11 +98,17 @@ def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenan
         orig_row=orig_rows[index]
         raw_json_dict=dict(zip(orig_header, orig_row))
         canonical_row = build_canonical_row(raw_data_storage_encr_row_dict, canonical_fields, raw_json_dict, tenant_mapping)
-        #finally add all fingerprinted values to canonical
+
         for sf in source_fields:
             if sf.pii_requires_fingerprint:
-                field_name = 'fingerprint_'+sf.source_field_name
-                canonical_row[field_name]=raw_data_storage_encr_row_dict[field_name]
+
+                if type(raw_data_storage_encr_row_dict[sf.source_field_name])==dict:
+                    for k, v in raw_data_storage_encr_row_dict[sf.source_field_name].items():
+                        field_name = 'fingerprint_'+k
+                        canonical_row[field_name]=raw_data_storage_encr_row_dict[field_name]
+                else:
+                    field_name = 'fingerprint_'+sf.source_field_name
+                    canonical_row[field_name]=raw_data_storage_encr_row_dict[field_name]
 
         canonical_rows.append(canonical_row)
 
@@ -177,8 +185,9 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
     business_key_hash = hash_with_platform_secret(business_key_json)
 
     #build raw json with applied pii encryption
-    raw_json_dict_enc=encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
-
+    raw_json_dict_unenc = encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account)
+    raw_json_dict_enc = encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
+    
     #prepend row with business_key_hash
     raw_json_dict_enc = {'business_key_hash': business_key_hash, **raw_json_dict_enc}
 
@@ -192,12 +201,22 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
     for sf in source_fields:
         if sf.pii_requires_fingerprint:
             orig_field_name = sf.source_field_name
-            value = raw_json_dict_not_encrypted.get(orig_field_name)
-            field_name = 'fingerprint_'+sf.source_field_name
             hmac_secret = os.getenv("HMAC_SECRET")
-            raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
 
-    return raw_json_dict_enc
+            #is field flat or object?
+            if isinstance(raw_json_dict_enc[sf.source_field_name], dict):
+                #dict, e.g. normalised postcode containing postcode_full, postcode area etc
+                for k, v in raw_json_dict_unenc[sf.source_field_name].items():
+                    value = v
+                    field_name = 'fingerprint_'+k
+                    raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
+            else:
+                #flat string, e.g. vin
+                value = raw_json_dict_not_encrypted.get(orig_field_name)
+                field_name = 'fingerprint_'+sf.source_field_name
+                raw_json_dict_enc[field_name] = hmac_value(value, hmac_secret)
+
+    return raw_json_dict_unenc, raw_json_dict_enc
 
 def decrypt(row, key, short, dek, format_type):
     if format_type != 'none':
@@ -206,7 +225,7 @@ def decrypt(row, key, short, dek, format_type):
         encrypted_value=row[key]
     return decrypt_value(encrypted_value, dek, short)
 
-def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
+def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek=None):
     all_kv_values = {}
     for sf in source_fields:
         field_name = sf.source_field_name
@@ -235,20 +254,22 @@ def encrypt_sensitive_PII_fields_in_place(raw_row, source_fields, account, dek):
     return all_kv_values
 
 def encrypt_value(v, dek, short):
-    if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
-        return f'ENCR({v})'
-    else:
-        # ensure bytes
-        if isinstance(v, str):
-            value_bytes = v.encode("utf-8")
+    if dek:
+        if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
+            return f'ENCR({v})'
         else:
-            value_bytes = v
-        # encrypt the bytes
-        encrypted_bytes = encrypt_as_aesgcm_with_nonce(dek, value_bytes, short)
-        # convert to Base64 string for JSON
-        encrypted_value = base64.b64encode(encrypted_bytes).decode("utf-8")
-        return encrypted_value
-
+            # ensure bytes
+            if isinstance(v, str):
+                value_bytes = v.encode("utf-8")
+            else:
+                value_bytes = v
+            # encrypt the bytes
+            encrypted_bytes = encrypt_as_aesgcm_with_nonce(dek, value_bytes, short)
+            # convert to Base64 string for JSON
+            encrypted_value = base64.b64encode(encrypted_bytes).decode("utf-8")
+            return encrypted_value
+    else:
+        return v
 
 def decrypt_value(encrypted_value, dek, short):
     if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):

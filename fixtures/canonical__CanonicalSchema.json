@@ -37,5 +37,18 @@
         },
         "model": "canonical.canonicalschema",
         "pk": 3
+    },
+    {
+        "fields": {
+            "contract": "contracts.Recall",
+            "created_at": "2026-04-02T21:33:11.986Z",
+            "deleted": false,
+            "description": "",
+            "name": "Recalls",
+            "requires_tenant_mapping": false,
+            "updated_at": "2026-04-04T21:25:16.794Z"
+        },
+        "model": "canonical.canonicalschema",
+        "pk": 4
     }
 ]

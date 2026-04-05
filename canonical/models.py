@@ -2,6 +2,7 @@ from django.db import models
 from value_mappings.models import ValueMappingGroup
 from django.core.exceptions import ValidationError
 from core.models import CoreModel, FixtureControlledModel
+from django.apps import apps
 
 
 class CanonicalSchema(CoreModel, FixtureControlledModel):
@@ -13,12 +14,26 @@ class CanonicalSchema(CoreModel, FixtureControlledModel):
     def __str__(self):
         return self.name
     
+
+def get_raw_data_model_choices():
+    models = apps.get_app_config("raw_data").get_models()
+    return [
+        (m.__name__, m.__name__)
+        for m in models
+        if not m._meta.abstract
+    ]
+    
 class SourceSchema(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50)
     system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
-    
+    raw_data_storage_model = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+
     def __str__(self):
-        return f"{self.system} - {self.name}"
+        return f"{self.system} - {self.name} > {self.raw_data_storage_model}"
 
 class FieldMapping(CoreModel, FixtureControlledModel): # rename as it not longer maps! it is just a list of fields
     source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")

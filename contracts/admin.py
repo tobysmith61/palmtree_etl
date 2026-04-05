@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
-from .models import Customer, Vehicle, CustomerVehicleLink
+from .models import Customer, Vehicle, CustomerVehicleLink, Recall
 from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
 from tenants.models import Tenant
 from core.filters import TenantByAccountFilter
@@ -149,3 +149,21 @@ class CustomerVehicleLinkAdmin(
         if account_id:
             return qs.filter(tenant__account_id=account_id)
         return qs.none()
+
+
+@admin.register(Recall)
+class RecallAdmin(
+    TimeStampedAdminMixin, 
+    ReadOnlyAdminMixin,
+    admin.ModelAdmin
+):
+    list_display = (
+        'vin',
+        'code',
+        'desc',
+    )
+    
+    ordering = (
+        'vin',
+        'code',
+    )
