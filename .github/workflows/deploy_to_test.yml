@@ -20,13 +20,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_GITHUB }}" > ~/.ssh/githubactions
           chmod 600 ~/.ssh/githubactions
-          ssh-keyscan -H 16.60.159.72 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 3.8.24.65 >> ~/.ssh/known_hosts
 
       # 3. Ensure system packages on EC2
       - name: Install system dependencies on EC2
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          ssh -i ~/.ssh/githubactions ubuntu@16.60.159.72 << 'EOF'
+          ssh -i ~/.ssh/githubactions ubuntu@3.8.24.65 << 'EOF'
           sudo apt update
           sudo apt install -y \
             python3.10 python3.10-venv python3-pip \
@@ -37,7 +37,7 @@ jobs:
       # 4. Deploy to EC2
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/githubactions ubuntu@16.60.159.72 << 'EOF'
+          ssh -i ~/.ssh/githubactions ubuntu@3.8.24.65 << 'EOF'
             set -e
             cd /home/ubuntu/palmtree_etl
 

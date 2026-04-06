@@ -311,7 +311,7 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
             print(f"Created local test file: {local_path}")
 
             if method=='SFTP':
-                HOST = "16.60.159.72"
+                HOST = "3.8.24.65"
                 PORT = 22
                 USERNAME = os.getenv("SFTP_TEST_USERNAME")
                 PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
