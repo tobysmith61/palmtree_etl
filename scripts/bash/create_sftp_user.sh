@@ -153,8 +153,7 @@ else
 fi
 
 # 13. Configure SSH for chrooted SFTP
-SFTP_SSH_CONFIG="\nMatch User $SFTP_USER\n    ChrootDirectory $SYSTEM_PATH\n    ForceCommand internal-sftp\n    PasswordAuthentication yes\n    AllowTcpForwar
-ding no\n    X11Forwarding no"
+SFTP_SSH_CONFIG="\nMatch User $SFTP_USER\n    ChrootDirectory $SYSTEM_PATH\n    ForceCommand internal-sftp\n    PasswordAuthentication yes\n    AllowTcpForwarding no\n    X11Forwarding no"
 
 if ! grep -q "Match User $SFTP_USER" /etc/ssh/sshd_config; then
     echo -e "${YELLOW}Adding SSH config for $SFTP_USER to /etc/ssh/sshd_config${NC}"
