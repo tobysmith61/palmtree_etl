@@ -21,7 +21,7 @@ from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, Tim
 
 from django.conf import settings
 
-from adminsortable2.admin import SortableAdminBase, SortableAdminMixin
+from adminsortable2.admin import SortableAdminMixin
 
 
 register_extra_admin_urls(admin.site)
