@@ -21,8 +21,7 @@ from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, Tim
 
 from django.conf import settings
 
-from adminsortable2.admin import SortableAdminMixin
-
+from adminsortable2.admin import SortableAdminBase, SortableAdminMixin
 
 
 register_extra_admin_urls(admin.site)
@@ -272,19 +271,18 @@ def build_account_tree(account,  group_type):
     return [node_to_dict(root) for root in roots]
 
 @admin.register(AccountJob)
-class AccountJobAdmin(
-    SortableAdminMixin,
-    AccountScopedAdminMixin,
-    PalmTreeGenericAdminMixin,
-):
-    list_display = ('account', 'order', 'job', 'sftp_drop_zone', 'tenant_mapping',)
-    list_display_links = ("job",)
-    fieldsets = (
-        (None, {
-            'fields':
-                ('account', 'job', 'sftp_drop_zone', 'tenant_mapping', 'account_table_data', 'auto_or_manual', 'move_source_file_on_completion'),
-        }),
-    )
+class AccountJobAdmin(SortableAdminMixin,
+                       AccountScopedAdminMixin,
+                       PalmTreeGenericAdminMixin):
+    
+    list_display = ('account', 'order_number', 'job', 'sftp_drop_zone', 'tenant_mapping')
+    list_display_links = ('job',)
+    ordering = ('order', )
+
+    # Derived column for account
+    def order_number(self, obj):
+        return obj.order
+    order_number.short_description = 'order no'
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Determine account_id

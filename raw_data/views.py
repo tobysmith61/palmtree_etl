@@ -447,6 +447,8 @@ def run_account_job(accountjob_pk, request=None):
                 f"Job complete, Canonical results: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
             )
 
+    log = AccountJobLog()
+    
     logger.info("Job complete")
 
     return
