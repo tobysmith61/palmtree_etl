@@ -22,67 +22,57 @@ jobs:
           chmod 600 ~/.ssh/githubactions
           ssh-keyscan -H 3.8.24.65 >> ~/.ssh/known_hosts
 
-      # 3. Ensure system packages on EC2
-      - name: Install system dependencies on EC2
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          ssh -i ~/.ssh/githubactions ubuntu@3.8.24.65 << 'EOF'
-          sudo apt update
-          sudo apt install -y \
-            python3.10 python3.10-venv python3-pip \
-            python3-distutils build-essential \
-            libpq-dev libffi-dev libssl-dev git
-          EOF
-
-      # 4. Deploy to EC2
+      # 3. Deploy to EC2
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/githubactions ubuntu@3.8.24.65 << 'EOF'
             set -e
+            set -x  # debug: prints each command
+
             cd /home/ubuntu/palmtree_etl
 
             echo "Pulling latest code..."
             git pull origin main
 
-            echo "Removing old virtualenv..."
-            rm -rf venv
+            echo "Setting up virtualenv (if not exists)..."
+            if [ ! -d "venv" ]; then
+              python3.10 -m venv venv
+            fi
 
-            echo "Creating new Python 3.10 virtualenv..."
-            python3.10 -m venv --upgrade-deps venv
             source venv/bin/activate
 
-            echo "Upgrading pip, setuptools, wheel..."
+            echo "Upgrading pip..."
             pip install --upgrade pip setuptools wheel
 
-            echo "Installing dependencies from requirements.txt..."
-            pip install -r requirements.txt
+            echo "Installing dependencies..."
+            timeout 300 pip install -r requirements.txt
 
             echo "Running migrations..."
-            python manage.py migrate --noinput --database=migrate
+            timeout 120 python manage.py migrate --noinput --database=migrate
 
             echo "Collecting static files..."
-            python manage.py collectstatic --noinput
+            timeout 120 python manage.py collectstatic --noinput
 
-            sudo systemctl daemon-reload
-            
-            echo "Restarting palmtree service..."
-            sudo systemctl --no-pager --full restart palmtree.service
-            sudo systemctl --no-pager --full status palmtree.service | tail -n 20
+            echo "Importing fixtures BEFORE services start..."
+            timeout 120 python manage.py import_fixtures --dir=fixtures
 
-            echo "Restarting celery.service..."
-            sudo systemctl --no-pager --full restart celery.service
-            sudo systemctl --no-pager --full status celery.service | tail -n 20
+            echo "Restarting services in correct order..."
+
+            echo "Restarting app (palmtree)..."
+            sudo systemctl restart palmtree.service
+            sudo systemctl is-active palmtree.service
+
+            echo "Restarting celery worker..."
+            sudo systemctl restart celery.service
+            sudo systemctl is-active celery.service
 
             echo "Restarting celery beat..."
             sudo systemctl restart celery-beat.service
-            sudo systemctl --no-pager --full status celery-beat.service | tail -n 20
+            sudo systemctl is-active celery-beat.service
 
-            echo "Restarting dropzone watcher..."
-            sudo systemctl --no-pager --full restart dropzone-watcher.service
-            sudo systemctl --no-pager --full status dropzone-watcher.service | tail -n 20
-
-            echo "Importing fixtures..."
-            python manage.py import_fixtures --dir=fixtures
+            echo "Restarting dropzone watcher (last)..."
+            sudo systemctl restart dropzone-watcher.service
+            sudo systemctl is-active dropzone-watcher.service
 
             echo "Deployment complete."
           EOF
