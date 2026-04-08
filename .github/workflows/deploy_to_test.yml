@@ -45,16 +45,16 @@ jobs:
             pip install --upgrade pip setuptools wheel
 
             echo "Installing dependencies..."
-            timeout 300 pip install -r requirements.txt
+            pip install -r requirements.txt
 
             echo "Running migrations..."
-            timeout 120 python manage.py migrate --noinput --database=migrate
+            python manage.py migrate --noinput --database=migrate
 
             echo "Collecting static files..."
-            timeout 120 python manage.py collectstatic --noinput
+            python manage.py collectstatic --noinput
 
             echo "Importing fixtures BEFORE services start..."
-            timeout 120 python manage.py import_fixtures --dir=fixtures
+            python manage.py import_fixtures --dir=fixtures
 
             echo "Restarting services in correct order..."
 
