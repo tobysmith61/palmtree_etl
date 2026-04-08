@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse
-from tenants.models import AccountJob
+from tenants.models import AccountJob, AccountJobLog
 from tenants.utils import ensure_local_ready_folder
 from django.conf import settings
 from pathlib import Path
@@ -441,14 +441,20 @@ def run_account_job(accountjob_pk, request=None):
 
         logger.info("Finished file processing")
 
+        result_text = f"Job complete, Canonical results: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
         if request:
             messages.info(
                 request,
-                f"Job complete, Canonical results: Created: {result['created']}, Updated: {result['updated']}, Deleted: {result['deleted']}, Unchanged: {result['unchanged']}"
+                result_text
             )
 
-    log = AccountJobLog()
-    
+        log = AccountJobLog()
+        log.account = accountjob.account
+        log.accountjob = accountjob
+        log.result_text = result_text
+        log.path_and_filename = path_and_filename
+        log.save()
+
     logger.info("Job complete")
 
     return

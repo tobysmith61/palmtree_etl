@@ -12,7 +12,7 @@ from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
 from .forms import AccountTableDataForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
-from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData
+from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData, AccountJobLog
 from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
@@ -516,3 +516,21 @@ class AccountEncryptionAdmin(
             dek, encrypted_dek = generate_encrypted_dek()
             obj.encrypted_dek = encrypted_dek
         super().save_model(request, obj, form, change)
+
+from django import forms
+from django.db import models
+@admin.register(AccountJobLog)
+class AccountJobLogAdmin(
+    AccountScopedAdminMixin, 
+    PalmTreeGenericAdminMixin, 
+):
+    list_filter = ('completed_datetime',)
+    formfield_overrides = {
+        models.CharField: {
+            'widget': forms.TextInput(attrs={'size': '120'})  # wider input
+        },
+        models.TextField: {
+            'widget': forms.TextInput(attrs={'size': '120'})  # wider input
+        },
+    }
+

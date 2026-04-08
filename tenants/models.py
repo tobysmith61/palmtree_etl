@@ -262,6 +262,19 @@ class AccountJob(CoreModel, FixtureControlledModel):
     def __str__(self):
         return f"{self.job}"
 
+class AccountJobLog(CoreModel):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    accountjob = models.ForeignKey(AccountJob, on_delete=models.CASCADE)
+    completed_datetime = models.DateTimeField(auto_now_add=True)
+    result_text = models.TextField(max_length=1000, blank=True, null=True)
+    path_and_filename = models.CharField(max_length=255)
+
+    class Meta:
+        ordering = ['completed_datetime']
+
+    def __str__(self):
+        return f"{self.accountjob} / {self.completed_datetime}"
+    
 class Role(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
