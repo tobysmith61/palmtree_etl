@@ -20,12 +20,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_GITHUB }}" > ~/.ssh/githubactions
           chmod 600 ~/.ssh/githubactions
-          ssh-keyscan -H 3.8.24.65 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 18.169.146.55 >> ~/.ssh/known_hosts
 
       # 3. Deploy to EC2
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/githubactions ubuntu@3.8.24.65 << 'EOF'
+          ssh -i ~/.ssh/githubactions ubuntu@18.169.146.55 << 'EOF'
             set -e
             set -x  # debug: prints each command
 

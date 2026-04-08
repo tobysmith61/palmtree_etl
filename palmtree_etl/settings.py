@@ -34,7 +34,7 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "3.8.24.65",
+    "18.169.146.55",
     "palmtree-test.bitsprout.co.uk",
 ]
 CSRF_TRUSTED_ORIGINS = [

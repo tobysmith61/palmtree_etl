@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-HOST = "3.8.24.65"
+HOST = "18.169.146.55"
 PORT = 22
 USERNAME = os.getenv("SFTP_TEST_USERNAME")
 PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
