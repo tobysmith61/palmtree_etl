@@ -2,6 +2,12 @@ from .models import Tenant, UserAccount, Account
 from django.conf import settings
 import os
 
+import logging
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
 class NoTenantError(Exception):
     pass
 
@@ -47,23 +53,57 @@ def get_current_tenant(request):
         return Tenant.objects.get(rls_key=tenant_id)
     return None
 
-
 def ensure_local_ready_folder(accountjob):
-    if getattr(settings, "IS_STAGING_SERVER", False):
+    logger.warning("🔧 ensure_local_ready_folder START")
+    logger.warning(f"accountjob_id={getattr(accountjob, 'id', None)}")
+
+    is_staging = getattr(settings, "IS_STAGING_SERVER", False)
+    logger.warning(f"IS_STAGING_SERVER={is_staging}")
+    logger.warning(f"BASE_DIR={getattr(settings, 'BASE_DIR', None)}")
+
+    if is_staging:
         base_dir = f"{settings.BASE_DIR}/temp_files"
-    else: 
-        base_dir = "/srv"
-    
-    p = (
-        f"{base_dir}/sftp_drops/"
-        f"{'/'.join(accountjob.sftp_drop_zone.folder_path.strip('/').split('/')[-3:-1])}"
-        f"/ready"
-    )
-    
-    if getattr(settings, "IS_STAGING_SERVER", False):
-        os.makedirs(p, exist_ok=True)
     else:
-        # shouldn't need to do this for the remote server which receives actual sftp dropped files
-        # as folders are set up by create_sftp account script, so this is commented out
-        pass
+        base_dir = "/srv"
+
+    logger.warning(f"base_dir={base_dir}")
+
+    try:
+        folder_path = accountjob.sftp_drop_zone.folder_path
+    except Exception as e:
+        logger.exception("❌ Failed to access folder_path on accountjob")
+        raise
+
+    logger.warning(f"raw folder_path={folder_path}")
+
+    try:
+        cleaned = folder_path.strip("/").split("/")
+        logger.warning(f"split folder_path={cleaned}")
+    except Exception as e:
+        logger.exception("❌ Failed processing folder_path")
+        raise
+
+    try:
+        subpath = "/".join(cleaned[-3:-1])
+        logger.warning(f"subpath ([-3:-1])={subpath}")
+    except Exception as e:
+        logger.exception("❌ Failed building subpath")
+        raise
+
+    p = f"{base_dir}/sftp_drops/{subpath}/ready"
+
+    logger.warning(f"FINAL PATH={p}")
+
+    if is_staging:
+        try:
+            os.makedirs(p, exist_ok=True)
+            logger.warning(f"Created directory (staging): {p}")
+        except Exception as e:
+            logger.exception(f"❌ Failed to create directory: {p}")
+            raise
+    else:
+        logger.warning("Skipping mkdir (production mode)")
+
+    logger.warning("🔧 ensure_local_ready_folder END")
+
     return p
