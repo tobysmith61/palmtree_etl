@@ -51,7 +51,7 @@ def scan_for_ready_files(self):
             logger.warning(debug_context(f"RUN START job={job.pk, job, job.account, job.job.desc}"))
 
             # 🔴 CRITICAL: synchronous call
-            run_account_job(job.pk, job, job.account, job.job.desc)
+            run_account_job(job.pk)
 
             logger.warning(debug_context(f"RUN END job={job.pk, job, job.account, job.job.desc}"))
 
