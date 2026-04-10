@@ -31,32 +31,32 @@ def scan_for_ready_files(self):
 
     for job in jobs:
         try:
-            logger.warning(debug_context(f"CHECK job={job.pk}"))
+            logger.warning(debug_context(f"CHECK job={job.pk, job, job.account, job.job.desc}"))
 
             if job.auto_or_manual == 'manual':
-                logger.warning(f"SKIP manual job={job.pk}")
+                logger.warning(f"SKIP manual job={job.pk, job, job.account, job.job.desc}")
                 continue
 
             ready_folder = Path(ensure_local_ready_folder(job))
 
             if not ready_folder.exists():
-                logger.warning(f"NO FOLDER job={job.pk}")
+                logger.warning(f"NO FOLDER job={job.pk, job, job.account, job.job.desc}")
                 continue
 
             files = list(ready_folder.iterdir())
             if not files:
-                logger.warning(f"NO FILES job={job.pk}")
+                logger.warning(f"NO FILES job={job.pk, job, job.account, job.job.desc}")
                 continue
 
-            logger.warning(debug_context(f"RUN START job={job.pk}"))
+            logger.warning(debug_context(f"RUN START job={job.pk, job, job.account, job.job.desc}"))
 
             # 🔴 CRITICAL: synchronous call
-            run_account_job(job.pk)
+            run_account_job(job.pk, job, job.account, job.job.desc)
 
-            logger.warning(debug_context(f"RUN END job={job.pk}"))
+            logger.warning(debug_context(f"RUN END job={job.pk, job, job.account, job.job.desc}"))
 
         except Exception as e:
-            logger.exception(f"ERROR job={job.pk}: {e}")
+            logger.exception(f"ERROR job={job.pk, job, job.account, job.job.desc}: {e}")
 
     logger.warning(debug_context("END scan_for_ready_files"))
     
