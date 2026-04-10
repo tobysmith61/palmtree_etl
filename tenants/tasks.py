@@ -23,9 +23,9 @@ def scan_for_ready_files():
 
     for job in jobs:
         try:
-            if job.auto_or_manual=='manual':
+            if job.auto_or_manual == 'manual':
                 continue
-            
+
             ready_folder = Path(ensure_local_ready_folder(job))
 
             if not ready_folder.exists():
@@ -36,11 +36,11 @@ def scan_for_ready_files():
                 continue
 
             logger.info(
-                f"Found {len(files)} file(s) for AccountJob {job.pk}. Triggering processing."
+                f"Processing AccountJob {job.pk} sequentially"
             )
 
-            # Trigger async processing
-            run_account_job_celery_task.delay(job.pk)
+            # RUN DIRECTLY (NOT async)
+            run_account_job(job.pk)
 
         except Exception as e:
             logger.exception(f"Error scanning AccountJob {job.pk}: {e}")

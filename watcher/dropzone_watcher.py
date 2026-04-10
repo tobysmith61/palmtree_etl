@@ -1,6 +1,8 @@
 import time
 import shutil
 import logging
+import os
+
 from pathlib import Path
 from threading import Thread, Lock
 
@@ -14,7 +16,7 @@ from watchdog.events import FileSystemEventHandler
 BASE_FOLDER = Path("/srv/sftp_drops")
 READY_FOLDER_NAME = "ready"
 
-STABLE_SECONDS = 60
+SFTP_DROP_STABLE_SECONDS = int(os.getenv("SFTP_DROP_STABLE_SECONDS"))
 CHECK_INTERVAL = 5
 
 # =========================
@@ -29,7 +31,7 @@ processing_lock = Lock()
 class DropzoneHandler(FileSystemEventHandler):
     """
     Watches drop folders and promotes files
-    once they are stable for STABLE_SECONDS.
+    once they are stable for SFTP_DROP_STABLE_SECONDS.
     """
 
     def on_created(self, event):
@@ -86,7 +88,7 @@ class DropzoneHandler(FileSystemEventHandler):
                 if current_size == last_size:
                     if stable_start is None:
                         stable_start = time.time()
-                    elif time.time() - stable_start >= STABLE_SECONDS:
+                    elif time.time() - stable_start >= SFTP_DROP_STABLE_SECONDS:
                         self._promote(file_path)
                         return
                 else:
