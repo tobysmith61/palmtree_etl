@@ -182,7 +182,7 @@
                     "brand",
                     "model",
                     "first_reg",
-                    "vin17",
+                    "vin",
                     "fuel",
                     "variant",
                     null
@@ -323,7 +323,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-04-02T15:02:03.262Z"
+            "updated_at": "2026-04-11T21:52:42.439Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
