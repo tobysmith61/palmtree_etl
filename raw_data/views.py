@@ -303,43 +303,35 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
     }
 
 def validate_header(header, source_fields):
-    """
-    Validate that a file/header contains all required columns.
-
-    Parameters:
-    ----------
-    header : list[str]
-        Columns found in the incoming file (e.g. CSV header row)
-
-    source_fields : list[str]
-        Expected required columns from schema
-
-    Raises:
-    ------
-    ValueError if required columns are missing
-    """
-
     if not header:
         logger.error("Header is empty or None")
         return False
 
     if not source_fields:
-        logger.error("Source fields are empty or None")
+        logger.error("Source fields is empty or None")
         return False
-    
-    header_set = set(header)
-    required_set = set(source_fields)
+
+    # normalize CSV header (strings)
+    header_set = {str(h).strip().lower() for h in header}
+
+    # IMPORTANT: extract field names from FieldMapping objects
+    required_set = {
+        str(f.source_field_name).strip().lower()
+        for f in source_fields
+    }
 
     missing = required_set - header_set
 
     if missing:
         logger.error(
-            f"Missing required columns: {sorted(missing)}. "
-            f"Found columns: {sorted(header)}"
+            "Missing required columns=%s | found=%s",
+            sorted(missing),
+            sorted(header_set),
         )
         return False
+
     return True
-    
+
 def run_account_job(accountjob_pk, request=None):
     logger.info(f"Starting run_account_job for pk={accountjob_pk}")
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
