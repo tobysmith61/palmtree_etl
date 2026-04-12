@@ -213,7 +213,7 @@
                     "333456",
                     "CA22FRW",
                     "Fiat",
-                    "500",
+                    "501",
                     "01/09/2022",
                     "1HGCM82633A004352",
                     "P",
@@ -323,7 +323,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-04-11T21:52:42.439Z"
+            "updated_at": "2026-04-12T20:10:55.757Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
