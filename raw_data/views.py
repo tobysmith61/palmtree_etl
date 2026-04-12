@@ -302,6 +302,44 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
         "unchanged": unchanged_count,
     }
 
+def validate_header(header, source_fields):
+    """
+    Validate that a file/header contains all required columns.
+
+    Parameters:
+    ----------
+    header : list[str]
+        Columns found in the incoming file (e.g. CSV header row)
+
+    source_fields : list[str]
+        Expected required columns from schema
+
+    Raises:
+    ------
+    ValueError if required columns are missing
+    """
+
+    if not header:
+        logger.error("Header is empty or None")
+        return False
+
+    if not source_fields:
+        logger.error("Source fields are empty or None")
+        return False
+    
+    header_set = set(header)
+    required_set = set(source_fields)
+
+    missing = required_set - header_set
+
+    if missing:
+        logger.error(
+            f"Missing required columns: {sorted(missing)}. "
+            f"Found columns: {sorted(header)}"
+        )
+        return False
+    return True
+    
 def run_account_job(accountjob_pk, request=None):
     logger.info(f"Starting run_account_job for pk={accountjob_pk}")
     accountjob = AccountJob.objects.get(pk=accountjob_pk)
@@ -335,6 +373,15 @@ def run_account_job(accountjob_pk, request=None):
         logger.debug(f"Row count: {len(rows)}")
 
         source_fields = accountjob.job.source_schema.field_mappings.all()
+
+        if not validate_header(header, source_fields):
+            failed_path = path_and_filename.parent.parent / "failed" / path_and_filename.name
+            if os.environ.get("IS_STAGING_SERVER") == "True":
+                os.makedirs(processed_path, exist_ok=True)
+
+            shutil.move(path_and_filename, failed_path)
+            continue
+
         tenant_mapping = accountjob.tenant_mapping
         canonical_fields = accountjob.job.canonical_schema.fields.all()
 
@@ -356,15 +403,7 @@ def run_account_job(accountjob_pk, request=None):
         ################
 
         # get model
-        
         rawdatamodel = map_string_model_to_django_model(accountjob.job.source_schema.raw_data_storage_model)
-        print (343)
-        print (accountjob.job)
-        print (accountjob.job.source_schema)
-        print (accountjob.job.source_schema.raw_data_storage_model)
-        print (rawdatamodel)
-        #1/0
-        
         
         # get current
         if accountjob.tenant_mapping!=None:
@@ -381,6 +420,7 @@ def run_account_job(accountjob_pk, request=None):
                     is_current=True
                 ).values_list('business_key_hash', flat=True)
             )
+
         # insert new versions
         seen_keys = set()
         row_number = 0

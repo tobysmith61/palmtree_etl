@@ -42,7 +42,6 @@ def get_account_encryption(account):
     )
     return account_encryption
 
-
 def hmac_value(value: str, secret: str) -> str:
     if getattr(settings, "DISABLED_ENCR_AND_HMAC", False):
         return f'HMAC({value})'
