@@ -73,7 +73,6 @@ def ensure_local_ready_folder(accountjob):
 
     try:
         subpath = "/".join(cleaned[-3:-1])
-        logger.warning(f"subpath ([-3:-1])={subpath}")
     except Exception as e:
         raise
 

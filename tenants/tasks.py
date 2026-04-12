@@ -75,8 +75,6 @@ def scan_dropzones():
     Moves stable files from drop → ready
     """
 
-    logger.warning("START scan_dropzones")
-
     if not BASE_FOLDER.exists():
         logger.warning("BASE_FOLDER missing")
         return
@@ -91,8 +89,6 @@ def scan_dropzones():
                 continue
 
             promote_to_ready(file_path)
-
-    logger.warning("END scan_dropzones")
 
 
 # =====================================================
@@ -117,8 +113,6 @@ def scan_for_ready_files():
     Celery Beat task:
     Scans ready folders and queues processing jobs
     """
-
-    logger.warning(debug_context("START scan_for_ready_files"))
 
     jobs = AccountJob.objects.all().order_by("account", "order")
 
@@ -145,5 +139,3 @@ def scan_for_ready_files():
         except Exception as e:
             logger.exception(f"ERROR job={job.pk}: {e}")
 
-    logger.warning(debug_context("END scan_for_ready_files"))
-    
