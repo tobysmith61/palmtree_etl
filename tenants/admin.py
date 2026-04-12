@@ -524,6 +524,7 @@ class AccountJobLogAdmin(
     AccountScopedAdminMixin, 
     PalmTreeGenericAdminMixin, 
 ):
+    list_display = ('account', 'accountjob', 'completed_datetime',)
     list_filter = ('completed_datetime',)
     formfield_overrides = {
         models.CharField: {
