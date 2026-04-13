@@ -70,9 +70,5 @@ jobs:
             sudo systemctl restart celery-beat.service
             sudo systemctl is-active celery-beat.service
 
-            echo "Restarting dropzone watcher (last)..."
-            sudo systemctl restart dropzone-watcher.service
-            sudo systemctl is-active dropzone-watcher.service
-
             echo "Deployment complete."
           EOF
