@@ -313,8 +313,8 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
             if method=='SFTP':
                 HOST = "18.169.146.55"
                 PORT = 22
-                USERNAME = os.getenv("SFTP_TEST_USERNAME")
-                PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
+                USERNAME = accountjob.sftp_drop_zone.test_sftp_user
+                PASSWORD = accountjob.sftp_drop_zone.test_sftp_password
                 REMOTE_DIR = "drop"  # because user home is already the drop root
                 transport = paramiko.Transport((HOST, PORT))
                 transport.connect(username=USERNAME, password=PASSWORD)

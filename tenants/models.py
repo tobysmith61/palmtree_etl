@@ -196,6 +196,10 @@ class SFTPDropZone(CoreModel, FixtureControlledModel):
         default=7,
         help_text="Number of days to keep files before automatic cleanup"
     )
+    test_sftp_user = models.CharField(max_length=50, blank=True, null=True)
+    test_sftp_password = models.CharField(max_length=50, blank=True, null=True)
+
+    FIXTURE_EXCLUDE_FIELDS = ['test_sftp_user', 'test_sftp_password']
 
     def __str__(self):
         return self.zone_folder

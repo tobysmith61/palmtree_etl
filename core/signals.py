@@ -19,8 +19,20 @@ def dump_fixture(model, output_dir="fixtures"):
     if not qs.exists():
         return
 
+    # Get fields to include (exclude model-defined ones)
+    exclude_fields = getattr(model, "FIXTURE_EXCLUDE_FIELDS", [])
+    fields = [
+        f.name for f in model._meta.fields
+        if f.name not in exclude_fields
+    ]
+
     # Serialize to JSON using natural keys if available
-    data = serializers.serialize("json", qs, use_natural_primary_keys=True)
+    data = serializers.serialize(
+        "json",
+        qs,
+        use_natural_primary_keys=True,
+        fields=fields,
+    )
     parsed = json.loads(data)
 
     # Sort parsed JSON rows by PK (or you could sort by natural key)

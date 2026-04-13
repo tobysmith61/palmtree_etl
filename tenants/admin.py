@@ -9,7 +9,7 @@ from django.urls import path
 
 from .admin_extra import register_extra_admin_urls
 from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
-from .forms import AccountTableDataForm
+from .forms import AccountTableDataForm, SFTPDropZoneAdminForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
 from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData, AccountJobLog
@@ -19,9 +19,9 @@ from canonical.models import TableData
 from core.admin_mixins import PalmTreeGenericAdminMixin
 from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin
 
-from django.conf import settings
-
 from adminsortable2.admin import SortableAdminMixin
+
+from django.conf import settings
 
 
 register_extra_admin_urls(admin.site)
@@ -377,14 +377,8 @@ class SFTPDropZoneAdmin(
     PalmTreeGenericAdminMixin, 
 ):
     readonly_fields = ('folder_path',)
-    fields = (
-        'account',
-        'zone_folder',
-        'desc',
-        'folder_path',
-        'retention_period_days',
-        'deleted'
-    )
+
+    form = SFTPDropZoneAdminForm
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change) # save account

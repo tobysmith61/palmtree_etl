@@ -24,7 +24,7 @@
             "folder_path": "/srv/sftp_drops/stellant/dms002/drop",
             "retention_period_days": 7,
             "scope": null,
-            "updated_at": "2026-03-08T22:08:15.437Z",
+            "updated_at": "2026-04-13T19:24:12.501Z",
             "wait_time_before_ready_to_move": 60,
             "zone_folder": "dms002"
         },
@@ -71,8 +71,8 @@
             "desc": "Stellantis UK Ltd - Warranty System (UK)",
             "folder_path": "/srv/sftp_drops/stellant/stellantis_uk_warranty/drop",
             "retention_period_days": 30,
-            "scope": null,
-            "updated_at": "2026-04-02T21:43:10.064Z",
+            "scope": "",
+            "updated_at": "2026-04-13T20:24:56.809Z",
             "wait_time_before_ready_to_move": 60,
             "zone_folder": "stellantis_uk_warranty"
         },

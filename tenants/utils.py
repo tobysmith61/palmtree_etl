@@ -1,9 +1,7 @@
 from .models import Tenant, UserAccount, Account
 from django.conf import settings
 import os
-
 import logging
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
