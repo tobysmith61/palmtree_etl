@@ -234,7 +234,7 @@ def accountjob_transform(accountjob, header, rows):
         orig_header=header,
         orig_rows=rows,
         tenant_mapping=tenant_mapping,
-        prepare_for_display=False,
+        prepare_for_display=True,
     )
     return raw_json_rows, canonical_rows, display_rows
 

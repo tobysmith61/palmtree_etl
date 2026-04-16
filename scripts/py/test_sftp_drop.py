@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 HOST = "18.169.146.55"
 PORT = 22
-USERNAME = os.getenv("SFTP_TEST_USERNAME")
+USERNAME = '??';os.getenv("SFTP_TEST_USERNAME")
 PASSWORD = os.getenv("SFTP_TEST_PASSWORD")
 REMOTE_DIR = "drop"  # because user home is already the drop root
 # ==================
