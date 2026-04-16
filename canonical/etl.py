@@ -80,8 +80,14 @@ def etl_transform(source_fields, canonical_fields, orig_header, orig_rows, tenan
             # blank row
             continue
 
+        if all(x is None for x in orig_row):
+            # blank row
+            continue
+
         raw_json_dict=dict(zip(orig_header, orig_row))
         raw_data_storage_unencr_row_dict, raw_data_storage_encr_row_dict = raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, dek)
+        if raw_data_storage_unencr_row_dict==None or raw_data_storage_encr_row_dict==None:
+            continue
 
         #finished processing raw row
         if raw_data_storage_encr_row_dict:
@@ -158,7 +164,7 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
 
     #skip blank row
     if all(v in (None, "", []) for v in raw_json_dict.values()):
-        return
+        None, None
 
     #ignore (remove) volatile fields before hashing
     for sf in source_fields:
