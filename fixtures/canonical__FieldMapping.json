@@ -507,7 +507,7 @@
             "pii_requires_fingerprint": true,
             "source_field_name": "vin",
             "source_schema": 1,
-            "updated_at": "2026-03-10T18:09:49.930Z"
+            "updated_at": "2026-04-11T21:57:14.584Z"
         },
         "model": "canonical.fieldmapping",
         "pk": 59
@@ -606,5 +606,100 @@
         },
         "model": "canonical.fieldmapping",
         "pk": 65
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-17T10:17:37.317Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": true,
+            "is_volatile": false,
+            "normalisation": "{}",
+            "order": 1,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "company",
+            "source_schema": 3,
+            "updated_at": "2026-04-17T10:20:09.359Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 66
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-17T10:19:21.050Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "{}",
+            "order": 2,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "date_in",
+            "source_schema": 3,
+            "updated_at": "2026-04-17T10:20:09.374Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 67
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-17T10:19:21.061Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "{}",
+            "order": 3,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "dms_customer_id",
+            "source_schema": 3,
+            "updated_at": "2026-04-17T10:30:00.487Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 68
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-17T10:19:21.077Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "{}",
+            "order": 4,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "dms_vehicle_id",
+            "source_schema": 3,
+            "updated_at": "2026-04-17T10:30:00.501Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 69
+    },
+    {
+        "fields": {
+            "active": true,
+            "created_at": "2026-04-17T10:19:21.091Z",
+            "deleted": false,
+            "is_business_key": true,
+            "is_tenant_mapping_source": false,
+            "is_volatile": false,
+            "normalisation": "{}",
+            "order": 5,
+            "pii_requires_encryption": false,
+            "pii_requires_fingerprint": false,
+            "source_field_name": "booking_number",
+            "source_schema": 3,
+            "updated_at": "2026-04-17T10:20:09.410Z"
+        },
+        "model": "canonical.fieldmapping",
+        "pk": 70
     }
 ]

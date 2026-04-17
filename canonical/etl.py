@@ -225,7 +225,10 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
 
 def decrypt(row, key, short, dek, format_type):
     if format_type != 'none':
-        encrypted_value=row[key][format_type]
+        if isinstance(row[key], dict):
+            encrypted_value=row[key][format_type]
+        else:
+            encrypted_value=row[key]
     else:
         encrypted_value=row[key]
     return decrypt_value(encrypted_value, dek, short)

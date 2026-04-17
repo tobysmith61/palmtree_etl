@@ -126,8 +126,10 @@ def scan_for_ready_files():
             if not ready_folder.exists():
                 continue
 
-            files = list(ready_folder.iterdir())
-
+            files = [
+                f for f in ready_folder.iterdir()
+                if f.is_file() and f.name.startswith(job.job.filename_prefix)
+            ]
             if not files:
                 continue
 

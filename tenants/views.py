@@ -299,9 +299,10 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
         accountjob = get_object_or_404(AccountJob, pk=accountjob_pk)
         load_dotenv()
 
+        local_path=''
         try:
             # Create a local test file
-            filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            filename = f"{accountjob.job.source_schema.filename_prefix}{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
             local_path = os.path.join("/tmp", filename)
 
             psv = tabledata_to_pipe_csv(accountjob.account_table_data.data)
@@ -348,7 +349,8 @@ def simulate_sftp_drop_during_dev_only_with_method(request, accountjob_pk, metho
             )
     
         #remove the temp file
-        os.remove(local_path)
+        if local_path:
+            os.remove(local_path)
         break  # end of the while True: loop
 
     return redirect(

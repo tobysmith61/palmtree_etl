@@ -4,12 +4,25 @@ from django.core.exceptions import ValidationError
 from core.models import CoreModel, FixtureControlledModel
 from django.apps import apps
 
+class SourceSchema(CoreModel, FixtureControlledModel):
+    name = models.CharField(max_length=50)
+    system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
+    raw_data_storage_model = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    filename_prefix = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.system} - {self.name} > {self.raw_data_storage_model}"
 
 class CanonicalSchema(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
     contract = models.CharField(max_length=100, blank=True)
     requires_tenant_mapping = models.BooleanField(default=False)
+    source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="canonical_schema", blank=True, null =True)
 
     def __str__(self):
         return self.name
@@ -23,18 +36,6 @@ def get_raw_data_model_choices():
         if not m._meta.abstract
     ]
     
-class SourceSchema(CoreModel, FixtureControlledModel):
-    name = models.CharField(max_length=50)
-    system = models.CharField(max_length=50)  # e.g. "CDK", "Pinewood"
-    raw_data_storage_model = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True
-    )
-
-    def __str__(self):
-        return f"{self.system} - {self.name} > {self.raw_data_storage_model}"
-
 class FieldMapping(CoreModel, FixtureControlledModel): # rename as it not longer maps! it is just a list of fields
     source_schema = models.ForeignKey(SourceSchema, on_delete=models.CASCADE, related_name="field_mappings")
     source_field_name = models.CharField(max_length=100, null=True, blank=True)
@@ -195,9 +196,6 @@ class Job(CoreModel, FixtureControlledModel):
         verbose_name="Test transformation with:"
     )
     one_or_many_source_files = models.BooleanField(default=False)
-    source_filename_pattern = models.CharField(
-        max_length=50,
-    )
 
     def __str__(self):
         return self.desc

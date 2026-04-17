@@ -3,10 +3,11 @@
         "fields": {
             "created_at": "2026-03-02T08:47:13.481Z",
             "deleted": false,
+            "filename_prefix": "DMSCustomerVehicleLinks_",
             "name": "Customers & Vehicles",
             "raw_data_storage_model": "RawCustomerVehicleData",
             "system": "Autoline DMS",
-            "updated_at": "2026-04-04T19:42:38.368Z"
+            "updated_at": "2026-04-17T10:52:09.972Z"
         },
         "model": "canonical.sourceschema",
         "pk": 1
@@ -15,12 +16,26 @@
         "fields": {
             "created_at": "2026-04-02T21:28:46.098Z",
             "deleted": false,
+            "filename_prefix": "Peugeot_UK_Recalls_",
             "name": "Recalls",
             "raw_data_storage_model": "RawRecallData",
             "system": "Stellantis Warranty Extract",
-            "updated_at": "2026-04-04T19:41:45.297Z"
+            "updated_at": "2026-04-17T10:52:39.138Z"
         },
         "model": "canonical.sourceschema",
         "pk": 2
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-16T19:23:36.428Z",
+            "deleted": false,
+            "filename_prefix": "DMS_Bookings_",
+            "name": "DMS Bookings",
+            "raw_data_storage_model": "RawBookingData",
+            "system": "Autoline DMS",
+            "updated_at": "2026-04-17T11:00:19.748Z"
+        },
+        "model": "canonical.sourceschema",
+        "pk": 3
     }
 ]

@@ -5,8 +5,8 @@
             "created_at": "2026-03-02T08:47:13.457Z",
             "deleted": false,
             "desc": "DMS Customer Vehicle data > Canonical Customer",
+            "filename_prefix": "tbc",
             "one_or_many_source_files": false,
-            "source_filename_pattern": "DMS_CustomerVehicle_YYYYMMDD_HHMMSS.csv",
             "source_schema": 1,
             "test_table": 2,
             "updated_at": "2026-03-26T07:58:53.769Z"
@@ -20,8 +20,8 @@
             "created_at": "2026-03-02T08:47:13.457Z",
             "deleted": false,
             "desc": "DMS Customer Vehicle data > Canonical Vehicle",
+            "filename_prefix": "tbc",
             "one_or_many_source_files": false,
-            "source_filename_pattern": "",
             "source_schema": 1,
             "test_table": 2,
             "updated_at": "2026-03-26T07:59:07.090Z"
@@ -35,8 +35,8 @@
             "created_at": "2026-03-27T19:53:47.818Z",
             "deleted": false,
             "desc": "DMS Customer Vehicle data > Customer Vehicle links",
+            "filename_prefix": "tbc",
             "one_or_many_source_files": false,
-            "source_filename_pattern": "",
             "source_schema": 1,
             "test_table": 2,
             "updated_at": "2026-03-27T19:54:53.574Z"
@@ -50,13 +50,28 @@
             "created_at": "2026-04-02T21:33:54.357Z",
             "deleted": false,
             "desc": "Import Recall file",
+            "filename_prefix": "Peugeot_Recalls_",
             "one_or_many_source_files": false,
-            "source_filename_pattern": "",
             "source_schema": 2,
             "test_table": 3,
-            "updated_at": "2026-04-04T20:48:21.625Z"
+            "updated_at": "2026-04-17T10:47:47.130Z"
         },
         "model": "canonical.job",
         "pk": 4
+    },
+    {
+        "fields": {
+            "canonical_schema": 5,
+            "created_at": "2026-04-17T10:26:34.479Z",
+            "deleted": false,
+            "desc": "Import DMS Bookings",
+            "filename_prefix": "DMS_Bookings_",
+            "one_or_many_source_files": false,
+            "source_schema": 3,
+            "test_table": 4,
+            "updated_at": "2026-04-17T10:47:31.007Z"
+        },
+        "model": "canonical.job",
+        "pk": 5
     }
 ]

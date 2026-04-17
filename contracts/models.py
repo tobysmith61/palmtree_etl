@@ -288,7 +288,7 @@ class CustomerVehicleLink(CoreContractModel):
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,
-        related_name="customer_vehicle_link"
+        related_name="customer_vehicle_links"
     )
 
     external_customer_id = models.CharField(
@@ -355,4 +355,49 @@ class Recall(CoreContractModel):
 
     def __str__(self):
         return f"{self.code} / {self.desc}"
+
+
+
+class Booking(CoreContractModel):
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="bookings"
+    )
+    
+    date_in = models.DateField(
+        verbose_name="Arrival date",
+        help_text="The date the customers vehicle is expected to arrive at the workshop"
+    )
+
+    external_customer_id = models.CharField(
+        max_length=50,
+        help_text="Customer unique identifier (number) from source system"
+    )
+
+    external_vehicle_id = models.CharField(
+        max_length=10,
+        help_text="Vehicle unique identifier (number) from source system"
+    )
+
+    booking_number = models.IntegerField(
+        help_text="Booking number",
+        null=True, 
+        blank=True
+    )
+
+    class Meta:
+        db_table = "contract_booking"
+        indexes = [
+            models.Index(fields=["tenant", "external_customer_id", "external_vehicle_id", "date_in", "booking_number"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "external_customer_id", "external_vehicle_id", "date_in", "booking_number"],
+                name="uniq_booking"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.tenant} / {self.booking_number}"
 

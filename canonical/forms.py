@@ -102,41 +102,6 @@ ALLOWED_NORMALISATION_KEYS = {
     "remove_whitespace",
 }
 
-class FieldMappingInlineForm(forms.ModelForm):
-    normalisation = forms.CharField(
-        required=True,
-        widget=forms.Textarea(attrs={
-            "rows": 2,
-            "style": (
-                "font-family: monospace; white-space: pre;"
-                "font-size: 8px;"
-            ),
-        }),
-        help_text="JSON normalisation rules",
-    )
-
-    class Meta:
-        model = FieldMapping
-        fields = ("order", "source_field_name", "active", 
-                  "is_tenant_mapping_source", "is_business_key", "normalisation", "pii_requires_encryption", 
-                  "pii_requires_fingerprint", "is_volatile")
-    
-    def __init__(self, *args, **kwargs):
-        source_schema = kwargs.pop("source_schema", None)
-        super().__init__(*args, **kwargs)
-
-        # --- Source field: text input by default
-        self.fields["source_field_name"].widget = forms.TextInput()
-        if source_schema:
-            tabledata = getattr(source_schema, "table_data", None)
-            if tabledata and tabledata.data and isinstance(tabledata.data[0], list):
-                header = tabledata.data[0]
-                field_choices=[("", "— Select source field —")] + [(h, h) for h in header if h]
-                self.fields["source_field_name"].widget = forms.Select(
-                    choices=field_choices
-                )
-
-
 class CanonicalFieldForm(forms.ModelForm):
     normalisation = forms.CharField(
         required=True,
@@ -156,7 +121,6 @@ class CanonicalFieldForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         if self.instance.pk and self.instance.normalisation:
             self.initial["normalisation"] = json.dumps(
                 self.instance.normalisation,

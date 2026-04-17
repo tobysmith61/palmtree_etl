@@ -5,7 +5,7 @@ from django.apps import apps
 from django.shortcuts import redirect, reverse
 from django.db import models, transaction
 from django.urls import path
-from .forms import TableDataForm, CanonicalFieldForm, FieldMappingInlineForm
+from .forms import TableDataForm, CanonicalFieldForm
 from .models import CanonicalSchema, CanonicalField, SourceSchema, FieldMapping, TableData, Job
 from tenants.models import Tenant
 import pandas as pd
@@ -13,7 +13,6 @@ from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from core.admin_mixins import SoftDeleteAdminMixin, SoftDeletedFKAdminMixin, TimeStampedAdminMixin, StagingReadOnlyAdminMixin
-
 
 class CanonicalFieldInlineFormSet(BaseInlineFormSet):
     def clean(self):
@@ -50,6 +49,22 @@ class CanonicalFieldInline(admin.TabularInline):
     show_change_link = True
     formset = CanonicalFieldInlineFormSet
 
+    def get_formset(self, request, obj=None, **kwargs):
+        FormSet = super().get_formset(request, obj, **kwargs)
+
+        class CustomFormSet(FormSet):
+            def _construct_form(self, i, **form_kwargs):
+                form = super()._construct_form(i, **form_kwargs)
+
+                if obj and obj.source_schema:
+                    form.fields["source_field"].queryset = FieldMapping.objects.filter(
+                        source_schema=obj.source_schema
+                    )
+
+                return form
+
+        return CustomFormSet
+ 
 @admin.register(CanonicalSchema)
 class CanonicalSchemaAdmin(
     SoftDeleteAdminMixin, 
@@ -65,7 +80,7 @@ class CanonicalSchemaAdmin(
         (
             None,
             {
-                "fields": ("name", "description", "contract", "requires_tenant_mapping"),
+                "fields": ("name", "description", "contract", "requires_tenant_mapping", 'source_schema'),
             },
         ),
         (
@@ -170,6 +185,7 @@ class CanonicalSchemaAdmin(
             if not f.auto_created
             and not getattr(f, "primary_key", False)
             and f.name not in abstract_fields
+            and not f.name.startswith('fingerprint')
         ]
 
 
@@ -214,7 +230,9 @@ class CanonicalSchemaAdmin(
             request,
             f"{new_count} new fields added, {renumber_count} fields renumbered to match contract model."
         )
+        #huh? shouldnt be 25 created! bug there somewhere
 
+        
         return redirect(reverse('admin:canonical_canonicalschema_change', args=[pk]))
 
     # -----------------------------
@@ -247,20 +265,36 @@ class CanonicalSchemaAdmin(
 
 class FieldMappingInline(admin.TabularInline):
     model = FieldMapping
-    form = FieldMappingInlineForm
-    extra = 1  # allow adding new mappings
+    extra = 1
 
-    def get_formset(self, request, obj=None, **kwargs):
-        FormSet = super().get_formset(request, obj, **kwargs)
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        field = super().formfield_for_dbfield(db_field, request, **kwargs)
 
-        class InjectSourceSchemaFormSet(FormSet):
-            def _construct_form(self, i, **form_kwargs):
-                form_kwargs["source_schema"] = obj
-                return super()._construct_form(i, **form_kwargs)
+        if db_field.name == "source_field_name":
+            # get parent object ID from URL
+            object_id = request.resolver_match.kwargs.get("object_id")
 
-        return InjectSourceSchemaFormSet
+            if object_id:
+                from canonical.models import SourceSchema  # adjust import
 
+                try:
+                    source_schema = SourceSchema.objects.get(pk=object_id)
+                except SourceSchema.DoesNotExist:
+                    return field
 
+                tabledata = getattr(source_schema, "table_data", None)
+
+                if tabledata and tabledata.data and isinstance(tabledata.data[0], list):
+                    header = tabledata.data[0]
+
+                    field.widget = forms.Select(
+                        choices=[("", "— Select source field —")] + [
+                            (h, h) for h in header if h
+                        ]
+                    )
+
+        return field
+    
 class SourceSchemaAdminForm(forms.ModelForm):
     class Meta:
         model = SourceSchema

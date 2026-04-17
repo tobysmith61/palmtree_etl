@@ -11,7 +11,7 @@
             "required": true,
             "schema": 1,
             "source_field": 33,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.132Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -29,7 +29,7 @@
             "required": true,
             "schema": 1,
             "source_field": 33,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.144Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -47,7 +47,7 @@
             "required": true,
             "schema": 1,
             "source_field": 34,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.161Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -65,7 +65,7 @@
             "required": true,
             "schema": 1,
             "source_field": 36,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.179Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -83,7 +83,7 @@
             "required": true,
             "schema": 1,
             "source_field": 37,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.197Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -101,7 +101,7 @@
             "required": true,
             "schema": 1,
             "source_field": 38,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.213Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -119,7 +119,7 @@
             "required": true,
             "schema": 1,
             "source_field": 39,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.225Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -137,7 +137,7 @@
             "required": true,
             "schema": 1,
             "source_field": 46,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.244Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -155,7 +155,7 @@
             "required": true,
             "schema": 1,
             "source_field": 49,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.260Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -173,7 +173,7 @@
             "required": true,
             "schema": 1,
             "source_field": 51,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.278Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -191,7 +191,7 @@
             "required": true,
             "schema": 1,
             "source_field": 40,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.293Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -209,7 +209,7 @@
             "required": true,
             "schema": 1,
             "source_field": 41,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.309Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -227,7 +227,7 @@
             "required": true,
             "schema": 1,
             "source_field": 42,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.320Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -245,7 +245,7 @@
             "required": true,
             "schema": 1,
             "source_field": 43,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.338Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -263,7 +263,7 @@
             "required": true,
             "schema": 1,
             "source_field": 44,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.351Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -281,7 +281,7 @@
             "required": true,
             "schema": 1,
             "source_field": 45,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.365Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -299,7 +299,7 @@
             "required": true,
             "schema": 1,
             "source_field": 47,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.380Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -317,7 +317,7 @@
             "required": true,
             "schema": 1,
             "source_field": 48,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.395Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -331,11 +331,11 @@
             "format_type": "none",
             "name": "home_phone_opt_in_value",
             "normalisation": [],
-            "order": 19,
+            "order": 21,
             "required": true,
             "schema": 1,
             "source_field": 52,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.443Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -349,11 +349,11 @@
             "format_type": "none",
             "name": "home_phone_opt_in_date",
             "normalisation": [],
-            "order": 20,
+            "order": 22,
             "required": true,
             "schema": 1,
             "source_field": 53,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.456Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -367,11 +367,11 @@
             "format_type": "none",
             "name": "mobile_opt_in_value",
             "normalisation": [],
-            "order": 21,
+            "order": 23,
             "required": true,
             "schema": 1,
             "source_field": 50,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.475Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -385,11 +385,11 @@
             "format_type": "none",
             "name": "mobile_opt_in_date",
             "normalisation": [],
-            "order": 22,
+            "order": 24,
             "required": true,
             "schema": 1,
             "source_field": 52,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.492Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -403,11 +403,11 @@
             "format_type": "postcode_area",
             "name": "postcode_area",
             "normalisation": [],
-            "order": 23,
+            "order": 25,
             "required": true,
             "schema": 1,
             "source_field": 45,
-            "updated_at": "2026-03-02T08:47:13.389Z",
+            "updated_at": "2026-04-17T20:20:41.505Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -425,7 +425,7 @@
             "required": true,
             "schema": 2,
             "source_field": 33,
-            "updated_at": "2026-03-27T17:13:50.869Z",
+            "updated_at": "2026-04-17T15:00:36.563Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -443,7 +443,7 @@
             "required": false,
             "schema": 2,
             "source_field": 33,
-            "updated_at": "2026-03-27T17:13:50.886Z",
+            "updated_at": "2026-04-17T15:00:36.580Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -461,7 +461,7 @@
             "required": false,
             "schema": 2,
             "source_field": 54,
-            "updated_at": "2026-03-27T17:13:50.901Z",
+            "updated_at": "2026-04-17T15:00:36.595Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -479,7 +479,7 @@
             "required": false,
             "schema": 2,
             "source_field": 55,
-            "updated_at": "2026-03-27T17:13:50.919Z",
+            "updated_at": "2026-04-17T15:00:36.611Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -497,7 +497,7 @@
             "required": false,
             "schema": 2,
             "source_field": 58,
-            "updated_at": "2026-03-27T17:13:50.937Z",
+            "updated_at": "2026-04-17T15:00:36.715Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -515,7 +515,7 @@
             "required": false,
             "schema": 2,
             "source_field": 59,
-            "updated_at": "2026-03-27T17:13:50.953Z",
+            "updated_at": "2026-04-17T15:00:36.727Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -533,7 +533,7 @@
             "required": false,
             "schema": 2,
             "source_field": 56,
-            "updated_at": "2026-03-27T17:13:50.970Z",
+            "updated_at": "2026-04-17T15:00:36.741Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -551,7 +551,7 @@
             "required": false,
             "schema": 2,
             "source_field": 57,
-            "updated_at": "2026-03-27T17:13:50.987Z",
+            "updated_at": "2026-04-17T15:00:36.751Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -569,7 +569,7 @@
             "required": false,
             "schema": 2,
             "source_field": 61,
-            "updated_at": "2026-03-27T17:13:51Z",
+            "updated_at": "2026-04-17T15:00:36.761Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -587,7 +587,7 @@
             "required": false,
             "schema": 2,
             "source_field": 60,
-            "updated_at": "2026-03-27T17:13:51.019Z",
+            "updated_at": "2026-04-17T15:00:36.774Z",
             "value_mapping_group": 1
         },
         "model": "canonical.canonicalfield",
@@ -605,7 +605,7 @@
             "required": false,
             "schema": 3,
             "source_field": 33,
-            "updated_at": "2026-03-27T20:41:05.496Z",
+            "updated_at": "2026-04-17T15:00:01.054Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -623,7 +623,7 @@
             "required": false,
             "schema": 3,
             "source_field": 34,
-            "updated_at": "2026-03-27T20:41:05.513Z",
+            "updated_at": "2026-04-17T15:00:01.072Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -641,7 +641,7 @@
             "required": false,
             "schema": 3,
             "source_field": 54,
-            "updated_at": "2026-03-27T20:41:05.534Z",
+            "updated_at": "2026-04-17T15:00:01.088Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -659,7 +659,7 @@
             "required": false,
             "schema": 4,
             "source_field": 63,
-            "updated_at": "2026-04-04T21:25:17.170Z",
+            "updated_at": "2026-04-17T14:59:37.621Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -677,7 +677,7 @@
             "required": false,
             "schema": 4,
             "source_field": 64,
-            "updated_at": "2026-04-04T21:25:17.181Z",
+            "updated_at": "2026-04-17T14:59:37.640Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
@@ -695,10 +695,136 @@
             "required": false,
             "schema": 4,
             "source_field": 65,
-            "updated_at": "2026-04-04T21:25:17.190Z",
+            "updated_at": "2026-04-17T14:59:37.657Z",
             "value_mapping_group": null
         },
         "model": "canonical.canonicalfield",
         "pk": 138
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-16T21:07:16.698Z",
+            "data_type": "tenant_mapping",
+            "deleted": false,
+            "format_type": "none",
+            "name": "tenant",
+            "normalisation": [],
+            "order": 1,
+            "required": true,
+            "schema": 5,
+            "source_field": 66,
+            "updated_at": "2026-04-17T14:58:25.545Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 140
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-16T21:07:16.762Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_customer_id",
+            "normalisation": [],
+            "order": 3,
+            "required": true,
+            "schema": 5,
+            "source_field": 68,
+            "updated_at": "2026-04-17T14:58:25.562Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 144
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-16T21:07:16.778Z",
+            "data_type": "date",
+            "deleted": false,
+            "format_type": "none",
+            "name": "external_vehicle_id",
+            "normalisation": [],
+            "order": 4,
+            "required": true,
+            "schema": 5,
+            "source_field": 69,
+            "updated_at": "2026-04-17T14:58:25.577Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 145
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-16T21:07:16.794Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "none",
+            "name": "booking_number",
+            "normalisation": [],
+            "order": 5,
+            "required": true,
+            "schema": 5,
+            "source_field": 70,
+            "updated_at": "2026-04-17T14:58:25.593Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 146
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-17T09:51:03.291Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "postcode_district",
+            "name": "postcode_district",
+            "normalisation": [],
+            "order": 19,
+            "required": false,
+            "schema": 1,
+            "source_field": 45,
+            "updated_at": "2026-04-17T20:20:41.413Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 168
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-17T09:51:03.308Z",
+            "data_type": "string",
+            "deleted": false,
+            "format_type": "postcode_sector",
+            "name": "postcode_sector",
+            "normalisation": [],
+            "order": 20,
+            "required": false,
+            "schema": 1,
+            "source_field": 45,
+            "updated_at": "2026-04-17T20:20:41.428Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 169
+    },
+    {
+        "fields": {
+            "created_at": "2026-04-17T10:28:56.838Z",
+            "data_type": "date",
+            "deleted": false,
+            "format_type": "none",
+            "name": "date_in",
+            "normalisation": [],
+            "order": 6,
+            "required": true,
+            "schema": 5,
+            "source_field": 67,
+            "updated_at": "2026-04-17T14:58:25.604Z",
+            "value_mapping_group": null
+        },
+        "model": "canonical.canonicalfield",
+        "pk": 205
     }
 ]

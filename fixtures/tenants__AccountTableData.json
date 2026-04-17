@@ -254,39 +254,6 @@
                     null
                 ],
                 [
-                    "02",
-                    "234321",
-                    "2025-11-14T13:45:00+01:00",
-                    "Mr",
-                    "Ferghal",
-                    "OReilly",
-                    "Mr OReilly",
-                    "Flat 1a",
-                    "High Street",
-                    null,
-                    "Farncombe",
-                    "Surrey",
-                    "GU7 2BR",
-                    "foreilly1965@gmail.com",
-                    "Y",
-                    "1/12/2009",
-                    "07720709127",
-                    "N",
-                    null,
-                    "01483 222339",
-                    "N",
-                    "1/12/2010",
-                    "333691",
-                    "FE20LPW",
-                    "Peugeot",
-                    "707",
-                    "01/03/2020",
-                    "JH4KA8260MC012345",
-                    "D",
-                    "JT18WR",
-                    null
-                ],
-                [
                     null,
                     null,
                     null,
@@ -323,7 +290,7 @@
             "deleted": false,
             "name": "Customer Vehicle Data (Stellantis)",
             "table_data_copied_from": 2,
-            "updated_at": "2026-04-12T20:10:55.757Z"
+            "updated_at": "2026-04-16T19:09:26.321Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 2
@@ -359,5 +326,43 @@
         },
         "model": "tenants.accounttabledata",
         "pk": 3
+    },
+    {
+        "fields": {
+            "account": 1,
+            "created_at": "2026-04-17T10:31:52.010Z",
+            "data": [
+                [
+                    "company",
+                    "booking_number",
+                    "dms_customer_id",
+                    "dms_vehicle_id",
+                    "date_in",
+                    null
+                ],
+                [
+                    "01",
+                    "12345",
+                    "123456",
+                    "333456",
+                    "01/06/2026",
+                    null
+                ],
+                [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ]
+            ],
+            "deleted": false,
+            "name": "Stellantis DMS Bookings",
+            "table_data_copied_from": 4,
+            "updated_at": "2026-04-17T10:32:01.134Z"
+        },
+        "model": "tenants.accounttabledata",
+        "pk": 4
     }
 ]
