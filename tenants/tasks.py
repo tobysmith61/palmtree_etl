@@ -128,7 +128,7 @@ def scan_for_ready_files():
 
             files = [
                 f for f in ready_folder.iterdir()
-                if f.is_file() and f.name.startswith(job.job.filename_prefix)
+                if f.is_file() and f.name.startswith(job.job.source_schema.filename_prefix)
             ]
             if not files:
                 continue
