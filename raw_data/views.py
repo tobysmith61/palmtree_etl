@@ -150,7 +150,7 @@ def map_string_model_to_django_model(string_model):
         return RawCustomerVehicleData
     elif string_model=='RawRecallData':
         return RawRecallData
-    elif string_model=='RawRecallData':
+    elif string_model=='RawBookingData':
         return RawBookingData
     
     else:
