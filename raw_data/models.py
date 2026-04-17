@@ -43,10 +43,16 @@ class RawRecallData(BaseRawData):
         return f"Source row {self.source_row_number}"
 
 class RawBookingData(BaseRawData):
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="raw_booking_data"
+    )
+
     class Meta:
         indexes = [
-            models.Index(fields=["business_key_hash", "is_current"]),
+            models.Index(fields=["tenant", "business_key_hash", "is_current"]),
         ]
 
     def __str__(self):
-        return f"Source row {self.source_row_number}"
+        return f"{self.tenant} - source row {self.source_row_number}"

@@ -105,7 +105,7 @@
         "fields": {
             "account": 1,
             "account_table_data": 4,
-            "auto_or_manual": "auto",
+            "auto_or_manual": "manual",
             "created_at": "2026-04-17T10:32:10.295Z",
             "deleted": false,
             "job": 5,
@@ -113,7 +113,7 @@
             "order": 4,
             "sftp_drop_zone": 20,
             "tenant_mapping": 1,
-            "updated_at": "2026-04-17T10:32:10.296Z"
+            "updated_at": "2026-04-17T21:18:23.966Z"
         },
         "model": "tenants.accountjob",
         "pk": 7

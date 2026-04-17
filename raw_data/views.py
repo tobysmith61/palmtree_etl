@@ -373,7 +373,7 @@ def run_account_job(accountjob_pk, request=None):
         if not validate_header(header, source_fields):
             failed_path = path_and_filename.parent.parent / "failed" / path_and_filename.name
             if os.environ.get("IS_STAGING_SERVER") == "True":
-                os.makedirs(processed_path, exist_ok=True)
+                os.makedirs(failed_path, exist_ok=True)
 
             shutil.move(path_and_filename, failed_path)
             continue
