@@ -16,8 +16,8 @@ from django.contrib import messages
 from canonical.utils import build_canonical_row
 from django.db import models, transaction
 
-from .models import RawCustomerVehicleData, RawRecallData
-from contracts.models import Customer, Vehicle, CustomerVehicleLink, Recall
+from .models import RawCustomerVehicleData, RawRecallData, RawBookingData
+from contracts.models import Customer, Vehicle, CustomerVehicleLink, Recall, Booking
 
 
 logger = logging.getLogger(__name__)
@@ -143,14 +143,18 @@ def map_string_model_to_django_model(string_model):
         return CustomerVehicleLink
     elif string_model=='contracts.Recall':
         return Recall
-
+    elif string_model=='contracts.Booking':
+        return Booking
+    
     elif string_model=='RawCustomerVehicleData':
         return RawCustomerVehicleData
     elif string_model=='RawRecallData':
         return RawRecallData
-
+    elif string_model=='RawRecallData':
+        return RawBookingData
+    
     else:
-        return None
+        1/0
 
 @transaction.atomic
 def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
