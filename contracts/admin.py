@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
-from .models import Customer, Vehicle, CustomerVehicleLink, Recall
+from .models import Customer, Vehicle, CustomerVehicleLink, Recall, Booking
 from core.admin_mixins import TimeStampedAdminMixin, ReadOnlyAdminMixin
 from tenants.models import Tenant
 from core.filters import TenantByAccountFilter
@@ -167,3 +167,37 @@ class RecallAdmin(
         'vin',
         'code',
     )
+
+
+@admin.register(Booking)
+class BookingAdmin(
+    TimeStampedAdminMixin, 
+    ReadOnlyAdminMixin,
+    admin.ModelAdmin
+):
+    list_display = (
+        'tenant',
+        'external_customer_id',
+        'external_vehicle_id',
+        'date_in',
+        'booking_number',
+    )
+    search_fields = (
+        'tenant',
+        'external_customer_id',
+        'external_vehicle_id',
+    )
+    ordering = (
+        'id',
+    )
+    list_filter = (
+        TenantByAccountFilter,
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        account_id = request.session.get("account_id")
+        if account_id:
+            return qs.filter(tenant__account_id=account_id)
+
+        return qs.none()
