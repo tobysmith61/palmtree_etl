@@ -352,6 +352,8 @@ def run_account_job(accountjob_pk, request=None):
     # for each file currently in the ready folder awaiting processing
     #################################################################
     for path_and_filename in sorted(ready_folder_path.iterdir()):
+        if not path_and_filename.is_file() or not path_and_filename.name.startswith(accountjob.job.source_schema.filename_prefix):
+            continue
 
         logger.info(f"Processing file: {path_and_filename}")
 
