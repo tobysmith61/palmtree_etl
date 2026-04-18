@@ -187,8 +187,6 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
 
     # 🔑 Determine fields that uniquely identify a row (for update/delete)
     unique_fields = get_unique_fields(model)
-    print (189)
-    print (unique_fields)
     if accountjob.tenant_mapping!=None:
         # -----------------------------------
         # 1️⃣ Load scoped tenants for this job
@@ -212,13 +210,23 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
 
     # Map existing rows by their unique key for quick lookup
     existing_map = {}
+    
+    # normalise key for comparison to ident if new or existing
     for obj in existing_qs:
         key = tuple(
-            getattr(obj, f) if not f.endswith("tenant") else getattr(obj, f).internal_tenant_code
+            getattr(obj, f).internal_tenant_code
+            if f.endswith("tenant")
+            else getattr(obj, f)
             for f in unique_fields
         )
-        existing_map[key] = obj
 
+        key = tuple(
+            str(v) if type(v) is int else v
+            for v in key
+        )
+
+        existing_map[key] = obj
+    
     # Track which keys are seen in canonical_rows
     seen_keys = set()
 
@@ -238,13 +246,6 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
             fk_map["tenant"] = tenant_map[tenant_code]
 
         data = build_row_fn(row, model, fk_map=fk_map)
-
-        print (236)        
-        for f in unique_fields:
-            print (f)
-        print (data)
-
-
 
         key = tuple(
             data[f].internal_tenant_code if isinstance(data[f], Tenant) else data[f]
@@ -268,10 +269,6 @@ def sync_model_from_canonical(accountjob, canonical_rows, build_row_fn):
         else:
             to_create.append(model(**data))
 
-
-            # print (247)
-            # print (model(**data))
-            # 1/0 # recalls test???????? checkout VIN! fingerprint?
 
 
     # -----------------------------------
