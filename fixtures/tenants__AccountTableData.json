@@ -309,7 +309,7 @@
                 [
                     "JH4KA8260MC012346",
                     "WA555927-2026-03-01",
-                    "Battery connector wiring JB303xpR 01-03-2022 to 01-03-2024",
+                    "Battery connector wiring JB303xpR 01-03-2022 to 01-03-2025",
                     null
                 ],
                 [
@@ -322,7 +322,7 @@
             "deleted": false,
             "name": "Stellantis UK Ltd - Recalls - Peugeot",
             "table_data_copied_from": 3,
-            "updated_at": "2026-04-04T20:59:05.722Z"
+            "updated_at": "2026-04-20T18:43:08.506Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 3
@@ -345,7 +345,7 @@
                     "12345",
                     "123456",
                     "333456",
-                    "01/06/2026",
+                    "03/06/2026",
                     null
                 ],
                 [
@@ -360,7 +360,7 @@
             "deleted": false,
             "name": "Stellantis DMS Bookings",
             "table_data_copied_from": 4,
-            "updated_at": "2026-04-17T10:32:01.134Z"
+            "updated_at": "2026-04-20T18:41:26.324Z"
         },
         "model": "tenants.accounttabledata",
         "pk": 4

@@ -7,6 +7,7 @@ class BaseRawData(models.Model):
     source_row_number = models.IntegerField(null=True, blank=True)
     row_hash = models.CharField(max_length=64)
     business_key_hash = models.CharField(max_length=64, null=True, blank=True)
+    debug_business_key = models.JSONField(null=True, blank=True)
     payload = models.JSONField()
     ingested_at = models.DateTimeField(auto_now_add=True)
     processed = models.BooleanField(default=False)

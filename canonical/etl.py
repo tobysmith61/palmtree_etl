@@ -193,6 +193,12 @@ def raw_data_for_storage(raw_json_dict, source_fields, tenant_mapping, account, 
     raw_json_dict_unenc = encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account)
     raw_json_dict_enc = encrypt_sensitive_PII_fields_in_place(raw_json_dict, source_fields, account, dek)
     
+    #prepend row with human readable business_key_hash for debugging
+    if os.getenv("DEBUG_BUSINESS_KEYS") == "True":
+        raw_json_dict_enc = {'debug_business_key': json.loads(business_key_json), **raw_json_dict_enc}
+    else:
+        raw_json_dict_enc = {'debug_business_key': '', **raw_json_dict_enc}
+
     #prepend row with business_key_hash
     raw_json_dict_enc = {'business_key_hash': business_key_hash, **raw_json_dict_enc}
 

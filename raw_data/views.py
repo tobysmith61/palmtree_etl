@@ -46,42 +46,57 @@ def csv_to_header_and_rows(contents, separator=','):
     rows = [row.split(separator) for row in rows]
     return header, rows        
 
-def store_raw_row(raw_json_row_dict, row_number, ready_folder_path, path_and_filename, run_id):
+def store_raw_row(raw_json_row_dict, row_number, ready_folder_path, path_and_filename, run_id, rawdatamodel, is_tenant_aware):
     try:
-        tenant_code = raw_json_row_dict.get('tenant_code')
-        if not tenant_code:
-            print("WARNING: tenant_code missing, skipping row")
-            return
+        if is_tenant_aware:
+            tenant_code = raw_json_row_dict.get('tenant_code')
+            if not tenant_code:
+                print("WARNING: tenant_code missing, skipping row")
+                return
 
-        # cache tenant to avoid repeated DB lookups
-        if tenant_code not in tenant_cache:
-            tenant_cache[tenant_code] = Tenant.objects.get(internal_tenant_code=tenant_code)
-        tenant = tenant_cache[tenant_code]
+            # cache tenant to avoid repeated DB lookups
+            if tenant_code not in tenant_cache:
+                tenant_cache[tenant_code] = Tenant.objects.get(internal_tenant_code=tenant_code)
+            tenant = tenant_cache[tenant_code]
 
         business_key_hash = raw_json_row_dict.get('business_key_hash')
+        debug_business_key = raw_json_row_dict.get('debug_business_key')
+
         row_hash = raw_json_row_dict.get('row_hash')
 
         if not business_key_hash or not row_hash:
             return
 
         # remove these keys from payload
-        raw_json_row_dict.pop('tenant_code', None)
+        if is_tenant_aware:
+            raw_json_row_dict.pop('tenant_code', None)
         raw_json_row_dict.pop('business_key_hash', None)
         raw_json_row_dict.pop('row_hash', None)
+        raw_json_row_dict.pop('debug_business_key', None)
 
         source_name = "/".join(str(ready_folder_path).strip("/").split("/")[-3:-1])
 
         # check for existing current row
-        existing = (
-            RawCustomerVehicleData.objects
-            .filter(
-                tenant=tenant,
-                business_key_hash=business_key_hash,
-                is_current=True
+        if is_tenant_aware:
+            existing = (
+                rawdatamodel.objects
+                .filter(
+                    tenant=tenant,
+                    business_key_hash=business_key_hash,
+                    is_current=True
+                )
+                .first()
             )
-            .first()
-        )
-
+        else:
+            existing = (
+                rawdatamodel.objects
+                .filter(
+                    business_key_hash=business_key_hash,
+                    is_current=True
+                )
+                .first()
+            )
+       
         # Skip if no change
         if existing and existing.row_hash == row_hash:
             existing.last_seen_run_id = run_id
@@ -90,22 +105,37 @@ def store_raw_row(raw_json_row_dict, row_number, ready_folder_path, path_and_fil
 
         # Retire previous version
         if existing:
-            RawCustomerVehicleData.objects.filter(id=existing.id).update(is_current=False)
+            rawdatamodel.objects.filter(id=existing.id).update(is_current=False)
             upserted_type="UPDATED"
 
         # Insert new current version
-        rd = RawCustomerVehicleData.objects.create(
-            tenant=tenant,
-            source_name=source_name,
-            business_key_hash=business_key_hash,
-            row_hash=row_hash,
-            payload=raw_json_row_dict,
-            processed=False,
-            is_current=True,
-            source_file=str(path_and_filename),
-            source_row_number=row_number,
-            last_seen_run_id = run_id,
-        )
+        if is_tenant_aware:
+            rd = rawdatamodel.objects.create(
+                tenant=tenant,
+                source_name=source_name,
+                business_key_hash=business_key_hash,
+                debug_business_key=debug_business_key,
+                row_hash=row_hash,
+                payload=raw_json_row_dict,
+                processed=False,
+                is_current=True,
+                source_file=str(path_and_filename),
+                source_row_number=row_number,
+                last_seen_run_id = run_id,
+            )
+        else:
+            rd = rawdatamodel.objects.create(
+                source_name=source_name,
+                business_key_hash=business_key_hash,
+                debug_business_key=debug_business_key,
+                row_hash=row_hash,
+                payload=raw_json_row_dict,
+                processed=False,
+                is_current=True,
+                source_file=str(path_and_filename),
+                source_row_number=row_number,
+                last_seen_run_id = run_id,
+            )
         print(f"Inserted new row: id={rd.id}, row_hash={rd.row_hash}")
         upserted_type="INSERTED"
         return upserted_type
@@ -401,7 +431,9 @@ def run_account_job(accountjob_pk, request=None):
         rawdatamodel = map_string_model_to_django_model(accountjob.job.source_schema.raw_data_storage_model)
         
         # get current
-        if accountjob.tenant_mapping!=None:
+        is_tenant_aware = accountjob.tenant_mapping != None
+
+        if is_tenant_aware:
             tenants = accountjob.tenant_mapping.mapping_codes.all() # the 'expected' scope of the tenants
             existing_keys = set(
                 rawdatamodel.objects.filter(
@@ -428,13 +460,15 @@ def run_account_job(accountjob_pk, request=None):
 
             key = raw_json_row_dict.get('business_key_hash')
             seen_keys.add(key)
-
+            
             result = store_raw_row(
                 raw_json_row_dict,
                 row_number,
                 ready_folder_path,
                 path_and_filename,
-                last_seen_run_id
+                last_seen_run_id,
+                rawdatamodel,
+                is_tenant_aware
             )
 
             #logger.debug(f"Row {row_number} store result: {result}")
@@ -445,7 +479,7 @@ def run_account_job(accountjob_pk, request=None):
         # flag omitted items as deleted_at_source
         missing_keys = existing_keys - seen_keys
         
-        if accountjob.tenant_mapping!=None:
+        if is_tenant_aware:
             rawdatamodel.objects.filter(
                 tenant__in=tenants.values_list('mapped_tenant_id', flat=True),
                 is_current=True,
