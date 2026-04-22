@@ -385,7 +385,6 @@ class SFTPDropZoneAdmin(
         base_path = getattr(settings, "SFTP_BASE_PATH", "/srv/sftp_drops")
         obj.folder_path = f"{base_path}/{obj.account.short.lower()}/{obj.zone_folder}/drop"
         obj.save(update_fields=["folder_path"])
-    
 
     def get_urls(self):
         urls = super().get_urls()
@@ -420,6 +419,16 @@ class SFTPDropZoneAdmin(
         )
 
         return redirect("..")
+    
+    def get_fieldsets(self, request, obj=None):
+        return (
+            ("Detail", {
+                "fields": ( 'account', 'deleted', 'zone_folder', 'folder_path', 'wait_time_before_ready_to_move',
+                            'retention_period_days', 'test_sftp_user', 'test_sftp_password',),
+                "classes": ("collapse",),
+            }),
+        )
+    
     
 @admin.register(AccountTableData)
 class AccountTableDataAdmin(
