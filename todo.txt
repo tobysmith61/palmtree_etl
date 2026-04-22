@@ -100,3 +100,11 @@ move file from ready to processed
 
 
 #(tenant, external_customer_id, vin) = stable key / business key / identity key
+
+22/04/2026
+-=-=-=-=-=
+Failed files to be downloadable for inspection
+Do not process jobs in ready folder whilst failed files are present
+Allow delete of failed files
+Log runs (failed and successful)
+Add runs list to sftp folder view (dynamic view)
