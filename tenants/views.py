@@ -431,13 +431,13 @@ def processor_logs_for_sftpdropzone_api(request, pk):
 
     # Optional: validate dropzone exists
     try:
-        sftpdropzone = SFTPDropZone.objects.get(pk=pk)
+        sftp_drop_zone = SFTPDropZone.objects.get(pk=pk)
     except SFTPDropZone.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
 
     logs = (
         AccountJobLog.objects
-        .filter(sftpdropzone=sftpdropzone)
+        .filter(sftp_drop_zone=sftp_drop_zone)
         .order_by("-created_at")[:100]   # limit for performance
     )
 
