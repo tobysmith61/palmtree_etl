@@ -269,7 +269,7 @@ class AccountJob(CoreModel, FixtureControlledModel):
 class AccountJobLog(CoreModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     accountjob = models.ForeignKey(AccountJob, on_delete=models.CASCADE)
-    sftpdropzone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE, blank=True, null=True)
+    sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE, blank=True, null=True)
     completed_datetime = models.DateTimeField(auto_now_add=True)
     result_text = models.TextField(max_length=1000, blank=True, null=True)
     path_and_filename = models.CharField(max_length=255)
