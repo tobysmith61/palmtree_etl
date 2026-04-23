@@ -444,7 +444,6 @@ def processor_logs_for_sftpdropzone_api(request, pk):
     data = [
         {
             "timestamp": date_format(log.created_at, "Y-m-d H:i:s"),
-            "level": log.level,
             "message": log.message,
         }
         for log in logs

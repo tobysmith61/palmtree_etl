@@ -186,10 +186,6 @@
                 const timeTd = document.createElement("td");
                 timeTd.textContent = log.timestamp;
 
-                const levelTd = document.createElement("td");
-                levelTd.textContent = log.level;
-                levelTd.style.color = colorForLevel(log.level);
-
                 const msgTd = document.createElement("td");
                 msgTd.textContent = log.message;
                 msgTd.style.wordBreak = "break-all";
