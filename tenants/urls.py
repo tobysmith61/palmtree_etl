@@ -33,4 +33,6 @@ urlpatterns = [
          name='run_account_job_from_django_admin'),
     path('sftp-drop-dashboard/', sftp_drop_dashboard_view, name='sftp-drop-dashboard'),
     path('admin/dropzone-files/<int:pk>/', dropzone_files_api, name='dropzone_files_api'),
+    path('dropzone/<int:pk>/processor-logs/', views.processor_logs_for_sftpdropzone_api, name="processor_logs_for_sftpdropzone_api",
+    ),
 ]

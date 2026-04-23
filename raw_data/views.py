@@ -382,6 +382,13 @@ def run_account_job(accountjob_pk, request=None):
     # for each file currently in the ready folder awaiting processing
     #################################################################
     for path_and_filename in sorted(ready_folder_path.iterdir()):
+        account_job_log = AccountJobLog()
+        account_job_log.account = accountjob.account
+        account_job_log.accountjob = accountjob
+        account_job_log.result_text = result_text
+        account_job_log.path_and_filename = path_and_filename
+        account_job_log.save()
+
         if not path_and_filename.is_file() or not path_and_filename.name.startswith(accountjob.job.source_schema.filename_prefix):
             continue
 
@@ -405,8 +412,15 @@ def run_account_job(accountjob_pk, request=None):
                 os.makedirs(failed_path, exist_ok=True)
 
             shutil.move(path_and_filename, failed_path)
+
+            account_job_log.result_text = "Validation failed on the header"
+            account_job_log.save()
+
             continue
 
+        account_job_log.result_text = "Processing"
+        account_job_log.save()
+        
         tenant_mapping = accountjob.tenant_mapping
         canonical_fields = accountjob.job.canonical_schema.fields.all()
 
@@ -517,12 +531,8 @@ def run_account_job(accountjob_pk, request=None):
                 result_text
             )
 
-        log = AccountJobLog()
-        log.account = accountjob.account
-        log.accountjob = accountjob
-        log.result_text = result_text
-        log.path_and_filename = path_and_filename
-        log.save()
+        account_job_log.result_text = result_text
+        account_job_log.save()
 
     logger.info("Job complete")
 

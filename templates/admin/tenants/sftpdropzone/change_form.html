@@ -11,6 +11,24 @@
                 Provision SFTP
             </a>
         </li>
+
+        <div class="module aligned">
+            <h2>Processor Logs</h2>
+
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Time</th>
+                        <th style="text-align:left;">Level</th>
+                        <th style="text-align:left;">Message</th>
+                    </tr>
+                </thead>
+
+                <tbody id="processor-log-list">
+                    <tr><td colspan="3">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 {% endblock %}
 
@@ -45,75 +63,165 @@
 </div>
 
 <script>
-    (function() {
-        const apiUrl = "{% url 'tenants:dropzone_files_api' original.pk %}";
-        const tableBody = document.getElementById("dropzone-file-list");
-    
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + " B";
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-            return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-        }
-    
-        async function loadFiles() {
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-    
-                tableBody.innerHTML = "";
-    
-                if (!data || data.length === 0) {
-                    tableBody.innerHTML =
-                        "<tr><td colspan='4'>No files found</td></tr>";
-                    return;
-                }
-    
-                // Initialize 4 arrays for each folder type
-                const dropFiles = [];
-                const readyFiles = [];
-                const processedFiles = [];
-                const failedFiles = [];
-    
-                data.forEach(file => {
-                    if (file.path.startsWith('drop/')) dropFiles.push(file);
-                    else if (file.path.startsWith('ready/')) readyFiles.push(file);
-                    else if (file.path.startsWith('processed/')) processedFiles.push(file);
-                    else if (file.path.startsWith('failed/')) failedFiles.push(file);
-                });
-    
-                // Determine max number of rows needed
-                const maxRows = Math.max(dropFiles.length, readyFiles.length, processedFiles.length, failedFiles.length);
-    
-                for (let i = 0; i < maxRows; i++) {
-                    const row = document.createElement("tr");
-    
-                    function cellContent(fileArray, index, color) {
-                        if (fileArray[index]) {
-                            return `<td style="color:${color}; word-break:break-all;">${fileArray[index].path}</td>`;
-                        }
-                        return "<td></td>";
-                    }
-    
-                    row.innerHTML = `
-                        ${cellContent(dropFiles, i, 'black')}
-                        ${cellContent(readyFiles, i, 'orange')}
-                        ${cellContent(processedFiles, i, 'green')}
-                        ${cellContent(failedFiles, i, 'red')}
-                    `;
-    
-                    tableBody.appendChild(row);
-                }
-    
-            } catch (err) {
-                console.error(err);
-                tableBody.innerHTML =
-                    "<tr><td colspan='4'>Error loading files</td></tr>";
+(function() {
+    const filesApiUrl = "{% url 'tenants:dropzone_files_api' original.pk %}";
+    const logsApiUrl = "{% url 'tenants:processor_logs_for_sftpdropzone_api' original.pk %}";
+
+    const filesTableBody = document.getElementById("dropzone-file-list");
+    const logsTableBody = document.getElementById("processor-log-list");
+
+    let loadingFiles = false;
+    let loadingLogs = false;
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>"']/g, function(m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m];
+        });
+    }
+
+    // --------------------------
+    // FILES
+    // --------------------------
+    async function loadFiles() {
+        if (loadingFiles) return;
+        loadingFiles = true;
+
+        try {
+            const response = await fetch(filesApiUrl);
+            const data = await response.json();
+
+            filesTableBody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                filesTableBody.innerHTML =
+                    "<tr><td colspan='4'>No files found</td></tr>";
+                return;
             }
+
+            const dropFiles = [];
+            const readyFiles = [];
+            const processedFiles = [];
+            const failedFiles = [];
+
+            data.forEach(file => {
+                if (file.path.startsWith('drop/')) dropFiles.push(file);
+                else if (file.path.startsWith('ready/')) readyFiles.push(file);
+                else if (file.path.startsWith('processed/')) processedFiles.push(file);
+                else if (file.path.startsWith('failed/')) failedFiles.push(file);
+            });
+
+            const maxRows = Math.max(
+                dropFiles.length,
+                readyFiles.length,
+                processedFiles.length,
+                failedFiles.length
+            );
+
+            for (let i = 0; i < maxRows; i++) {
+                const row = document.createElement("tr");
+
+                function cell(fileArray, index, color) {
+                    const td = document.createElement("td");
+                    if (fileArray[index]) {
+                        td.style.color = color;
+                        td.style.wordBreak = "break-all";
+                        td.textContent = fileArray[index].path;
+                    }
+                    return td;
+                }
+
+                row.appendChild(cell(dropFiles, i, "black"));
+                row.appendChild(cell(readyFiles, i, "orange"));
+                row.appendChild(cell(processedFiles, i, "green"));
+                row.appendChild(cell(failedFiles, i, "red"));
+
+                filesTableBody.appendChild(row);
+            }
+
+        } catch (err) {
+            console.error(err);
+            filesTableBody.innerHTML =
+                "<tr><td colspan='4'>Error loading files</td></tr>";
+        } finally {
+            loadingFiles = false;
         }
-    
+    }
+
+    // --------------------------
+    // LOGS
+    // --------------------------
+    function colorForLevel(level) {
+        if (level === "error") return "red";
+        if (level === "warning") return "orange";
+        return "black";
+    }
+
+    async function loadLogs() {
+        if (loadingLogs) return;
+        loadingLogs = true;
+
+        try {
+            const response = await fetch(logsApiUrl);
+            const data = await response.json();
+
+            logsTableBody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                logsTableBody.innerHTML =
+                    "<tr><td colspan='3'>No logs found</td></tr>";
+                return;
+            }
+
+            // Show latest first, limit to 100
+            data.slice(-100).reverse().forEach(log => {
+                const row = document.createElement("tr");
+
+                const timeTd = document.createElement("td");
+                timeTd.textContent = log.timestamp;
+
+                const levelTd = document.createElement("td");
+                levelTd.textContent = log.level;
+                levelTd.style.color = colorForLevel(log.level);
+
+                const msgTd = document.createElement("td");
+                msgTd.textContent = log.message;
+                msgTd.style.wordBreak = "break-all";
+
+                row.appendChild(timeTd);
+                row.appendChild(levelTd);
+                row.appendChild(msgTd);
+
+                logsTableBody.appendChild(row);
+            });
+
+        } catch (err) {
+            console.error(err);
+            logsTableBody.innerHTML =
+                "<tr><td colspan='3'>Error loading logs</td></tr>";
+        } finally {
+            loadingLogs = false;
+        }
+    }
+
+    // --------------------------
+    // INIT
+    // --------------------------
+    function refreshAll() {
         loadFiles();
-        setInterval(loadFiles, 5000);
-    })();
+        loadLogs();
+    }
+
+    refreshAll();
+    setInterval(refreshAll, 5000);  // every 5 seconds
+
+})();
 </script>
 
 {% endif %}

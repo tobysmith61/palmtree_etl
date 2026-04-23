@@ -10,12 +10,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView
 from django.conf import settings
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect
 from django.utils.timezone import make_aware
+from django.utils.dateformat import format as date_format
 
 # Local app
-from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone
+from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone, AccountJobLog
 from .forms import TenantForm, SFTPUploadForm
 from .utils import get_current_tenant
 
@@ -421,3 +422,32 @@ def dropzone_files_api(request, pk):
 
     # return array directly
     return JsonResponse(files, safe=False)
+
+@require_GET
+def processor_logs_for_sftpdropzone_api(request, pk):
+    """
+    Return recent processor logs for a given dropzone.
+    """
+
+    # Optional: validate dropzone exists
+    try:
+        sftpdropzone = SFTPDropZone.objects.get(pk=pk)
+    except SFTPDropZone.DoesNotExist:
+        return JsonResponse({"error": "Not found"}, status=404)
+
+    logs = (
+        AccountJobLog.objects
+        .filter(sftpdropzone=sftpdropzone)
+        .order_by("-created_at")[:100]   # limit for performance
+    )
+
+    data = [
+        {
+            "timestamp": date_format(log.created_at, "Y-m-d H:i:s"),
+            "level": log.level,
+            "message": log.message,
+        }
+        for log in logs
+    ]
+
+    return JsonResponse(data, safe=False)
