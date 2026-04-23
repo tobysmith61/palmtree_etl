@@ -385,6 +385,7 @@ def run_account_job(accountjob_pk, request=None):
         account_job_log = AccountJobLog()
         account_job_log.account = accountjob.account
         account_job_log.accountjob = accountjob
+        account_job_log.sftpdropzone = accountjob.sftpdropzone
         account_job_log.result_text = result_text
         account_job_log.path_and_filename = path_and_filename
         account_job_log.save()
