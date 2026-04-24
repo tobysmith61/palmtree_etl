@@ -422,12 +422,29 @@ class SFTPDropZoneAdmin(
     
     def get_fieldsets(self, request, obj=None):
         return (
-            ("Detail", {
-                "fields": ( 'account', 'deleted', 'zone_folder', 'folder_path', 'wait_time_before_ready_to_move',
-                            'retention_period_days', 'test_sftp_user', 'test_sftp_password',),
-                "classes": ("collapse",),
-                
-            }),
+            (
+                "Main Details",
+                {
+                    "fields": (
+                        "account", 
+                        "deleted", 
+                        "zone_folder",
+                    ),
+                },
+            ),
+            (
+                "More Details",
+                {
+                    "fields": (
+                        "folder_path",
+                        "wait_time_before_ready_to_move",
+                        "retention_period_days",
+                        "test_sftp_user",
+                        "test_sftp_password",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
         )
     
     

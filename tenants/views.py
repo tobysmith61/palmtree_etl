@@ -438,7 +438,7 @@ def processor_logs_for_sftpdropzone_api(request, pk):
     logs = (
         AccountJobLog.objects
         .filter(sftp_drop_zone=sftp_drop_zone)
-        .order_by("-created_at")[:100]   # limit for performance
+        .order_by("created_at")[:100]   # limit for performance
     )
 
     data = [

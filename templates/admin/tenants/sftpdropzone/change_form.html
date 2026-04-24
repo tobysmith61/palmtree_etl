@@ -4,6 +4,16 @@
     {{ block.super }}
 
     {% if original %}
+        <style>
+        #processor-log-list td,
+        #processor-log-list th {
+            font-size: 10px !important;
+            line-height: 1.2;
+            padding: 2px 4px;
+            font-family: monospace;
+        }
+        </style>
+
         <li>
             <a href="{% url 'admin:sftpdropzone_provision_sftp' original.pk %}"
                class="button"
@@ -12,24 +22,11 @@
             </a>
         </li>
 
-        <div class="module aligned">
-            <h2>Processor Logs</h2>
-
-            <table style="width:100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th style="text-align:left;">Time</th>
-                        <th style="text-align:left;">Level</th>
-                        <th style="text-align:left;">Message</th>
-                    </tr>
-                </thead>
-
-                <tbody id="processor-log-list">
-                    <tr><td colspan="3">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
+        
     {% endif %}
+
+    <br/>
+    
 {% endblock %}
 
 {% block after_related_objects %}
@@ -58,6 +55,26 @@
     
         <tbody id="dropzone-file-list">
             <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="module aligned">
+    <h2>Processor Logs</h2>
+
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Account Job</th>
+                <th>Drop Zone</th>
+                <th>Completed</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+
+        <tbody id="processor-log-list">
+            <tr><td colspan="6">Loading...</td></tr>
         </tbody>
     </table>
 </div>
@@ -189,7 +206,7 @@
             }
 
             // latest first, limit to 100
-            data.slice(-100).reverse().forEach(log => {
+            data.slice(-10).reverse().forEach(log => {
                 const row = document.createElement("tr");
 
                 function td(text) {
@@ -199,12 +216,11 @@
                     return cell;
                 }
 
-                row.appendChild(td(log.timestamp));
                 row.appendChild(td(log.filename));
                 row.appendChild(td(log.accountjob));
                 row.appendChild(td(log.sftp_drop_zone));
                 row.appendChild(td(log.completed_datetime));
-                row.appendChild(td(log.result_text || log.message));
+                row.appendChild(td(log.result_text));
 
                 logsTableBody.appendChild(row);
             });
