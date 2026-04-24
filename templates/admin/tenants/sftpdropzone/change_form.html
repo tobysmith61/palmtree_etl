@@ -169,30 +169,42 @@
 
         try {
             const response = await fetch(logsApiUrl);
+
+            if (!response.ok) {
+                const text = await response.text();
+                console.error("API error:", text);
+                logsTableBody.innerHTML =
+                    "<tr><td colspan='6'>Server error</td></tr>";
+                return;
+            }
+
             const data = await response.json();
 
             logsTableBody.innerHTML = "";
 
             if (!data || data.length === 0) {
                 logsTableBody.innerHTML =
-                    "<tr><td colspan='3'>No logs found</td></tr>";
+                    "<tr><td colspan='6'>No logs found</td></tr>";
                 return;
             }
 
-            // Show latest first, limit to 100
+            // latest first, limit to 100
             data.slice(-100).reverse().forEach(log => {
                 const row = document.createElement("tr");
 
-                const timeTd = document.createElement("td");
-                timeTd.textContent = log.timestamp;
+                function td(text) {
+                    const cell = document.createElement("td");
+                    cell.textContent = text || "";
+                    cell.style.wordBreak = "break-all";
+                    return cell;
+                }
 
-                const msgTd = document.createElement("td");
-                msgTd.textContent = log.message;
-                msgTd.style.wordBreak = "break-all";
-
-                row.appendChild(timeTd);
-                row.appendChild(levelTd);
-                row.appendChild(msgTd);
+                row.appendChild(td(log.timestamp));
+                row.appendChild(td(log.filename));
+                row.appendChild(td(log.accountjob));
+                row.appendChild(td(log.sftp_drop_zone));
+                row.appendChild(td(log.completed_datetime));
+                row.appendChild(td(log.result_text || log.message));
 
                 logsTableBody.appendChild(row);
             });
@@ -200,12 +212,11 @@
         } catch (err) {
             console.error(err);
             logsTableBody.innerHTML =
-                "<tr><td colspan='3'>Error loading logs</td></tr>";
+                "<tr><td colspan='6'>Error loading logs</td></tr>";
         } finally {
             loadingLogs = false;
         }
     }
-
     // --------------------------
     // INIT
     // --------------------------

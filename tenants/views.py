@@ -443,8 +443,12 @@ def processor_logs_for_sftpdropzone_api(request, pk):
 
     data = [
         {
-            "timestamp": date_format(log.created_at, "Y-m-d H:i:s"),
-            "message": log.message,
+            "accountjob":log.accountjob.job.desc,
+            "sftp_drop_zone": log.sftp_drop_zone.zone_folder,
+            "completed_datetime": log.completed_datetime,
+            "result_text": log.result_text,
+            "filename": Path(log.path_and_filename).name
+
         }
         for log in logs
     ]
