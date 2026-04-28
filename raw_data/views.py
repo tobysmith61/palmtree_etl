@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse
-from tenants.models import AccountJob, AccountJobLog
+from tenants.models import AccountJob#, AccountJobLog
 from tenants.utils import ensure_local_ready_folder
 from django.conf import settings
 from pathlib import Path
@@ -382,13 +382,13 @@ def run_account_job(accountjob_pk, request=None):
     # for each file currently in the ready folder awaiting processing
     #################################################################
     for path_and_filename in sorted(ready_folder_path.iterdir()):
-        account_job_log = AccountJobLog()
-        account_job_log.account = accountjob.account
-        account_job_log.accountjob = accountjob
-        account_job_log.sftp_drop_zone = accountjob.sftp_drop_zone
-        account_job_log.result_text = 'Starting job...'
-        account_job_log.path_and_filename = path_and_filename
-        account_job_log.save()
+        # account_job_log = AccountJobLog()
+        # account_job_log.account = accountjob.account
+        # account_job_log.accountjob = accountjob
+        # account_job_log.sftp_drop_zone = accountjob.sftp_drop_zone
+        # account_job_log.result_text = 'Starting job...'
+        # account_job_log.path_and_filename = path_and_filename
+        # account_job_log.save()
 
         if not path_and_filename.is_file() or not path_and_filename.name.startswith(accountjob.job.source_schema.filename_prefix):
             continue
