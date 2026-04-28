@@ -12,7 +12,8 @@ from .admin_mixins import AccountScopedAdminMixin, AccountScopedInlineMixin
 from .forms import AccountTableDataForm, SFTPDropZoneAdminForm
 from .models import Account, Tenant, UserAccount, Location, AccountEncryption
 from .models import TenantMapping, TenantMappingCode
-from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData#, AccountJobLog
+from .models import AccountJob, SFTPDropZone, SFTPDropZoneScopedTenant, AccountTableData, AccountJobLog, IngestRun
+
 from .local_kms import generate_encrypted_dek
 
 from canonical.models import TableData
@@ -23,6 +24,8 @@ from adminsortable2.admin import SortableAdminMixin
 
 from django.conf import settings
 
+from django import forms
+from django.db import models
 
 register_extra_admin_urls(admin.site)
 
@@ -538,21 +541,51 @@ class AccountEncryptionAdmin(
             obj.encrypted_dek = encrypted_dek
         super().save_model(request, obj, form, change)
 
-# from django import forms
-# from django.db import models
-# @admin.register(AccountJobLog)
-# class AccountJobLogAdmin(
-#     AccountScopedAdminMixin, 
-#     PalmTreeGenericAdminMixin, 
-# ):
-#     list_display = ('account', 'accountjob', 'completed_datetime',)
-#     list_filter = ('completed_datetime',)
-#     formfield_overrides = {
-#         models.CharField: {
-#             'widget': forms.TextInput(attrs={'size': '120'})  # wider input
-#         },
-#         models.TextField: {
-#             'widget': forms.TextInput(attrs={'size': '120'})  # wider input
-#         },
-#     }
+class AccountJobLogInline(admin.TabularInline):
+    model = AccountJobLog
+    extra = 0
+    readonly_fields = ('created_datetime', 'message')
+    can_delete = False
 
+@admin.register(IngestRun)
+class IngestRunAdmin(admin.ModelAdmin):
+    inlines = [AccountJobLogInline]
+    
+    list_display = (
+        'id',
+        'account',
+        'accountjob',
+        'completed_datetime',
+        'short_result',
+        'path_and_filename',
+    )
+
+    list_filter = (
+        'account',
+        'accountjob',
+        'completed_datetime',
+    )
+
+    search_fields = (
+        'account__name',
+        'accountjob__name',
+        'path_and_filename',
+        'result_text',
+    )
+
+    formfield_overrides = {
+        models.CharField: {
+            'widget': forms.TextInput(attrs={'size': '120'}),
+        },
+        models.TextField: {
+            'widget': forms.Textarea(attrs={'rows': 6, 'cols': 120}),
+        },
+    }
+
+    ordering = ('-completed_datetime',)
+
+    date_hierarchy = 'completed_datetime'
+
+    def short_result(self, obj):
+        return (obj.result_text[:50] + '...') if obj.result_text else ''
+    short_result.short_description = "Result"

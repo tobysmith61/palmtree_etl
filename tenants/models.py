@@ -266,29 +266,30 @@ class AccountJob(CoreModel, FixtureControlledModel):
     def __str__(self):
         return f"{self.job}"
 
-# class IngestRun(CoreModel):
-#     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-#     accountjob = models.ForeignKey(AccountJob, on_delete=models.CASCADE)
-#     sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE, blank=True, null=True)
-#     completed_datetime = models.DateTimeField(auto_now_add=True)
-#     result_text = models.TextField(max_length=1000, blank=True, null=True)
-#     path_and_filename = models.CharField(max_length=255)
+class IngestRun(CoreModel):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    accountjob = models.ForeignKey(AccountJob, on_delete=models.CASCADE)
+    sftp_drop_zone = models.ForeignKey(SFTPDropZone, on_delete=models.CASCADE, blank=True, null=True)
+    completed_datetime = models.DateTimeField(auto_now_add=True)
+    result_text = models.TextField(max_length=1000, blank=True, null=True)
+    path_and_filename = models.CharField(max_length=255)
 
-#     class Meta:
-#         ordering = ['completed_datetime']
+    class Meta:
+        ordering = ['completed_datetime']
 
-#     def __str__(self):
-#         return f"{self.accountjob} / {self.completed_datetime}"
+    def __str__(self):
+        return f"{self.accountjob} / {self.completed_datetime}"
     
-# class AccountJobLog(CoreModel):    
-#     ingest_run = models.ForeignKey(IngestRun, null=True, on_delete=models.SET_NULL)
-#     message = models.TextField(max_length=1000, blank=True, null=True)
+class AccountJobLog(CoreModel):    
+    ingest_run = models.ForeignKey(IngestRun, null=True, on_delete=models.SET_NULL)
+    message = models.TextField(max_length=1000, blank=True, null=True)
+    created_datetime = models.DateTimeField(auto_now_add=True)
 
-#     class Meta:
-#         ordering = ['accountjob', 'completed_datetime']
+    class Meta:
+        ordering = ['created_datetime']
 
-#     def __str__(self):
-#         return f"{self.accountjob} / {self.completed_datetime}"
+    def __str__(self):
+        return f"{self.ingest_run} / {self.created_datetime}"
 
 class Role(CoreModel, FixtureControlledModel):
     name = models.CharField(max_length=50)

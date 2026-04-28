@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse
-from tenants.models import AccountJob#, AccountJobLog
+from tenants.models import AccountJob, IngestRun, AccountJobLog
 from tenants.utils import ensure_local_ready_folder
 from django.conf import settings
 from pathlib import Path
@@ -382,16 +382,22 @@ def run_account_job(accountjob_pk, request=None):
     # for each file currently in the ready folder awaiting processing
     #################################################################
     for path_and_filename in sorted(ready_folder_path.iterdir()):
-        # account_job_log = AccountJobLog()
-        # account_job_log.account = accountjob.account
-        # account_job_log.accountjob = accountjob
-        # account_job_log.sftp_drop_zone = accountjob.sftp_drop_zone
-        # account_job_log.result_text = 'Starting job...'
-        # account_job_log.path_and_filename = path_and_filename
-        # account_job_log.save()
 
         if not path_and_filename.is_file() or not path_and_filename.name.startswith(accountjob.job.source_schema.filename_prefix):
             continue
+
+        ingest_run = IngestRun()
+        ingest_run.account = accountjob.account
+        ingest_run.accountjob = accountjob
+        ingest_run.sftp_drop_zone = accountjob.sftp_drop_zone
+        ingest_run.result_text = 'Starting job...'
+        ingest_run.path_and_filename = path_and_filename
+        ingest_run.save()
+
+        account_job_log = AccountJobLog()
+        account_job_log.ingest_run = ingest_run
+        account_job_log.message = ingest_run.result_text
+        account_job_log.save()
 
         logger.info(f"Processing file: {path_and_filename}")
 
@@ -414,14 +420,23 @@ def run_account_job(accountjob_pk, request=None):
 
             shutil.move(path_and_filename, failed_path)
 
-            account_job_log.result_text = "Validation failed on the header"
-            account_job_log.save()
+            ingest_run.result_text = "Validation failed on the header"
+            ingest_run.save()
 
+            account_job_log = AccountJobLog()
+            account_job_log.ingest_run = ingest_run
+            account_job_log.message = ingest_run.result_text
+            account_job_log.save()
             continue
 
-        account_job_log.result_text = "Processing"
+        ingest_run.result_text = "Processing"
+        ingest_run.save()
+
+        account_job_log = AccountJobLog()
+        account_job_log.ingest_run = ingest_run
+        account_job_log.message = ingest_run.result_text
         account_job_log.save()
-        
+
         tenant_mapping = accountjob.tenant_mapping
         canonical_fields = accountjob.job.canonical_schema.fields.all()
 
@@ -532,7 +547,12 @@ def run_account_job(accountjob_pk, request=None):
                 result_text
             )
 
-        account_job_log.result_text = result_text
+        ingest_run.result_text = result_text
+        ingest_run.save()
+
+        account_job_log = AccountJobLog()
+        account_job_log.ingest_run = ingest_run
+        account_job_log.message = ingest_run.result_text
         account_job_log.save()
 
     logger.info("Job complete")

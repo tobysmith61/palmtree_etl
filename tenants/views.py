@@ -16,7 +16,7 @@ from django.utils.timezone import make_aware
 from django.utils.dateformat import format as date_format
 
 # Local app
-from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone#, AccountJobLog
+from .models import Account, Tenant, UserAccount, AccountJob, SFTPDropZone, AccountJobLog
 from .forms import TenantForm, SFTPUploadForm
 from .utils import get_current_tenant
 
@@ -435,11 +435,11 @@ def processor_logs_for_sftpdropzone_api(request, pk):
     except SFTPDropZone.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
 
-    # logs = (
-    #     AccountJobLog.objects
-    #     .filter(sftp_drop_zone=sftp_drop_zone)
-    #     .order_by("created_at")[:100]   # limit for performance
-    # )
+    logs = (
+        AccountJobLog.objects
+        .filter(sftp_drop_zone=sftp_drop_zone)
+        .order_by("created_at")[:100]   # limit for performance
+    )
 
     data = [
         {
