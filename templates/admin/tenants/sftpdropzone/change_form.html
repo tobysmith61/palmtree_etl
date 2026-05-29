@@ -5,8 +5,8 @@
 
     {% if original %}
         <style>
-        #processor-log-list td,
-        #processor-log-list th {
+        #ingest-run-list td,
+        #ingest-run-list th {
             font-size: 10px !important;
             line-height: 1.2;
             padding: 2px 4px;
@@ -60,20 +60,19 @@
 </div>
 
 <div class="module aligned">
-    <h2>Processor Logs</h2>
+    <h2>Ingest Runs</h2>
 
     <table style="width:100%; border-collapse: collapse;">
         <thead>
             <tr>
                 <th>Filename</th>
                 <th>Account Job</th>
-                <th>Drop Zone</th>
                 <th>Completed</th>
                 <th>Result</th>
             </tr>
         </thead>
 
-        <tbody id="processor-log-list">
+        <tbody id="ingest-run-list">
             <tr><td colspan="6">Loading...</td></tr>
         </tbody>
     </table>
@@ -85,7 +84,7 @@
     const logsApiUrl = "{% url 'tenants:processor_logs_for_sftpdropzone_api' original.pk %}";
 
     const filesTableBody = document.getElementById("dropzone-file-list");
-    const logsTableBody = document.getElementById("processor-log-list");
+    const logsTableBody = document.getElementById("ingest-run-list");
 
     let loadingFiles = false;
     let loadingLogs = false;
