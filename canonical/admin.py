@@ -311,8 +311,10 @@ class SourceSchemaAdminForm(forms.ModelForm):
             if not m._meta.abstract
         ]
 
-        self.fields["raw_data_storage_model"].widget = forms.Select(choices=choices)
-        
+        field = self.fields.get("raw_data_storage_model")
+        if field:
+            field.widget = forms.Select(choices=choices)
+                
 @admin.register(SourceSchema)
 class SourceSchemaAdmin(
     SoftDeleteAdminMixin, 
