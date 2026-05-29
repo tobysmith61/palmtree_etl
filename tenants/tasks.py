@@ -119,18 +119,26 @@ def scan_for_ready_files():
     for job in jobs:
         try:
             if job.auto_or_manual == "manual":
+                logger.warning('Job is set to manual - skipping')
                 continue
 
             ready_folder = Path(ensure_local_ready_folder(job))
 
             if not ready_folder.exists():
+                logger.warning('ready folder not available - skipping')
                 continue
 
+            logger.warning('Scan for ready files')
+            logger.warning('Prefix: ' + job.job.source_schema.filename_prefix)
+            for f in ready_folder.iterdir():
+                logger.warning('Filename:' + f.name)
+                
             files = [
                 f for f in ready_folder.iterdir()
                 if f.is_file() and f.name.startswith(job.job.source_schema.filename_prefix)
             ]
             if not files:
+                logger.warning('No files available - skipping')
                 continue
 
             logger.warning(f"QUEUE JOB {job.pk} | files={len(files)}")
