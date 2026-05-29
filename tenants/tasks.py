@@ -100,6 +100,17 @@ def run_account_job_celery_task(self, accountjob_id):
     """
     Actual job execution (isolated worker task)
     """
+
+    from django.db import connection
+
+    logger.warning(
+        "CELERY DB CONTEXT user=%s db=%s host=%s",
+        connection.settings_dict.get("USER"),
+        connection.settings_dict.get("NAME"),
+        socket.gethostname(),
+    )
+
+
     from raw_data.views import run_account_job
 
     logger.warning(f"START JOB {accountjob_id}")
